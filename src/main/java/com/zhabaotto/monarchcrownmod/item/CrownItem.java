@@ -1,6 +1,6 @@
 package com.zhabaotto.monarchcrownmod.item;
 
-public class CrownItem extends com.pcmanager.item.CrownItem {
+public class CrownItem extends com.onemanager.item.CrownItem {
     public CrownItem() {
         super();
     }

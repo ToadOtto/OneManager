@@ -1,4 +1,4 @@
 package com.zhabaotto.monarchcrownmod.event;
 
-public class CrownEvents extends com.pcmanager.event.CrownEvents {
+public class CrownEvents extends com.onemanager.event.CrownEvents {
 }

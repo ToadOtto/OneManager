@@ -6,8 +6,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModDataComponents {
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES =
-            com.pcmanager.item.ModDataComponents.LEGACY_DATA_COMPONENT_TYPES;
+            com.onemanager.item.ModDataComponents.LEGACY_DATA_COMPONENT_TYPES;
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> KNYAZ_NAME =
-            com.pcmanager.item.ModDataComponents.LEGACY_KNYAZ_NAME;
+            com.onemanager.item.ModDataComponents.LEGACY_KNYAZ_NAME;
 }

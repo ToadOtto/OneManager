@@ -6,8 +6,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModArmorMaterials {
     public static final DeferredRegister<ArmorMaterial> ARMOR_MATERIALS =
-            com.pcmanager.item.ModArmorMaterials.LEGACY_ARMOR_MATERIALS;
+            com.onemanager.item.ModArmorMaterials.LEGACY_ARMOR_MATERIALS;
 
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> MONARCH_CROWN_MATERIAL =
-            com.pcmanager.item.ModArmorMaterials.LEGACY_MONARCH_CROWN_MATERIAL;
+            com.onemanager.item.ModArmorMaterials.LEGACY_MONARCH_CROWN_MATERIAL;
 }

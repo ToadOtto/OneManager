@@ -1,4 +1,4 @@
 package com.zhabaotto.monarchcrownmod.data;
 
-public class KnyazSavedData extends com.pcmanager.data.KnyazSavedData {
+public class KnyazSavedData extends com.onemanager.data.KnyazSavedData {
 }

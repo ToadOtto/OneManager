@@ -1,7 +1,7 @@
 # Script to synchronize all raw assets into mod resource directories
 $baseDir = $PSScriptRoot
 $assetsDir = Join-Path $baseDir "assets"
-$resDir = Join-Path $baseDir "src\main\resources\assets\pcmanager"
+$resDir = Join-Path $baseDir "src\main\resources\assets\onemanager"
 
 $mobEffectDir = Join-Path $resDir "textures\mob_effect"
 $blockTexDir = Join-Path $resDir "textures\block"

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "onemanager:block/tombstone"
+    },
+    "facing=south": {
+      "model": "onemanager:block/tombstone",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "onemanager:block/tombstone",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "onemanager:block/tombstone",
+      "y": 90
+    }
+  }
+}
