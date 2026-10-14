@@ -31,7 +31,7 @@ repositories {
 }
 
 base {
-    archivesName = mod_id
+    archivesName = 'OneManager'
 }
 
 // Mojang ships Java 21 to end users in 1.21.1, so mods should target Java 21.
@@ -120,8 +120,8 @@ configurations {
 }
 
 dependencies {
-    implementation files('assets/owo-lib-neoforge-0.12.15.5-beta.1+1.21.jar')
-    localRuntime files('assets/owo-lib-neoforge-0.12.15.5-beta.1+1.21.jar')
+    implementation files('assets/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
+    localRuntime files('assets/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
     localRuntime files('create-1.21.1-6.0.10.jar')
     localRuntime files('CreateNumismatics-1.1.0+neoforge-mc1.21.1.jar')
     testImplementation platform('org.junit:junit-bom:5.10.2')
