@@ -571,7 +571,7 @@ public class CharacterWorldData extends SavedData {
     }
 
     public boolean canManageTaxes(UUID uuid) {
-        return isKnyaz(uuid) || isTreasurer(uuid);
+        return isKnyaz(uuid);
     }
 
     public List<TreasuryLogEntry> getTreasuryLog() {

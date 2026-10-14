@@ -48,7 +48,7 @@ public record SetTaxRatePacket(int newTaxRate) implements CustomPacketPayload {
                 );
             } else {
                 player.sendSystemMessage(
-                        Component.literal("❌ Только Князь или Казначей могут изменять налог!").withStyle(ChatFormatting.RED)
+                        Component.literal("❌ Только Князь может изменять налог!").withStyle(ChatFormatting.RED)
                 );
             }
         });

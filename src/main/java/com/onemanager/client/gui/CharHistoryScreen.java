@@ -61,6 +61,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
@@ -1928,7 +1929,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                     0xFF262112, 0xFF3D3219, 0xFFD4AF37,
                     this::openSetTaxRateModal
             );
-            changeRateBtn.tooltip(Component.literal("Установить новую ставку налога (только для Князя и Казначея)").withStyle(ChatFormatting.GRAY));
+            changeRateBtn.tooltip(Component.literal("Установить новую ставку налога (только для Князя)").withStyle(ChatFormatting.GRAY));
             taxTitleRow.child(changeRateBtn);
         }
 
@@ -1972,25 +1973,29 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         }
 
         ChatFormatting statusColor;
-        String subText;
-        ChatFormatting subColor;
-
         if (myStatus < 0) {
             statusColor = ChatFormatting.RED;
-            subText = "(задолженность)";
-            subColor = ChatFormatting.DARK_RED;
-        } else if (currentTaxRate > 0 && myStatus >= currentTaxRate) {
+        } else if (myStatus > 0) {
             statusColor = ChatFormatting.GREEN;
-            subText = "(налог оплачен наперед)";
-            subColor = ChatFormatting.DARK_GREEN;
         } else {
             statusColor = ChatFormatting.WHITE;
-            subText = "(нет задолженности)";
-            subColor = ChatFormatting.GRAY;
         }
 
-        statusRow.child(Components.label(Component.literal(formattedVal).withStyle(statusColor, ChatFormatting.BOLD)));
-        statusRow.child(Components.label(Component.literal(subText).withStyle(subColor)));
+        long maxStatus = currentTaxRate * 3L;
+        MutableComponent statusComp = Component.literal(formattedVal).withStyle(statusColor, ChatFormatting.BOLD);
+
+        if (myStatus < 0) {
+            statusRow.child(Components.label(statusComp));
+            statusRow.child(Components.label(Component.literal("(задолженность)").withStyle(ChatFormatting.DARK_RED)));
+        } else if (currentTaxRate > 0) {
+            statusComp.append(Component.literal(" / " + String.format("%,d", maxStatus).replace(',', ' ') + " $PR")
+                    .withStyle(ChatFormatting.GRAY)
+                    .withStyle(style -> style.withBold(false)));
+            statusRow.child(Components.label(statusComp));
+        } else {
+            statusRow.child(Components.label(statusComp));
+            statusRow.child(Components.label(Component.literal("(нет задолженности)").withStyle(ChatFormatting.GRAY)));
+        }
         taxCard.child(statusRow);
 
         // 3. Баланс игрока
@@ -2025,7 +2030,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 0xFF2A2312, 0xFF3D3219, 0xFFD4AF37,
                 this::openDepositTreasuryModal
         );
-        depositBtn.tooltip(Component.literal("Внести деньги в казну и получить Гос. Марки на счёт (250 $PR ➔ 1 марка)").withStyle(ChatFormatting.GRAY));
+        depositBtn.tooltip(Component.literal("Внести деньги в казну и получить Гос. Марки на счёт").withStyle(ChatFormatting.GRAY));
         btnCol.child(depositBtn);
 
         taxCard.child(btnCol);
