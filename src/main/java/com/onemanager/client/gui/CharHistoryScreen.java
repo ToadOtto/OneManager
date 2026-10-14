@@ -398,7 +398,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         FlowLayout balancePill = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(20));
         balancePill.surface(Surface.flat(0xFF1F232D).and(Surface.outline(0xFF323946)));
-        balancePill.padding(Insets.of(0, 8, 0, 8));
+        balancePill.padding(Insets.horizontal(8));
         balancePill.verticalAlignment(VerticalAlignment.CENTER);
         balancePill.gap(4);
         balancePill.margins(Insets.right(6));
@@ -418,7 +418,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         FlowLayout brandsPill = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(20));
         brandsPill.surface(Surface.flat(0xFF1F232D).and(Surface.outline(0xFF323946)));
-        brandsPill.padding(Insets.of(0, 8, 0, 6));
+        brandsPill.padding(Insets.horizontal(6));
         brandsPill.verticalAlignment(VerticalAlignment.CENTER);
         brandsPill.gap(4);
         brandsPill.tooltip(Component.literal("Гос. Марки на счету: " + balance + " шт.\nВ инвентаре: " + inventoryBrands + " шт.").withStyle(ChatFormatting.GRAY));
@@ -426,14 +426,13 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         brandsPill.child(new TextureIconComponent(ICON_STATE_BRAND, 12));
         brandsPill.child(Components.label(Component.literal(String.valueOf(balance)).withStyle(ChatFormatting.WHITE)));
 
-        // Minus button (Withdraw) - shifted right by 2px for centering
-        FlowLayout minusBtn = createIconButton("-", 14, 14, 2, 0xFF2A2E38, 0xFF3A404E, 0xFF4A5263, () -> openBrandModal(false));
+        // Minus button (Withdraw)
+        FlowLayout minusBtn = createIconButton("-", 14, 14, 0, 0xFF2A2E38, 0xFF3A404E, 0xFF4A5263, () -> openBrandModal(false));
         minusBtn.tooltip(Component.literal("Снять Гос. Марки со счета"));
         brandsPill.child(minusBtn);
 
-        // Plus button (Deposit) - shifted right by 1px for centering, margin right 2px to prevent clipping
-        FlowLayout plusBtn = createIconButton("+", 14, 14, 1, 0xFF2A2E38, 0xFF3A404E, 0xFF4A5263, () -> openBrandModal(true));
-        plusBtn.margins(Insets.right(2));
+        // Plus button (Deposit)
+        FlowLayout plusBtn = createIconButton("+", 14, 14, 0, 0xFF2A2E38, 0xFF3A404E, 0xFF4A5263, () -> openBrandModal(true));
         plusBtn.tooltip(Component.literal("Внести Гос. Марки на счет"));
         brandsPill.child(plusBtn);
 
