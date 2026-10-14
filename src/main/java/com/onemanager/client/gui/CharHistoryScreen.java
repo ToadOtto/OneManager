@@ -821,7 +821,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             }
         }
 
-        ScrollContainer<FlowLayout> leftScroll = Containers.verticalScroll(Sizing.fill(68), Sizing.fill(100), leftFlow);
+        ScrollContainer<FlowLayout> leftScroll = Containers.verticalScroll(Sizing.fill(58), Sizing.fill(100), leftFlow);
         leftScroll.scrollbar(DARK_SCROLLBAR);
         leftScroll.scrollbarThiccness(4);
         columns.child(leftScroll);
@@ -846,14 +846,19 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         if (unburiedList.isEmpty()) {
             rightFlow.child(Components.label(Component.literal("✔ Все предки упокоены").withStyle(ChatFormatting.GRAY)));
         } else {
+            int uiWidth = (int) (this.width / UI_SCALE);
+            int totalColumnsWidth = Math.max(200, (int) (uiWidth * 0.92) - 159);
+            int rightColWidth = Math.max(120, (int) (totalColumnsWidth * 0.42) - 6);
+            int unburiedCauseMaxWidth = Math.max(80, rightColWidth - 78);
+
             for (DeadEntry entry : unburiedList) {
                 DeadCharacter dead = entry.dead();
 
-                FlowLayout card = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(44));
+                FlowLayout card = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
                 int borderColor = 0xFF382428;
                 int hoverBorder = 0xFF4C3036;
                 card.surface(Surface.flat(0xFF1E1719).and(Surface.outline(borderColor)));
-                card.padding(Insets.of(4));
+                card.padding(Insets.of(5));
                 card.verticalAlignment(VerticalAlignment.CENTER);
                 card.cursorStyle(CursorStyle.HAND);
                 card.tooltip(Component.literal("Нажмите, чтобы открыть досье персонажа").withStyle(ChatFormatting.GRAY));
@@ -873,13 +878,16 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 card.child(new PlayerAvatarComponent(entry.playerUuid(), 32));
 
                 // Middle Info: strictly only name, death date, and death cause
-                FlowLayout info = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+                FlowLayout info = Containers.verticalFlow(Sizing.expand(), Sizing.content());
                 info.margins(Insets.left(6));
                 info.gap(1);
 
                 info.child(Components.label(Component.literal(dead.getName()).withStyle(ChatFormatting.WHITE)));
                 info.child(Components.label(Component.literal("Дата: " + dead.getFormattedDeathDate()).withStyle(ChatFormatting.GRAY)));
-                info.child(Components.label(Component.literal("Причина: " + dead.getDeathCause()).withStyle(ChatFormatting.DARK_GRAY)));
+
+                LabelComponent causeLabel = Components.label(Component.literal("Причина: " + dead.getDeathCause()).withStyle(ChatFormatting.DARK_GRAY));
+                causeLabel.maxWidth(unburiedCauseMaxWidth);
+                info.child(causeLabel);
 
                 card.child(info);
 
@@ -3441,10 +3449,18 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         modal.child(modalHeader);
         modal.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(4)));
 
-        // Balance
+        // Balance & Weekly deposited row
         FlowLayout balRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+        balRow.verticalAlignment(VerticalAlignment.CENTER);
         balRow.child(Components.label(Component.literal("Ваш баланс: ").withStyle(ChatFormatting.GRAY)));
         balRow.child(Components.label(Component.literal(String.format("%,d", balance).replace(',', ' ') + " $PR").withStyle(ChatFormatting.GOLD)));
+
+        balRow.child(Components.box(Sizing.expand(), Sizing.fixed(1)).color(Color.ofArgb(0)));
+
+        long weeklyDep = pd != null ? pd.getWeeklyDeposit() : 0L;
+        String formattedWeeklyDep = String.format("%,d", weeklyDep).replace(',', ' ') + " $PR";
+        balRow.child(Components.label(Component.literal("Внесено: " + formattedWeeklyDep).withStyle(ChatFormatting.GRAY)));
+
         modal.child(balRow);
 
         // Converter banner: curCost $PR -> 1 [icon] Гос. Марка

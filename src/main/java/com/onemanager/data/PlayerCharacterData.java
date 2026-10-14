@@ -42,6 +42,7 @@ public class PlayerCharacterData {
     public static final String KEY_MAILBOX = "mailbox";
     public static final String KEY_PROFESSION_PROGRESS = "professionProgress";
     public static final String KEY_ONLINE_BRAND_TICKS = "onlineBrandTicks";
+    public static final String KEY_WEEKLY_DEPOSIT = "weeklyDeposit";
 
     public static final int[] BRAND_PROGRESSION = {250, 500, 1000, 2000, 4000, 8000, 16000};
     public static final int BRAND_CYCLE_TICKS = 168_000; // 140 minutes in ticks (7 minecraft days)
@@ -68,6 +69,7 @@ public class PlayerCharacterData {
     private int onlineBrandTicks = 0;
     private boolean leftMainThisCycle = false;
     private boolean leftSecondaryThisCycle = false;
+    private long weeklyDeposit = 0L;
 
     public PlayerCharacterData(UUID playerUuid) {
         this.playerUuid = Objects.requireNonNull(playerUuid, "Player UUID cannot be null");
@@ -458,6 +460,7 @@ public class PlayerCharacterData {
             lastBrandResetTime += cyclesPassed * BRAND_RESET_INTERVAL_MS;
             brandTier = 0;
             brandProgress = 0;
+            weeklyDeposit = 0L;
             leftMainThisCycle = false;
             leftSecondaryThisCycle = false;
 
@@ -518,6 +521,7 @@ public class PlayerCharacterData {
             this.onlineBrandTicks %= BRAND_CYCLE_TICKS;
             this.brandTier = 0;
             this.brandProgress = 0;
+            this.weeklyDeposit = 0L;
             this.leftMainThisCycle = false;
             this.leftSecondaryThisCycle = false;
             this.lastBrandResetTime = System.currentTimeMillis();
@@ -550,8 +554,21 @@ public class PlayerCharacterData {
         return BRAND_PROGRESSION[Math.min(brandTier, BRAND_PROGRESSION.length - 1)];
     }
 
+    public long getWeeklyDeposit() {
+        checkBrandReset();
+        if (weeklyDeposit > 0) {
+            return weeklyDeposit;
+        }
+        long total = brandProgress;
+        for (int i = 0; i < brandTier && i < BRAND_PROGRESSION.length; i++) {
+            total += BRAND_PROGRESSION[i];
+        }
+        return total;
+    }
+
     public int applyBrandDeposit(long amount) {
         triggerBrandCycleReset(System.currentTimeMillis(), true);
+        this.weeklyDeposit += amount;
         int marksEarned = 0;
         long remaining = amount;
 
@@ -619,6 +636,7 @@ public class PlayerCharacterData {
         tag.putInt(KEY_ONLINE_BRAND_TICKS, onlineBrandTicks);
         tag.putBoolean(KEY_LEFT_MAIN_CYCLE, leftMainThisCycle);
         tag.putBoolean(KEY_LEFT_SEC_CYCLE, leftSecondaryThisCycle);
+        tag.putLong(KEY_WEEKLY_DEPOSIT, weeklyDeposit);
 
         ListTag mailList = new ListTag();
         for (MailEntry entry : mailbox) {
@@ -730,6 +748,9 @@ public class PlayerCharacterData {
         }
         if (tag.contains(KEY_LEFT_SEC_CYCLE, Tag.TAG_BYTE)) {
             data.leftSecondaryThisCycle = tag.getBoolean(KEY_LEFT_SEC_CYCLE);
+        }
+        if (tag.contains(KEY_WEEKLY_DEPOSIT, Tag.TAG_ANY_NUMERIC)) {
+            data.weeklyDeposit = tag.getLong(KEY_WEEKLY_DEPOSIT);
         }
         if (tag.contains(KEY_MAILBOX, Tag.TAG_LIST)) {
             ListTag list = tag.getList(KEY_MAILBOX, Tag.TAG_COMPOUND);
