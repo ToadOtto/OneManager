@@ -46,7 +46,7 @@ public record WithdrawTreasuryPacket(long amount) implements CustomPacketPayload
 
             if (toWithdraw > 0 && treasury >= toWithdraw) {
                 worldData.removeTreasury(toWithdraw);
-                EconomyManager.addBalance(worldData, player.getUUID(), toWithdraw);
+                EconomyManager.addBalance(player, toWithdraw);
 
                 PlayerCharacterData pd = worldData.getPlayerData(player.getUUID());
                 String charName = pd != null && pd.hasActiveCharacter() ? pd.getActiveCharacter().getName() : player.getScoreboardName();

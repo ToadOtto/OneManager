@@ -47,7 +47,7 @@ public class ProfessionRegistry {
                 4,
                 "Казначей",
                 ProfessionCategory.STATE,
-                Items.GOLD_INGOT,
+                com.oneshop.item.ModItems.SPROTA,
                 "Ведение учёта государственной казны, сбор пошлин, регулирование торговых соглашений и финансовый контроль за оборотом Государственных Марок."
         ), "treasurer");
 

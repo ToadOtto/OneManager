@@ -120,6 +120,8 @@ configurations {
 }
 
 dependencies {
+    implementation files('oneshop/oneshop-1.0.2.jar')
+    localRuntime files('oneshop/oneshop-1.0.2.jar')
     implementation files('assets/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
     localRuntime files('assets/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
     localRuntime files('create-1.21.1-6.0.10.jar')

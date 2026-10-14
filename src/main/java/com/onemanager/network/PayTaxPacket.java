@@ -35,7 +35,7 @@ public record PayTaxPacket(long amount) implements CustomPacketPayload {
             }
 
             CharacterWorldData worldData = CharacterWorldData.get(player.server);
-            long balance = EconomyManager.getBalance(worldData, player.getUUID());
+            double balance = EconomyManager.getBalance(player);
             int taxRate = worldData.getTaxRate();
             long maxStatus = taxRate * 3L;
 
@@ -53,7 +53,10 @@ public record PayTaxPacket(long amount) implements CustomPacketPayload {
                 return;
             }
 
-            EconomyManager.deductBalance(worldData, player.getUUID(), toPay);
+            if (!EconomyManager.deductBalance(player, toPay)) {
+                player.sendSystemMessage(Component.literal("❌ Недостаточно средств на балансе!").withStyle(ChatFormatting.RED));
+                return;
+            }
             pd.increaseTaxStatus(toPay, maxStatus);
             worldData.addTreasury(toPay);
 

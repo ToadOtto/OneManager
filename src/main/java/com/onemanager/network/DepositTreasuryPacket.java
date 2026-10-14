@@ -35,11 +35,14 @@ public record DepositTreasuryPacket(long amount) implements CustomPacketPayload 
             }
 
             CharacterWorldData worldData = CharacterWorldData.get(player.server);
-            long balance = EconomyManager.getBalance(worldData, player.getUUID());
+            double balance = EconomyManager.getBalance(player);
             long toPay = payload.amount();
 
             if (toPay > 0 && balance >= toPay) {
-                EconomyManager.deductBalance(worldData, player.getUUID(), toPay);
+                if (!EconomyManager.deductBalance(player, toPay)) {
+                    player.sendSystemMessage(Component.literal("❌ Недостаточно средств на балансе!").withStyle(ChatFormatting.RED));
+                    return;
+                }
                 PlayerCharacterData pd = worldData.getOrCreatePlayerData(player.getUUID());
                 worldData.addTreasury(toPay);
 

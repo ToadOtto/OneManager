@@ -4,6 +4,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Represents a registered profession with English identifier in memory,
@@ -14,14 +15,18 @@ public class Profession {
     private final int id;
     private final String title;
     private final ProfessionCategory type;
-    private final Item iconItem;
+    private final Supplier<? extends Item> iconSupplier;
     private final String description;
 
     public Profession(int id, String title, ProfessionCategory type, Item iconItem, String description) {
+        this(id, title, type, () -> iconItem != null ? iconItem : Items.PAPER, description);
+    }
+
+    public Profession(int id, String title, ProfessionCategory type, Supplier<? extends Item> iconSupplier, String description) {
         this.id = id;
         this.title = Objects.requireNonNull(title, "Profession title cannot be null");
         this.type = Objects.requireNonNull(type, "Profession category cannot be null");
-        this.iconItem = iconItem != null ? iconItem : Items.PAPER;
+        this.iconSupplier = iconSupplier != null ? iconSupplier : () -> Items.PAPER;
         this.description = description != null ? description : "";
     }
 
@@ -46,7 +51,8 @@ public class Profession {
     }
 
     public Item getIconItem() {
-        return iconItem;
+        Item item = iconSupplier.get();
+        return item != null ? item : Items.PAPER;
     }
 
     public String getDescription() {

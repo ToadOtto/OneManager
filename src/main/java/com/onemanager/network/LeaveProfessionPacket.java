@@ -72,13 +72,16 @@ public record LeaveProfessionPacket(int professionId) implements CustomPacketPay
                     player.sendSystemMessage(Component.literal("❌ Вы уже покидали основную профессию в этом недельном цикле! Сброс через: " + hrs + "ч " + mins + "м.").withStyle(ChatFormatting.RED));
                     return;
                 }
-                long balance = EconomyManager.getBalance(worldData, player.getUUID());
+                double balance = EconomyManager.getBalance(player);
                 int brands = pd.getStateBrands();
                 if (balance < 500 || brands < 2) {
-                    player.sendSystemMessage(Component.literal("❌ Недостаточно ресурсов для ухода из основной профессии! Требуется 500 $PR и 2 Гос. Марки (у вас: " + balance + " $PR, " + brands + " марок).").withStyle(ChatFormatting.RED));
+                    player.sendSystemMessage(Component.literal("❌ Недостаточно ресурсов для ухода из основной профессии! Требуется 500 $PR и 2 Гос. Марки (у вас: " + String.format(java.util.Locale.ROOT, "%.0f", balance) + " $PR, " + brands + " марок).").withStyle(ChatFormatting.RED));
                     return;
                 }
-                EconomyManager.deductBalance(worldData, player.getUUID(), 500);
+                if (!EconomyManager.deductBalance(player, 500)) {
+                    player.sendSystemMessage(Component.literal("❌ Недостаточно средств на балансе!").withStyle(ChatFormatting.RED));
+                    return;
+                }
                 pd.removeStateBrands(2);
                 pd.setLeftMainThisCycle(true);
             } else if (cat == ProfessionCategory.SECONDARY) {
@@ -89,13 +92,16 @@ public record LeaveProfessionPacket(int professionId) implements CustomPacketPay
                     player.sendSystemMessage(Component.literal("❌ Вы уже покидали дополнительную профессию в этом недельном цикле! Сброс через: " + hrs + "ч " + mins + "м.").withStyle(ChatFormatting.RED));
                     return;
                 }
-                long balance = EconomyManager.getBalance(worldData, player.getUUID());
+                double balance = EconomyManager.getBalance(player);
                 int brands = pd.getStateBrands();
                 if (balance < 250 || brands < 1) {
-                    player.sendSystemMessage(Component.literal("❌ Недостаточно ресурсов для ухода из дополнительной профессии! Требуется 250 $PR и 1 Гос. Марка (у вас: " + balance + " $PR, " + brands + " марок).").withStyle(ChatFormatting.RED));
+                    player.sendSystemMessage(Component.literal("❌ Недостаточно ресурсов для ухода из дополнительной профессии! Требуется 250 $PR и 1 Гос. Марка (у вас: " + String.format(java.util.Locale.ROOT, "%.0f", balance) + " $PR, " + brands + " марок).").withStyle(ChatFormatting.RED));
                     return;
                 }
-                EconomyManager.deductBalance(worldData, player.getUUID(), 250);
+                if (!EconomyManager.deductBalance(player, 250)) {
+                    player.sendSystemMessage(Component.literal("❌ Недостаточно средств на балансе!").withStyle(ChatFormatting.RED));
+                    return;
+                }
                 pd.removeStateBrands(1);
                 pd.setLeftSecondaryThisCycle(true);
             }

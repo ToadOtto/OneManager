@@ -32,7 +32,6 @@ public class PlayerCharacterData {
     public static final String KEY_STATE_BRANDS = "stateBrands";
     public static final String KEY_MAIN_PROFESSION_SLOTS = "mainProfSlots";
     public static final String KEY_SECONDARY_PROFESSION_SLOTS = "secProfSlots";
-    public static final String KEY_BALANCE = "balance";
     public static final String KEY_TAX_DEBT = "taxDebt";
     public static final String KEY_TAX_STATUS = "taxStatus";
     public static final String KEY_BRAND_TIER = "brandTier";
@@ -62,7 +61,6 @@ public class PlayerCharacterData {
     private int stateBrands = 0;
     private int mainProfessionSlots = 1;
     private int secondaryProfessionSlots = 2;
-    private long balance = 0L;
     private long taxStatus = 0L;
     private int brandTier = 0;
     private long brandProgress = 0L;
@@ -409,26 +407,6 @@ public class PlayerCharacterData {
         this.secondaryProfessionSlots = Math.max(0, this.secondaryProfessionSlots + amount);
     }
 
-    // --- Economy & Taxes ---
-
-    public long getBalance() {
-        return balance;
-    }
-
-    public void setBalance(long balance) {
-        this.balance = Math.max(0L, balance);
-    }
-
-    public void addBalance(long amount) {
-        setBalance(this.balance + amount);
-    }
-
-    public long removeBalance(long amount) {
-        long actual = Math.min(this.balance, Math.max(0L, amount));
-        setBalance(this.balance - actual);
-        return actual;
-    }
-
     // --- Tax Status ---
 
     public long getTaxStatus() {
@@ -634,7 +612,6 @@ public class PlayerCharacterData {
         tag.putInt(KEY_STATE_BRANDS, stateBrands);
         tag.putInt(KEY_MAIN_PROFESSION_SLOTS, mainProfessionSlots);
         tag.putInt(KEY_SECONDARY_PROFESSION_SLOTS, secondaryProfessionSlots);
-        tag.putLong(KEY_BALANCE, balance);
         tag.putLong(KEY_TAX_STATUS, taxStatus);
         tag.putInt(KEY_BRAND_TIER, brandTier);
         tag.putLong(KEY_BRAND_PROGRESS, brandProgress);
@@ -728,10 +705,6 @@ public class PlayerCharacterData {
             data.setSecondaryProfessionSlots(tag.getInt(KEY_SECONDARY_PROFESSION_SLOTS));
         } else {
             data.setSecondaryProfessionSlots(2);
-        }
-
-        if (tag.contains(KEY_BALANCE, Tag.TAG_ANY_NUMERIC)) {
-            data.setBalance(tag.getLong(KEY_BALANCE));
         }
 
         if (tag.contains(KEY_TAX_STATUS, Tag.TAG_ANY_NUMERIC)) {

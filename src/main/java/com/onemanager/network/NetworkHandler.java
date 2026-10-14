@@ -68,12 +68,6 @@ public class NetworkHandler {
         );
 
         registrar.playToServer(
-                DepositWithdrawGoldPacket.TYPE,
-                DepositWithdrawGoldPacket.STREAM_CODEC,
-                DepositWithdrawGoldPacket::handle
-        );
-
-        registrar.playToServer(
                 LeaveProfessionPacket.TYPE,
                 LeaveProfessionPacket.STREAM_CODEC,
                 LeaveProfessionPacket::handle

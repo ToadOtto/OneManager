@@ -1,43 +1,50 @@
 package com.onemanager.economy;
 
-import com.onemanager.data.CharacterWorldData;
-import com.onemanager.data.PlayerCharacterData;
+import com.oneshop.client.ClientBankCache;
+import com.oneshop.service.PlayerAccountService;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.UUID;
 
 /**
- * Modular economy abstraction layer.
- * Currently uses the built-in player balance stored in PlayerCharacterData.
- * When integrating an external economy mod (e.g., Numismatics, Vault, Impactor),
- * simply redirect these methods to the external mod's API.
+ * Economy abstraction layer backed by OneShop's PlayerAccountService and ClientBankCache.
  */
 public class EconomyManager {
 
-    public static long getBalance(CharacterWorldData worldData, UUID playerUuid) {
-        if (worldData == null || playerUuid == null) return 0L;
-        PlayerCharacterData pd = worldData.getPlayerData(playerUuid);
-        return pd != null ? pd.getBalance() : 0L;
+    public static double getBalance(Player player) {
+        if (player == null) return 0.0;
+        return PlayerAccountService.getBalance(player);
     }
 
-    public static void setBalance(CharacterWorldData worldData, UUID playerUuid, long amount) {
-        if (worldData == null || playerUuid == null) return;
-        PlayerCharacterData pd = worldData.getOrCreatePlayerData(playerUuid);
-        pd.setBalance(amount);
-        worldData.setDirty();
+    public static double getBalance(MinecraftServer server, UUID playerUuid) {
+        if (server == null || playerUuid == null) return 0.0;
+        ServerPlayer player = server.getPlayerList().getPlayer(playerUuid);
+        return player != null ? PlayerAccountService.getBalance(player) : 0.0;
     }
 
-    public static void addBalance(CharacterWorldData worldData, UUID playerUuid, long amount) {
-        if (worldData == null || playerUuid == null) return;
-        setBalance(worldData, playerUuid, getBalance(worldData, playerUuid) + amount);
+    public static double getClientBalance() {
+        return ClientBankCache.getBalance();
     }
 
-    public static boolean deductBalance(CharacterWorldData worldData, UUID playerUuid, long amount) {
-        if (worldData == null || playerUuid == null || amount <= 0) return false;
-        long current = getBalance(worldData, playerUuid);
-        if (current >= amount) {
-            setBalance(worldData, playerUuid, current - amount);
-            return true;
-        }
-        return false;
+    public static void setBalance(ServerPlayer player, double amount) {
+        if (player == null) return;
+        PlayerAccountService.setBalance(player, Math.max(0.0, amount));
+    }
+
+    public static void addBalance(ServerPlayer player, double amount) {
+        if (player == null || amount <= 0) return;
+        PlayerAccountService.addBalance(player, amount);
+    }
+
+    public static boolean deductBalance(ServerPlayer player, double amount) {
+        if (player == null || amount <= 0) return false;
+        return PlayerAccountService.withdraw(player, amount);
+    }
+
+    public static boolean canAfford(Player player, double amount) {
+        if (player == null || amount <= 0) return true;
+        return PlayerAccountService.getBalance(player) >= amount;
     }
 }

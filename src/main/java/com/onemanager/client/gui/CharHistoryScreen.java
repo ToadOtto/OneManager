@@ -22,7 +22,8 @@ import com.onemanager.client.gui.note.NoteViewScreen;
 import com.onemanager.network.ClaimLetterPacket;
 import com.onemanager.network.RepealLawPacket;
 import com.onemanager.network.DepositTreasuryPacket;
-import com.onemanager.network.DepositWithdrawGoldPacket;
+import com.oneshop.client.ClientBankCache;
+import com.oneshop.item.SprotaItem;
 import com.onemanager.network.DepositWithdrawStateBrandPacket;
 import com.onemanager.network.ExpandWorldBorderPacket;
 import com.onemanager.network.LeaveProfessionPacket;
@@ -104,7 +105,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 case POPULATION -> new ItemStack(Items.PLAYER_HEAD);
                 case STATE -> new ItemStack(Items.GOLDEN_HELMET);
                 case PROFESSIONS -> new ItemStack(Items.IRON_PICKAXE);
-                case TREASURY -> new ItemStack(Items.GOLD_INGOT);
+                case TREASURY -> new ItemStack(com.oneshop.item.ModItems.SPROTA.get());
                 case LETTERS -> new ItemStack(ModItems.NOTE.get());
                 case LAWS -> new ItemStack(Items.BOOK);
                 case FACTIONS -> new ItemStack(Items.SHIELD);
@@ -390,35 +391,24 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         // Spacer to push right-hand widgets
         headerBar.child(Components.spacer());
 
-        // Player Money / Gold Pill (Currency display with neutral gray + / - buttons)
-        PlayerCharacterData pd = getMyPlayerData();
-        long myBalance = pd != null ? pd.getBalance() : 0L;
-        int inventoryGold = getInventoryGoldIngots();
+        // Player Money / Sprota Pill (Currency display without deposit/withdraw buttons)
+        double myBalance = ClientBankCache.getBalance();
+        int inventorySprota = getInventorySprota();
+        String formattedMoney = (myBalance % 1 == 0 ? String.format(java.util.Locale.ROOT, "%,d", (long) myBalance).replace(',', ' ') : String.format(java.util.Locale.ROOT, "%,.2f", myBalance)) + " " + SprotaItem.CURRENCY_SYMBOL;
 
         FlowLayout balancePill = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(20));
         balancePill.surface(Surface.flat(0xFF1F232D).and(Surface.outline(0xFF323946)));
-        balancePill.padding(Insets.of(0, 8, 0, 6));
+        balancePill.padding(Insets.of(0, 8, 0, 8));
         balancePill.verticalAlignment(VerticalAlignment.CENTER);
         balancePill.gap(4);
         balancePill.margins(Insets.right(6));
-        balancePill.tooltip(Component.literal("Баланс: " + String.format("%,d", myBalance).replace(',', ' ') + " $PR\nВ инвентаре: " + inventoryGold + " слитков золота").withStyle(ChatFormatting.GRAY));
+        balancePill.tooltip(Component.literal("Банковский счёт: " + formattedMoney + "\nВ инвентаре: " + inventorySprota + " шт. " + SprotaItem.CURRENCY_SYMBOL).withStyle(ChatFormatting.GRAY));
 
-        ItemComponent goldIcon = Components.item(new ItemStack(Items.GOLD_INGOT));
-        goldIcon.sizing(Sizing.fixed(12), Sizing.fixed(12));
-        balancePill.child(goldIcon);
+        ItemComponent currencyIcon = Components.item(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()));
+        currencyIcon.sizing(Sizing.fixed(12), Sizing.fixed(12));
+        balancePill.child(currencyIcon);
 
-        balancePill.child(Components.label(Component.literal(String.format("%,d", myBalance).replace(',', ' ') + " $PR").withStyle(ChatFormatting.WHITE)));
-
-        // Minus button (Withdraw gold ingots)
-        FlowLayout goldMinusBtn = createIconButton("-", 14, 14, 2, 0xFF2A2E38, 0xFF3A404E, 0xFF4A5263, () -> openGoldModal(false));
-        goldMinusBtn.tooltip(Component.literal("Снять деньги в инвентарь (слитками золота)"));
-        balancePill.child(goldMinusBtn);
-
-        // Plus button (Deposit gold ingots)
-        FlowLayout goldPlusBtn = createIconButton("+", 14, 14, 1, 0xFF2A2E38, 0xFF3A404E, 0xFF4A5263, () -> openGoldModal(true));
-        goldPlusBtn.margins(Insets.right(2));
-        goldPlusBtn.tooltip(Component.literal("Внести золотые слитки на баланс"));
-        balancePill.child(goldPlusBtn);
+        balancePill.child(Components.label(Component.literal(formattedMoney).withStyle(ChatFormatting.WHITE)));
 
         headerBar.child(balancePill);
 
@@ -1313,7 +1303,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             );
         } else if (title.contains("казначей")) {
             return List.of(
-                    new ProfessionAbility(new ItemStack(Items.GOLD_INGOT), "Государственная Пошлина", false, "Сбор налогов и контроль государственной казны."),
+                    new ProfessionAbility(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()), "Государственная Пошлина", false, "Сбор налогов и контроль государственной казны."),
                     new ProfessionAbility(new ItemStack(Items.EMERALD), "Финансовый Аудит", true, "Регулирование торговых сделок и оборот Гос. Марок.")
             );
         } else if (title.contains("флорист")) {
@@ -1605,7 +1595,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     private void openLeaveProfessionModal(Profession prof) {
         if (prof == null) return;
         PlayerCharacterData pd = getMyPlayerData();
-        long balance = pd != null ? pd.getBalance() : 0L;
+        long balance = (long) ClientBankCache.getBalance();
         int brands = pd != null ? pd.getStateBrands() : 0;
         ProfessionCategory cat = prof.getType();
 
@@ -1899,7 +1889,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         amountRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
         amountRow.gap(8);
 
-        ItemComponent bigIngot = Components.item(new ItemStack(Items.GOLD_INGOT));
+        ItemComponent bigIngot = Components.item(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()));
         bigIngot.sizing(Sizing.fixed(20), Sizing.fixed(20));
         amountRow.child(bigIngot);
 
@@ -2005,14 +1995,15 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         taxCard.child(statusRow);
 
         // 3. Баланс игрока
-        long myBalance = myData != null ? myData.getBalance() : 0L;
+        double myBalance = ClientBankCache.getBalance();
+        String formattedMyBal = (myBalance % 1 == 0 ? String.format(java.util.Locale.ROOT, "%,d", (long) myBalance).replace(',', ' ') : String.format(java.util.Locale.ROOT, "%,.2f", myBalance)) + " " + SprotaItem.CURRENCY_SYMBOL;
         FlowLayout balanceRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
         balanceRow.verticalAlignment(VerticalAlignment.CENTER);
         balanceRow.gap(6);
 
         balanceRow.child(Components.label(Component.literal("• ").withStyle(ChatFormatting.GOLD)));
         balanceRow.child(Components.label(Component.literal("Ваш баланс: ").withStyle(ChatFormatting.GRAY)));
-        balanceRow.child(Components.label(Component.literal(String.format("%,d", myBalance).replace(',', ' ') + " $PR").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+        balanceRow.child(Components.label(Component.literal(formattedMyBal).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
         taxCard.child(balanceRow);
 
         // 4. Кнопки действий казны - друг под другом
@@ -3191,135 +3182,17 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         this.uiAdapter.rootComponent.child(overlay);
     }
 
-    /**
-     * Gold / Balance Deposit / Withdraw Modal (Same UX as State Brands modal)
-     */
-    private int goldTransferAmount = 1;
-
-    private int getInventoryGoldIngots() {
+    private int getInventorySprota() {
         if (Minecraft.getInstance().player != null) {
             int count = 0;
             for (ItemStack stack : Minecraft.getInstance().player.getInventory().items) {
-                if (stack.is(Items.GOLD_INGOT)) {
+                if (stack.is(com.oneshop.item.ModItems.SPROTA.get())) {
                     count += stack.getCount();
                 }
             }
             return count;
         }
         return 0;
-    }
-
-    private void openGoldModal(boolean isDeposit) {
-        PlayerCharacterData pd = getMyPlayerData();
-        long balance = pd != null ? pd.getBalance() : 0L;
-        int invGold = getInventoryGoldIngots();
-        int maxAvailable = isDeposit ? invGold : (int) Math.min(balance, Integer.MAX_VALUE);
-        goldTransferAmount = Math.min(1, maxAvailable);
-
-        FlowLayout modal = Containers.verticalFlow(Sizing.fixed(260), Sizing.content());
-        modal.surface(Surface.flat(0xFF14171E).and(Surface.outline(0xFF454B58)));
-        modal.padding(Insets.of(12));
-        modal.gap(6);
-        modal.zIndex(10);
-
-        OverlayContainer<FlowLayout> overlay = createOverlay(modal);
-
-        // Header: Standard white/gray, no bold
-        FlowLayout modalHeader = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(18));
-        modalHeader.verticalAlignment(VerticalAlignment.CENTER);
-        modalHeader.gap(5);
-
-        ItemComponent headerIngot = Components.item(new ItemStack(Items.GOLD_INGOT));
-        headerIngot.sizing(Sizing.fixed(14), Sizing.fixed(14));
-        modalHeader.child(headerIngot);
-
-        String title = isDeposit ? "Внесение золота" : "Снятие золота";
-        modalHeader.child(Components.label(Component.literal(title).withStyle(ChatFormatting.WHITE)));
-        modalHeader.child(Components.box(Sizing.expand(), Sizing.fixed(1)).color(Color.ofArgb(0)));
-
-        FlowLayout xBtn = createIconButton("✕", 16, 16, 2, 0xFF22262E, 0xFF353B47, 0xFF4A5263, overlay::remove);
-        modalHeader.child(xBtn);
-        modal.child(modalHeader);
-        modal.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF2E3442)).margins(Insets.bottom(4)));
-
-        String availStr = isDeposit ? "В инвентаре: " + invGold + " слитков (1 слиток = 1 $PR)" : "На балансе: " + String.format("%,d", balance).replace(',', ' ') + " $PR (1 слиток = 1 $PR)";
-        modal.child(Components.label(Component.literal(availStr).withStyle(ChatFormatting.GRAY)));
-
-        // Amount Input & Stepper Controls Row
-        FlowLayout amountRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(24));
-        amountRow.verticalAlignment(VerticalAlignment.CENTER);
-        amountRow.horizontalAlignment(HorizontalAlignment.CENTER);
-        amountRow.gap(4);
-
-        EditBoxComponent amtBox = new EditBoxComponent(Minecraft.getInstance().font, 56, 18, Component.literal("РљРѕР»РёС‡РµСЃС‚РІРѕ"));
-        amtBox.setMaxLength(8);
-        amtBox.setValue(String.valueOf(goldTransferAmount));
-        amtBox.setFilter(s -> s.matches("\\d*"));
-        amtBox.setResponder(val -> {
-            try {
-                int parsed = Integer.parseInt(val.trim());
-                goldTransferAmount = Math.max(1, Math.min(parsed, maxAvailable));
-            } catch (NumberFormatException ignored) {}
-        });
-
-        FlowLayout minus10 = createFlatButton(Component.literal("-10").withStyle(ChatFormatting.GRAY), 26, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
-            goldTransferAmount = Math.max(1, goldTransferAmount - 10);
-            amtBox.setValue(String.valueOf(goldTransferAmount));
-        });
-
-        FlowLayout minus1 = createFlatButton(Component.literal("-1").withStyle(ChatFormatting.GRAY), 22, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
-            goldTransferAmount = Math.max(1, goldTransferAmount - 1);
-            amtBox.setValue(String.valueOf(goldTransferAmount));
-        });
-
-        FlowLayout plus1 = createFlatButton(Component.literal("+1").withStyle(ChatFormatting.GRAY), 22, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
-            goldTransferAmount = Math.min(maxAvailable, goldTransferAmount + 1);
-            amtBox.setValue(String.valueOf(goldTransferAmount));
-        });
-
-        FlowLayout plus10 = createFlatButton(Component.literal("+10").withStyle(ChatFormatting.GRAY), 26, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
-            goldTransferAmount = Math.min(maxAvailable, goldTransferAmount + 10);
-            amtBox.setValue(String.valueOf(goldTransferAmount));
-        });
-
-        FlowLayout maxBtn = createFlatButton(Component.literal("MAX").withStyle(ChatFormatting.WHITE), 30, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
-            goldTransferAmount = maxAvailable;
-            amtBox.setValue(String.valueOf(goldTransferAmount));
-        });
-
-        amountRow.child(minus10);
-        amountRow.child(minus1);
-        amountRow.child(amtBox);
-        amountRow.child(plus1);
-        amountRow.child(plus10);
-        amountRow.child(maxBtn);
-
-        modal.child(amountRow);
-
-        String actionText = isDeposit ? "Внести на баланс" : "Снять в инвентарь";
-        FlowLayout confirmBtn;
-        if (maxAvailable <= 0) {
-            confirmBtn = Containers.horizontalFlow(Sizing.fixed(236), Sizing.fixed(22));
-            confirmBtn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-            confirmBtn.surface(Surface.flat(0xFF181B22).and(Surface.outline(0xFF282D38)));
-            confirmBtn.child(Components.label(Component.literal(actionText).withStyle(ChatFormatting.DARK_GRAY)));
-        } else {
-            confirmBtn = createFlatButton(
-                    Component.literal(actionText).withStyle(ChatFormatting.WHITE),
-                    236, 22,
-                    0xFF222630, 0xFF2F3542, 0xFF485164,
-                    () -> {
-                        if (goldTransferAmount > 0 && goldTransferAmount <= maxAvailable) {
-                            overlay.remove();
-                            NetworkHandler.sendToServer(new DepositWithdrawGoldPacket(isDeposit, goldTransferAmount));
-                        }
-                    }
-            );
-        }
-        confirmBtn.margins(Insets.top(8));
-        modal.child(confirmBtn);
-
-        this.uiAdapter.rootComponent.child(overlay);
     }
 
     /**
@@ -3330,7 +3203,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
     private void openPayTaxModal() {
         PlayerCharacterData pd = getMyPlayerData();
-        long balance = pd != null ? pd.getBalance() : 0L;
+        long balance = (long) ClientBankCache.getBalance();
         long currentStatus = pd != null ? pd.getTaxStatus() : 0L;
         int taxRate = worldData != null ? worldData.getTaxRate() : 10;
         long maxStatus = taxRate * 3L;
@@ -3361,7 +3234,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         modalHeader.verticalAlignment(VerticalAlignment.CENTER);
         modalHeader.gap(5);
 
-        ItemComponent headerIngot = Components.item(new ItemStack(Items.GOLD_INGOT));
+        ItemComponent headerIngot = Components.item(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()));
         headerIngot.sizing(Sizing.fixed(14), Sizing.fixed(14));
         modalHeader.child(headerIngot);
 
@@ -3528,7 +3401,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
     private void openDepositTreasuryModal() {
         PlayerCharacterData pd = getMyPlayerData();
-        long balance = pd != null ? pd.getBalance() : 0L;
+        long balance = (long) ClientBankCache.getBalance();
         if (pd != null) {
             pd.checkBrandReset();
         }
@@ -3552,7 +3425,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         modalHeader.verticalAlignment(VerticalAlignment.CENTER);
         modalHeader.gap(5);
 
-        ItemComponent headerIngot = Components.item(new ItemStack(Items.GOLD_INGOT));
+        ItemComponent headerIngot = Components.item(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()));
         headerIngot.sizing(Sizing.fixed(14), Sizing.fixed(14));
         modalHeader.child(headerIngot);
 
@@ -3769,7 +3642,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         modalHeader.verticalAlignment(VerticalAlignment.CENTER);
         modalHeader.gap(5);
 
-        ItemComponent headerIngot = Components.item(new ItemStack(Items.GOLD_INGOT));
+        ItemComponent headerIngot = Components.item(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()));
         headerIngot.sizing(Sizing.fixed(14), Sizing.fixed(14));
         modalHeader.child(headerIngot);
 

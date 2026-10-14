@@ -34,7 +34,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import com.onemanager.profession.Profession;
 import com.onemanager.profession.ProfessionRegistry;
-import com.onemanager.economy.EconomyManager;
 
 public class ModCommands {
 
@@ -80,10 +79,7 @@ public class ModCommands {
         // 9. Treasury: /oh:treasury
         dispatcher.register(buildTreasuryCommand("oh:treasury"));
 
-        // 10. Balance: /oh:setbalance
-        dispatcher.register(buildSetBalanceCommand("oh:setbalance"));
-
-        // 11. Tax rate: /oh:settax
+        // 10. Tax rate: /oh:settax
         dispatcher.register(buildSetTaxCommand("oh:settax"));
 
         // 12. Cycle / Calendar: /oh:cycle
@@ -1240,37 +1236,6 @@ public class ModCommands {
             }
         }
         worldData.logTransaction(charName, pName, action, worldData.getTreasury());
-    }
-
-    private static LiteralArgumentBuilder<CommandSourceStack> buildSetBalanceCommand(String name) {
-        return Commands.literal(name)
-                .requires(source -> source.hasPermission(2))
-                .then(Commands.argument("targets", EntityArgument.players())
-                        .then(Commands.argument("amount", IntegerArgumentType.integer(0))
-                                .executes(ctx -> {
-                                    Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
-                                    int amount = IntegerArgumentType.getInteger(ctx, "amount");
-                                    CharacterWorldData worldData = CharacterWorldData.get(ctx.getSource().getServer());
-
-                                    for (ServerPlayer target : targets) {
-                                        EconomyManager.setBalance(worldData, target.getUUID(), amount);
-                                        target.sendSystemMessage(
-                                                Component.literal("💰 Ваш баланс установлен на: ")
-                                                        .withStyle(ChatFormatting.GOLD)
-                                                        .append(Component.literal(String.format("%,d", (long) amount).replace(',', ' ') + " $PR")
-                                                                .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
-                                        );
-                                    }
-                                    worldData.setDirty();
-                                    NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));
-
-                                    ctx.getSource().sendSuccess(() ->
-                                            Component.literal("Баланс установлен для " + targets.size() + " игрок(ов) на " + amount + " $PR")
-                                                    .withStyle(ChatFormatting.GREEN),
-                                            true
-                                    );
-                                    return targets.size();
-                                })));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> buildSetTaxCommand(String name) {
