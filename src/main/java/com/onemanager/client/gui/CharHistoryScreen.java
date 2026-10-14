@@ -3460,68 +3460,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         converterRow.child(Components.label(Component.literal("Гос. Марка").withStyle(ChatFormatting.WHITE)));
         modal.child(converterRow);
 
-        // Progression info & Reset countdown
-        FlowLayout progRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-        progRow.child(Components.label(Component.literal("Прогресс до марки: ").withStyle(ChatFormatting.GRAY)));
-        progRow.child(Components.label(Component.literal(curProg + " / " + curCost + " $PR").withStyle(ChatFormatting.YELLOW)));
-        modal.child(progRow);
-
-        long remainingResetMs = clientWeekTicksRemaining > 0 ? (clientWeekTicksRemaining * 50L) : (pd != null ? pd.getLongCycleRemainingMs() : PlayerCharacterData.BRAND_RESET_INTERVAL_MS);
-        int remHours = (int) (remainingResetMs / 3600000L);
-        int remMins = (int) ((remainingResetMs % 3600000L) / 60000L);
-        int remSecs = (int) ((remainingResetMs % 60000L) / 1000L);
-        String timeStr = remHours > 0 ? String.format("%d:%02d:%02d", remHours, remMins, remSecs) : String.format("%02d:%02d", remMins, remSecs);
-
-        FlowLayout resetRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-        resetRow.child(Components.label(Component.literal("Сброс наценки через: ").withStyle(ChatFormatting.DARK_GRAY)));
-        resetRow.child(Components.label(Component.literal(timeStr).withStyle(ChatFormatting.GRAY)));
-        modal.child(resetRow);
-
-        // Dynamic result calculation label
-        LabelComponent calcLabel = Components.label(Component.literal("").withStyle(ChatFormatting.GRAY));
-        calcLabel.horizontalTextAlignment(HorizontalAlignment.CENTER);
-
-        Runnable updateCalc = () -> {
-            if (depositTreasuryAmount <= 0) {
-                calcLabel.text(Component.literal("Введите сумму взноса").withStyle(ChatFormatting.DARK_GRAY));
-            } else {
-                // Simulate marks earned
-                int simTier = curTier;
-                long simProg = curProg;
-                long rem = depositTreasuryAmount;
-                int marks = 0;
-
-                while (rem > 0) {
-                    int cost = PlayerCharacterData.BRAND_PROGRESSION[Math.min(simTier, PlayerCharacterData.BRAND_PROGRESSION.length - 1)];
-                    long needed = cost - simProg;
-                    if (rem >= needed) {
-                        rem -= needed;
-                        simProg = 0;
-                        simTier = Math.min(simTier + 1, PlayerCharacterData.BRAND_PROGRESSION.length - 1);
-                        marks++;
-                    } else {
-                        simProg += rem;
-                        rem = 0;
-                    }
-                }
-
-                int nextCost = PlayerCharacterData.BRAND_PROGRESSION[Math.min(simTier, PlayerCharacterData.BRAND_PROGRESSION.length - 1)];
-                if (marks > 0) {
-                    calcLabel.text(Component.literal("Награда: +" + marks + " марок на счёт").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD)
-                            .append(Component.literal(" (прогресс: " + simProg + "/" + nextCost + ")").withStyle(ChatFormatting.GRAY)));
-                } else {
-                    calcLabel.text(Component.literal("Прогресс марки: +" + depositTreasuryAmount + " (" + simProg + "/" + nextCost + ")").withStyle(ChatFormatting.YELLOW));
-                }
-            }
-        };
-
-        // Amount Input & Stepper Controls Row
-        FlowLayout amountRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(24));
-        amountRow.verticalAlignment(VerticalAlignment.CENTER);
-        amountRow.horizontalAlignment(HorizontalAlignment.CENTER);
-        amountRow.gap(4);
-
-        EditBoxComponent amtBox = new EditBoxComponent(Minecraft.getInstance().font, 64, 18, Component.literal("РЎСѓРјРјР°"));
+        // Amount Input (declared before tiersRow so tier cells can set its value)
+        EditBoxComponent amtBox = new EditBoxComponent(Minecraft.getInstance().font, 56, 18, Component.literal("Сумма"));
         amtBox.setMaxLength(10);
         amtBox.setValue(String.valueOf(depositTreasuryAmount));
         amtBox.setFilter(s -> s.matches("\\d*"));
@@ -3530,32 +3470,110 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             try {
                 long parsed = Long.parseLong(val.trim());
                 depositTreasuryAmount = Math.max(1, Math.min(parsed, Math.max(1, balance)));
-                updateCalc.run();
             } catch (NumberFormatException ignored) {}
         });
+
+        // 5 Tiers under converter row: 250, 500, 1000, 2000, 4000
+        FlowLayout tiersRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(20));
+        tiersRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        tiersRow.gap(4);
+
+        int[] brandTiers = {250, 500, 1000, 2000, 4000};
+        for (int i = 0; i < brandTiers.length; i++) {
+            int tierCost = brandTiers[i];
+            boolean isReceived = curTier > i;
+            boolean isCurrent = curTier == i;
+
+            FlowLayout cell = Containers.horizontalFlow(Sizing.fixed(48), Sizing.fixed(20));
+            cell.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+
+            if (isReceived) {
+                // Dimmed / faded gray when brand has been received
+                cell.surface(Surface.flat(0xFF14161C).and(Surface.outline(0xFF22252C)));
+                LabelComponent lbl = Components.label(Component.literal(String.valueOf(tierCost)));
+                lbl.color(Color.ofRgb(0xFF525966));
+                cell.child(lbl);
+                cell.tooltip(Component.literal("Гос. марка получена (" + tierCost + " $PR)").withStyle(ChatFormatting.DARK_GRAY));
+            } else if (isCurrent) {
+                // Current active tier - neutral active styling
+                cell.surface(Surface.flat(0xFF222733).and(Surface.outline(0xFF3E485C)));
+                cell.child(Components.label(Component.literal(String.valueOf(tierCost)).withStyle(ChatFormatting.WHITE)));
+                cell.cursorStyle(CursorStyle.HAND);
+                cell.tooltip(Component.literal("Текущая стоимость: " + tierCost + " $PR\nНажмите, чтобы выбрать").withStyle(ChatFormatting.GRAY));
+                cell.mouseEnter().subscribe(() -> cell.surface(Surface.flat(0xFF2A3140).and(Surface.outline(0xFF4F5B73))));
+                cell.mouseLeave().subscribe(() -> cell.surface(Surface.flat(0xFF222733).and(Surface.outline(0xFF3E485C))));
+                cell.mouseDown().subscribe((mx, my, btn) -> {
+                    if (btn == 0) {
+                        depositTreasuryAmount = Math.min(tierCost, Math.max(1, balance));
+                        amtBox.setValue(String.valueOf(depositTreasuryAmount));
+                        return true;
+                    }
+                    return false;
+                });
+            } else {
+                // Upcoming tier - neutral waiting styling
+                cell.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2D3442)));
+                cell.child(Components.label(Component.literal(String.valueOf(tierCost)).withStyle(ChatFormatting.GRAY)));
+                cell.cursorStyle(CursorStyle.HAND);
+                cell.tooltip(Component.literal("Следующая стоимость: " + tierCost + " $PR\nНажмите, чтобы выбрать").withStyle(ChatFormatting.GRAY));
+                cell.mouseEnter().subscribe(() -> cell.surface(Surface.flat(0xFF242833).and(Surface.outline(0xFF3B4456))));
+                cell.mouseLeave().subscribe(() -> cell.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2D3442))));
+                cell.mouseDown().subscribe((mx, my, btn) -> {
+                    if (btn == 0) {
+                        depositTreasuryAmount = Math.min(tierCost, Math.max(1, balance));
+                        amtBox.setValue(String.valueOf(depositTreasuryAmount));
+                        return true;
+                    }
+                    return false;
+                });
+            }
+            tiersRow.child(cell);
+        }
+        modal.child(tiersRow);
+
+        long remainingResetMs = clientWeekTicksRemaining > 0 ? (clientWeekTicksRemaining * 50L) : (pd != null ? pd.getLongCycleRemainingMs() : PlayerCharacterData.BRAND_RESET_INTERVAL_MS);
+        int remHours = (int) (remainingResetMs / 3600000L);
+        int remMins = (int) ((remainingResetMs % 3600000L) / 60000L);
+        int remSecs = (int) ((remainingResetMs % 60000L) / 1000L);
+        String timeStr = remHours > 0 ? String.format("%d:%02d:%02d", remHours, remMins, remSecs) : String.format("%02d:%02d", remMins, remSecs);
+
+        // Reset markup timer - centered
+        FlowLayout resetRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+        resetRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        resetRow.gap(4);
+        resetRow.child(Components.label(Component.literal("Сброс наценки через: ").withStyle(ChatFormatting.DARK_GRAY)));
+        resetRow.child(Components.label(Component.literal(timeStr).withStyle(ChatFormatting.GRAY)));
+        modal.child(resetRow);
+
+        // Amount Input & Stepper Controls Row (with "Все" button)
+        FlowLayout amountRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(24));
+        amountRow.verticalAlignment(VerticalAlignment.CENTER);
+        amountRow.horizontalAlignment(HorizontalAlignment.CENTER);
+        amountRow.gap(4);
 
         FlowLayout minus100 = createFlatButton(Component.literal("-100").withStyle(ChatFormatting.GRAY), 32, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
             depositTreasuryAmount = Math.max(1, depositTreasuryAmount - 100);
             amtBox.setValue(String.valueOf(depositTreasuryAmount));
-            updateCalc.run();
         });
 
         FlowLayout minus10 = createFlatButton(Component.literal("-10").withStyle(ChatFormatting.GRAY), 26, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
             depositTreasuryAmount = Math.max(1, depositTreasuryAmount - 10);
             amtBox.setValue(String.valueOf(depositTreasuryAmount));
-            updateCalc.run();
         });
 
         FlowLayout plus10 = createFlatButton(Component.literal("+10").withStyle(ChatFormatting.GRAY), 26, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
             depositTreasuryAmount = Math.min(Math.max(1, balance), depositTreasuryAmount + 10);
             amtBox.setValue(String.valueOf(depositTreasuryAmount));
-            updateCalc.run();
         });
 
         FlowLayout plus100 = createFlatButton(Component.literal("+100").withStyle(ChatFormatting.GRAY), 32, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
             depositTreasuryAmount = Math.min(Math.max(1, balance), depositTreasuryAmount + 100);
             amtBox.setValue(String.valueOf(depositTreasuryAmount));
-            updateCalc.run();
+        });
+
+        FlowLayout allBtn = createFlatButton(Component.literal("Все").withStyle(ChatFormatting.WHITE), 32, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
+            depositTreasuryAmount = Math.max(1, balance);
+            amtBox.setValue(String.valueOf(depositTreasuryAmount));
         });
 
         amountRow.child(minus100);
@@ -3563,33 +3581,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         amountRow.child(amtBox);
         amountRow.child(plus10);
         amountRow.child(plus100);
+        amountRow.child(allBtn);
         modal.child(amountRow);
-
-        // Quick buttons row
-        FlowLayout quickRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(20));
-        quickRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        quickRow.gap(6);
-
-        long nextMarkNeed = Math.max(1, curCost - curProg);
-        if (balance >= nextMarkNeed) {
-            FlowLayout nextMarkBtn = createFlatButton(Component.literal("+1 марка").withStyle(ChatFormatting.YELLOW), 75, 18, 0xFF262112, 0xFF3A3018, 0xFF8A6D24, () -> {
-                depositTreasuryAmount = nextMarkNeed;
-                amtBox.setValue(String.valueOf(depositTreasuryAmount));
-                updateCalc.run();
-            });
-            quickRow.child(nextMarkBtn);
-        }
-
-        FlowLayout maxBtn = createFlatButton(Component.literal("Весь баланс").withStyle(ChatFormatting.WHITE), 90, 18, 0xFF1C1F26, 0xFF292E38, 0xFF3C4352, () -> {
-            depositTreasuryAmount = Math.max(1, balance);
-            amtBox.setValue(String.valueOf(depositTreasuryAmount));
-            updateCalc.run();
-        });
-        quickRow.child(maxBtn);
-
-        modal.child(quickRow);
-        modal.child(calcLabel);
-        updateCalc.run();
 
         // Confirm button
         FlowLayout confirmBtn;
