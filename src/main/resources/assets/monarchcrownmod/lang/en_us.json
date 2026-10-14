@@ -1,0 +1,14 @@
+{
+  "item.monarchcrownmod.monarch_crown": "Корона Монарха",
+  "itemGroup.monarchcrownmod.tab": "Корона Монарха",
+  "tooltip.monarchcrownmod.no_knyaz": "Текущий Князь: Нет",
+  "tooltip.monarchcrownmod.current_knyaz": "Текущий Князь: %s",
+  "message.monarchcrownmod.new_knyaz": "👑 %s надел(а) Корону Монарха и становится новым Князем!",
+  "message.monarchcrownmod.crown_received": "👑 Вы получили Корону Монарха!",
+  "message.monarchcrownmod.crown_returned": "👑 Корона Монарха вернулась в ваш инвентарь!",
+  "message.monarchcrownmod.crown_equipped": "👑 Корона Монарха вернулась и надета на вас!",
+  "message.monarchcrownmod.crown_returned_broadcast": "👑 Корона Монарха вернулась к Князю %s!",
+  "message.monarchcrownmod.cannot_store": "👑 Корону Монарха нельзя положить в хранилище!",
+  "message.monarchcrownmod.cannot_interact": "👑 Корону Монарха нельзя поместить в данный объект!",
+  "command.monarchcrownmod.give_success": "Корона Монарха успешно выдана %s игрок(ам)."
+}

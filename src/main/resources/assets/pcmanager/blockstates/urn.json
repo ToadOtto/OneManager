@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "pcmanager:block/urn"
+    }
+  }
+}

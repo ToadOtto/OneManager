@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "pcmanager:block/tomb_workbench"
+    },
+    "facing=south": {
+      "model": "pcmanager:block/tomb_workbench",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "pcmanager:block/tomb_workbench",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "pcmanager:block/tomb_workbench",
+      "y": 90
+    }
+  }
+}

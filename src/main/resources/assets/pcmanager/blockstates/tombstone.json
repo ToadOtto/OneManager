@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "pcmanager:block/tombstone"
+    },
+    "facing=south": {
+      "model": "pcmanager:block/tombstone",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "pcmanager:block/tombstone",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "pcmanager:block/tombstone",
+      "y": 90
+    }
+  }
+}
