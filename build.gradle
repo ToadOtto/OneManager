@@ -122,10 +122,10 @@ configurations {
 dependencies {
     implementation files('oneshop/oneshop-1.0.2.jar')
     localRuntime files('oneshop/oneshop-1.0.2.jar')
-    implementation files('assets/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
-    localRuntime files('assets/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
-    localRuntime files('create-1.21.1-6.0.10.jar')
-    localRuntime files('CreateNumismatics-1.1.0+neoforge-mc1.21.1.jar')
+    implementation files('mods/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
+    localRuntime files('mods/owo-lib-neoforge-0.12.15.1-beta.6+1.21.jar')
+    localRuntime files('mods/create-1.21.1-6.0.10.jar')
+    localRuntime files('mods/CreateNumismatics-1.1.0+neoforge-mc1.21.1.jar')
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

@@ -2328,77 +2328,49 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             content.child(emptyBox);
         } else {
             for (LawEntry law : lawsList) {
-                FlowLayout card = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+                FlowLayout card = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
                 card.surface(Surface.flat(0xFF13171F).and(Surface.outline(0xFF262C38)));
-                card.padding(Insets.of(8, 10, 8, 10));
-                card.gap(3);
+                card.padding(Insets.of(5, 8, 5, 8));
+                card.verticalAlignment(VerticalAlignment.CENTER);
+                card.gap(8);
 
                 card.mouseEnter().subscribe(() -> card.surface(Surface.flat(0xFF171B24).and(Surface.outline(0xFF353D4E))));
                 card.mouseLeave().subscribe(() -> card.surface(Surface.flat(0xFF13171F).and(Surface.outline(0xFF262C38))));
 
-                // Top row: spacer + (Knyaz only) repeal cross button
-                FlowLayout topRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(16));
-                topRow.verticalAlignment(VerticalAlignment.CENTER);
-                topRow.child(Components.spacer());
+                // Left: Book icon
+                ItemComponent bookIcon = Components.item(new ItemStack(Items.BOOK));
+                bookIcon.sizing(Sizing.fixed(16), Sizing.fixed(16));
+                card.child(bookIcon);
 
-                if (isKnyaz) {
-                    FlowLayout repealBtn = createIconButton("✕", 16, 16, 2, 0xFF2A1C1E, 0xFF3D2226, 0xFF7A3036, () -> openRepealConfirmationModal(law));
-                    repealBtn.tooltip(Component.literal("Отменить закон").withStyle(ChatFormatting.RED));
-                    topRow.child(repealBtn);
-                }
-                card.child(topRow);
+                // Middle: Info Column
+                FlowLayout infoCol = Containers.verticalFlow(Sizing.expand(), Sizing.content());
+                infoCol.gap(1);
 
-                // Center: Title in large bold text
-                FlowLayout titleRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-                titleRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                LabelComponent titleLbl = Components.label(Component.literal(law.getTitle()).withStyle(ChatFormatting.GOLD));
-                titleRow.child(titleLbl);
-                card.child(titleRow);
+                // Title
+                LabelComponent titleLbl = Components.label(Component.literal(law.getTitle()).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+                infoCol.child(titleLbl);
 
-                // Subtitle: Author
-                FlowLayout authorRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-                authorRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+                // Author & Editors
                 String authorName = law.getAuthor().startsWith("Князь ") ? law.getAuthor() : "Князь " + law.getAuthor();
-                authorRow.child(Components.label(Component.literal("Автор: " + authorName).withStyle(ChatFormatting.WHITE)));
-                card.child(authorRow);
-
-                // Editors list
-                FlowLayout editorsRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-                editorsRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                String editorsText = law.getEditors().isEmpty() ? "Редакторы: —" : "Редакторы: " + String.join(", ", law.getEditors());
-                editorsRow.child(Components.label(Component.literal(editorsText).withStyle(ChatFormatting.GRAY)));
-                card.child(editorsRow);
-
-                // Divider
-                card.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF1E222A)).margins(Insets.vertical(2)));
-
-                // Bottom row: Dates on left, Buttons on right
-                FlowLayout bottomRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-                bottomRow.verticalAlignment(VerticalAlignment.BOTTOM);
-
-                // Left: Dates
-                FlowLayout datesCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
-                datesCol.gap(1);
-                datesCol.child(Components.label(Component.literal("Изменен: " + law.getLastModifiedDate()).withStyle(ChatFormatting.DARK_GRAY)));
-                datesCol.child(Components.label(Component.literal("Создан: " + law.getCreatedDate()).withStyle(ChatFormatting.DARK_GRAY)));
-                bottomRow.child(datesCol);
-
-                bottomRow.child(Components.spacer());
-
-                // Right buttons
-                FlowLayout btnsRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(20));
-                btnsRow.gap(4);
-
-                if (isKnyaz) {
-                    FlowLayout editBtn = createFlatButton(
-                            Component.literal("Изменить").withStyle(ChatFormatting.WHITE),
-                            68, 20,
-                            0xFF1E222A, 0xFF2A2E38, 0xFF353B47,
-                            () -> Minecraft.getInstance().setScreen(new LawEditScreen(law.getId(), law.getTitle(), law.getPages(), this))
-                    );
-                    editBtn.tooltip(Component.literal("Внести поправки в закон"));
-                    btnsRow.child(editBtn);
+                Component metaComp = Component.literal("Автор: " + authorName).withStyle(ChatFormatting.WHITE);
+                if (!law.getEditors().isEmpty()) {
+                    metaComp = metaComp.copy().append(Component.literal("  •  Редакторы: " + String.join(", ", law.getEditors())).withStyle(ChatFormatting.GRAY));
                 }
+                infoCol.child(Components.label(metaComp));
+
+                // Dates
+                String dateStr = "Создан: " + law.getCreatedDate();
+                if (law.getLastModifiedDate() != null && !law.getLastModifiedDate().isEmpty() && !law.getLastModifiedDate().equals(law.getCreatedDate())) {
+                    dateStr += "  •  Изменен: " + law.getLastModifiedDate();
+                }
+                infoCol.child(Components.label(Component.literal(dateStr).withStyle(ChatFormatting.DARK_GRAY)));
+
+                card.child(infoCol);
+
+                // Right: Action buttons
+                FlowLayout btnsRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(20));
+                btnsRow.verticalAlignment(VerticalAlignment.CENTER);
+                btnsRow.gap(4);
 
                 FlowLayout showBtn = createFlatButton(
                         Component.literal("Показать").withStyle(ChatFormatting.WHITE),
@@ -2409,9 +2381,22 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 showBtn.tooltip(Component.literal("Показать полный текст закона"));
                 btnsRow.child(showBtn);
 
-                bottomRow.child(btnsRow);
-                card.child(bottomRow);
+                if (isKnyaz) {
+                    FlowLayout editBtn = createFlatButton(
+                            Component.literal("Изменить").withStyle(ChatFormatting.WHITE),
+                            68, 20,
+                            0xFF1E222A, 0xFF2A2E38, 0xFF353B47,
+                            () -> Minecraft.getInstance().setScreen(new LawEditScreen(law.getId(), law.getTitle(), law.getPages(), this))
+                    );
+                    editBtn.tooltip(Component.literal("Внести поправки в закон"));
+                    btnsRow.child(editBtn);
 
+                    FlowLayout repealBtn = createIconButton("✕", 20, 20, 2, 0xFF2A1C1E, 0xFF3D2226, 0xFF7A3036, () -> openRepealConfirmationModal(law));
+                    repealBtn.tooltip(Component.literal("Отменить закон").withStyle(ChatFormatting.RED));
+                    btnsRow.child(repealBtn);
+                }
+
+                card.child(btnsRow);
                 content.child(card);
             }
         }
