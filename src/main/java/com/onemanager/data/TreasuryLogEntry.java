@@ -10,8 +10,19 @@ public record TreasuryLogEntry(
         String playerName,
         String action,
         String timestamp,
-        long treasuryAfter
+        long treasuryAfter,
+        long gameTick
 ) {
+    public TreasuryLogEntry(
+            String characterName,
+            String playerName,
+            String action,
+            String timestamp,
+            long treasuryAfter
+    ) {
+        this(characterName, playerName, action, timestamp, treasuryAfter, -1L);
+    }
+
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putString("char", characterName != null ? characterName : "");
@@ -19,17 +30,26 @@ public record TreasuryLogEntry(
         tag.putString("action", action != null ? action : "");
         tag.putString("time", timestamp != null ? timestamp : "");
         tag.putLong("after", treasuryAfter);
+        tag.putLong("tick", gameTick);
         return tag;
     }
 
     public static TreasuryLogEntry fromNBT(CompoundTag tag) {
+        long tick = tag.contains("tick") ? tag.getLong("tick") : -1L;
         return new TreasuryLogEntry(
                 tag.getString("char"),
                 tag.getString("player"),
                 tag.getString("action"),
                 tag.getString("time"),
-                tag.getLong("after")
+                tag.getLong("after"),
+                tick
         );
+    }
+
+    public boolean isExpense() {
+        if (action == null) return false;
+        String trimmed = action.trim();
+        return trimmed.startsWith("-") || trimmed.startsWith("Снос");
     }
 
     public String toLogFileLine() {

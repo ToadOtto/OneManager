@@ -63,6 +63,8 @@ public class CharacterWorldData extends SavedData {
     public static final int DEFAULT_TAX_RATE = 10;
     public static final int TAX_CYCLE_TICKS = 24000; // 20 minutes (20 * 60 * 20) = 1 in-game day
     public static final int WEEK_CYCLE_TICKS = 168000; // 140 minutes (7 * 24000) = 1 in-game week
+    public static final int MONTH_DAYS = 30; // 30 in-game days = 600 minutes = 10 hours
+    public static final long MONTH_CYCLE_TICKS = (long) MONTH_DAYS * TAX_CYCLE_TICKS; // 720,000 ticks
 
     public record PendingTreasuryReason(int amount, boolean demolition, String coords, String chestType) {}
 
@@ -799,11 +801,49 @@ public class CharacterWorldData extends SavedData {
         return Collections.unmodifiableList(treasuryLog);
     }
 
+    public long getTotalElapsedTicks() {
+        int clampedRemaining = Math.max(0, Math.min(TAX_CYCLE_TICKS, taxTicksRemaining));
+        return (long) Math.max(0, totalDays - 1) * TAX_CYCLE_TICKS + (TAX_CYCLE_TICKS - clampedRemaining);
+    }
+
+    /**
+     * Returns treasury log entries for the last in-game month (30 in-game days = 600 minutes = 10 hours),
+     * ordered chronologically from oldest (left) to newest (right).
+     */
+    public List<TreasuryLogEntry> getMonthlyTreasuryLog() {
+        java.util.ArrayList<TreasuryLogEntry> result = new java.util.ArrayList<>();
+        long currentTick = getTotalElapsedTicks();
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
+        for (TreasuryLogEntry entry : treasuryLog) {
+            boolean inMonth = false;
+            if (entry.gameTick() >= 0 && currentTick >= entry.gameTick()) {
+                inMonth = (currentTick - entry.gameTick()) <= MONTH_CYCLE_TICKS;
+            } else if (entry.timestamp() != null && !entry.timestamp().isEmpty()) {
+                try {
+                    LocalDateTime entryTime = LocalDateTime.parse(entry.timestamp(), fmt);
+                    long mins = java.time.Duration.between(entryTime, now).toMinutes();
+                    inMonth = mins >= -5 && mins <= (MONTH_DAYS * 20L);
+                } catch (Exception ignored) {
+                    inMonth = true;
+                }
+            } else {
+                inMonth = true;
+            }
+            if (inMonth) {
+                result.add(entry);
+            }
+        }
+        Collections.reverse(result);
+        return result;
+    }
+
     public void logTransaction(String characterName, String playerName, String action, long treasuryAfter) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
-        TreasuryLogEntry entry = new TreasuryLogEntry(characterName, playerName, action, timestamp, treasuryAfter);
+        TreasuryLogEntry entry = new TreasuryLogEntry(characterName, playerName, action, timestamp, treasuryAfter, getTotalElapsedTicks());
         treasuryLog.add(0, entry);
-        while (treasuryLog.size() > 200) {
+        while (treasuryLog.size() > 500) {
             treasuryLog.remove(treasuryLog.size() - 1);
         }
         setDirty();

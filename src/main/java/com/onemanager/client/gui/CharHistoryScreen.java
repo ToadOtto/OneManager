@@ -9,6 +9,7 @@ import com.onemanager.client.gui.components.ProfessionProgressBarComponent;
 import com.onemanager.client.gui.components.ScaledLabelComponent;
 import com.onemanager.client.gui.components.SlotLampComponent;
 import com.onemanager.client.gui.components.TextureIconComponent;
+import com.onemanager.client.gui.components.TreasuryGraphComponent;
 import com.onemanager.data.ActiveCharacter;
 import com.onemanager.data.CharacterWorldData;
 import com.onemanager.data.DeadCharacter;
@@ -1940,6 +1941,13 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         taxCard.child(taxTitleRow);
         taxCard.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(2)));
 
+        FlowLayout taxBodyRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+        taxBodyRow.verticalAlignment(VerticalAlignment.CENTER);
+        taxBodyRow.gap(12);
+
+        FlowLayout taxLeftCol = Containers.verticalFlow(Sizing.expand(), Sizing.content());
+        taxLeftCol.gap(8);
+
         // 1. Отображение актуального налога и таймера
         int currentTaxRate = worldData != null ? worldData.getTaxRate() : 10;
         FlowLayout rateRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
@@ -1955,7 +1963,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         int secs = totalSecs % 60;
         taxTimerLabel = Components.label(Component.literal(String.format("(до следующего снятия: %02d:%02d)", mins, secs)).withStyle(ChatFormatting.GRAY));
         rateRow.child(taxTimerLabel);
-        taxCard.child(rateRow);
+        taxLeftCol.child(rateRow);
 
         // 2. Отображение налогового статуса игрока - "Налоговый статус"
         PlayerCharacterData myData = getMyPlayerData();
@@ -2000,7 +2008,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             statusRow.child(Components.label(statusComp));
             statusRow.child(Components.label(Component.literal("(нет задолженности)").withStyle(ChatFormatting.GRAY)));
         }
-        taxCard.child(statusRow);
+        taxLeftCol.child(statusRow);
 
         // 3. Баланс игрока
         double myBalance = ClientBankCache.getBalance();
@@ -2012,10 +2020,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         balanceRow.child(Components.label(Component.literal("• ").withStyle(ChatFormatting.GOLD)));
         balanceRow.child(Components.label(Component.literal("Ваш баланс: ").withStyle(ChatFormatting.GRAY)));
         balanceRow.child(Components.label(Component.literal(formattedMyBal).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
-        taxCard.child(balanceRow);
+        taxLeftCol.child(balanceRow);
 
         // 4. Кнопки действий казны - друг под другом
-        FlowLayout btnCol = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+        FlowLayout btnCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
         btnCol.gap(6);
         btnCol.margins(Insets.top(4));
 
@@ -2037,7 +2045,25 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         depositBtn.tooltip(Component.literal("Внести деньги в казну и получить Гос. Марки на счёт").withStyle(ChatFormatting.GRAY));
         btnCol.child(depositBtn);
 
-        taxCard.child(btnCol);
+        taxLeftCol.child(btnCol);
+        taxBodyRow.child(taxLeftCol);
+
+        // Правая часть категории Налоги (на пустом пространстве): кнопка "График Казны"
+        FlowLayout taxRightCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
+        taxRightCol.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        taxRightCol.margins(Insets.right(12));
+
+        FlowLayout graphBtn = createFlatButton(
+                Component.literal("График Казны").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
+                148, 24,
+                0xFF1E222A, 0xFF2A303C, 0xFFD4AF37,
+                this::openTreasuryGraphModal
+        );
+        graphBtn.tooltip(Component.literal("Открыть линейный график доходов и расходов казны за последний игровой месяц (30 игровых дней)").withStyle(ChatFormatting.GRAY));
+        taxRightCol.child(graphBtn);
+
+        taxBodyRow.child(taxRightCol);
+        taxCard.child(taxBodyRow);
         treasuryFlow.child(taxCard);
 
         // --- 2b. TREASURY MANAGEMENT CATEGORY ("УПРАВЛЕНИЕ КАЗНОЙ" - Knyaz & Treasurer only) ---
@@ -4024,6 +4050,74 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         FlowLayout closeBtn = createFlatButton(Component.literal("Закрыть").withStyle(ChatFormatting.GRAY), 286, 20, 0xFF1E222A, 0xFF2A303C, 0xFF3E4656, overlay::remove);
         closeBtn.margins(Insets.top(4));
+        modal.child(closeBtn);
+
+        this.uiAdapter.rootComponent.child(overlay);
+    }
+
+    /**
+     * Monthly Treasury Graph Modal (30 in-game days = 600 minutes = 10 hours).
+     * Window dynamically scales its width and height to adapt to the graph.
+     */
+    private void openTreasuryGraphModal() {
+        List<TreasuryLogEntry> monthlyEntries = worldData != null ? worldData.getMonthlyTreasuryLog() : Collections.emptyList();
+        long currentTreasury = worldData != null ? worldData.getTreasury() : 0L;
+
+        int uiWidth = (int) (this.width / UI_SCALE);
+        int uiHeight = (int) (this.height / UI_SCALE);
+        int maxGraphW = Math.max(280, (int) (uiWidth * 0.78));
+        int maxGraphH = Math.max(130, (int) (uiHeight * 0.56));
+
+        TreasuryGraphComponent graph = new TreasuryGraphComponent(monthlyEntries, currentTreasury, maxGraphW, maxGraphH);
+
+        int modalInnerW = Math.max(296, graph.getRecommendedWidth());
+        int modalW = modalInnerW + 24;
+
+        FlowLayout modal = Containers.verticalFlow(Sizing.fixed(modalW), Sizing.content());
+        modal.surface(Surface.flat(0xFF14171E).and(Surface.outline(0xFF4A3E18)));
+        modal.padding(Insets.of(12));
+        modal.gap(6);
+        modal.zIndex(10);
+
+        OverlayContainer<FlowLayout> overlay = createOverlay(modal);
+
+        // Header
+        FlowLayout modalHeader = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(18));
+        modalHeader.verticalAlignment(VerticalAlignment.CENTER);
+        modalHeader.gap(5);
+
+        ItemComponent headerIcon = Components.item(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()));
+        headerIcon.sizing(Sizing.fixed(14), Sizing.fixed(14));
+        modalHeader.child(headerIcon);
+
+        modalHeader.child(Components.label(Component.literal("График Казны").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+        modalHeader.child(Components.label(Component.literal("(30 игровых дней / 600 мин)").withStyle(ChatFormatting.GRAY)));
+        modalHeader.child(Components.spacer());
+
+        FlowLayout xBtn = createIconButton("✕", 16, 16, 2, 0xFF22262E, 0xFF353B47, 0xFF4A5263, overlay::remove);
+        modalHeader.child(xBtn);
+        modal.child(modalHeader);
+        modal.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(2)));
+
+        // Graph container
+        FlowLayout graphBox = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+        graphBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        graphBox.child(graph);
+        modal.child(graphBox);
+
+        // Legend & Hint row
+        FlowLayout legendRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(14));
+        legendRow.verticalAlignment(VerticalAlignment.CENTER);
+        legendRow.gap(6);
+
+        legendRow.child(Components.label(Component.literal("● Доход").withStyle(ChatFormatting.GREEN)));
+        legendRow.child(Components.label(Component.literal("● Расход").withStyle(ChatFormatting.RED)));
+        legendRow.child(Components.spacer());
+        legendRow.child(Components.label(Component.literal("Операций: " + monthlyEntries.size()).withStyle(ChatFormatting.GRAY)));
+        modal.child(legendRow);
+
+        FlowLayout closeBtn = createFlatButton(Component.literal("Закрыть").withStyle(ChatFormatting.GRAY), modalInnerW, 20, 0xFF1E222A, 0xFF2A303C, 0xFF3E4656, overlay::remove);
+        closeBtn.margins(Insets.top(2));
         modal.child(closeBtn);
 
         this.uiAdapter.rootComponent.child(overlay);
