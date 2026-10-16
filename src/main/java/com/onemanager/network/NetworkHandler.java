@@ -109,6 +109,18 @@ public class NetworkHandler {
                 RepealLawPacket::handle
         );
 
+        registrar.playToServer(
+                BuyTreasuryChestC2SPacket.TYPE,
+                BuyTreasuryChestC2SPacket.STREAM_CODEC,
+                BuyTreasuryChestC2SPacket::handle
+        );
+
+        registrar.playToServer(
+                SubmitTreasuryReasonC2SPacket.TYPE,
+                SubmitTreasuryReasonC2SPacket.STREAM_CODEC,
+                SubmitTreasuryReasonC2SPacket::handle
+        );
+
         registrar.playToClient(
                 SyncAllCharactersPacket.TYPE,
                 SyncAllCharactersPacket.STREAM_CODEC,
@@ -125,6 +137,12 @@ public class NetworkHandler {
                 OpenRebirthScreenS2CPacket.TYPE,
                 OpenRebirthScreenS2CPacket.STREAM_CODEC,
                 OpenRebirthScreenS2CPacket::handle
+        );
+
+        registrar.playToClient(
+                OpenTreasuryReasonScreenS2CPacket.TYPE,
+                OpenTreasuryReasonScreenS2CPacket.STREAM_CODEC,
+                OpenTreasuryReasonScreenS2CPacket::handle
         );
 
         OneManager.LOGGER.info("Registered network payloads for OneManager.");

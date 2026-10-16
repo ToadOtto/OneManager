@@ -29,5 +29,9 @@
   "item.onemanager.note": "Записка",
   "item.onemanager.note_copy": "Копия записки",
   "item.onemanager.memorial_sign": "Ритуальная табличка",
-  "entity.onemanager.memorial_sign": "Ритуальная табличка"
+  "entity.onemanager.memorial_sign": "Ритуальная табличка",
+  "block.onemanager.small_treasury_chest": "Малый Сундук Казны",
+  "block.onemanager.large_treasury_chest": "Большой Сундук Казны",
+  "container.onemanager.small_treasury_chest": "Малый Сундук Казны",
+  "container.onemanager.large_treasury_chest": "Большой Сундук Казны"
 }

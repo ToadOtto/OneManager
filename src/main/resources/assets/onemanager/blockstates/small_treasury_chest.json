@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "onemanager:block/small_treasury_chest"
+    },
+    "facing=south": {
+      "model": "onemanager:block/small_treasury_chest",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "onemanager:block/small_treasury_chest",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "onemanager:block/small_treasury_chest",
+      "y": 90
+    }
+  }
+}

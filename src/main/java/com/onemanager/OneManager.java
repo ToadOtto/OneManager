@@ -77,6 +77,7 @@ public class OneManager {
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(com.onemanager.client.gui.ModMenuTypes.CREMATION_FURNACE.get(), com.onemanager.client.gui.CremationFurnaceScreen::new);
         event.register(com.onemanager.client.gui.ModMenuTypes.TOMB_WORKBENCH.get(), com.onemanager.client.gui.TombWorkbenchScreen::new);
+        event.register(com.onemanager.client.gui.ModMenuTypes.TREASURY_CHEST.get(), com.onemanager.client.gui.TreasuryChestScreen::new);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

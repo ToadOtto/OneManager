@@ -37,6 +37,10 @@ public class ModItems {
     public static final DeferredItem<MemorialSignItem> MEMORIAL_SIGN = ITEMS.register("memorial_sign",
             () -> new MemorialSignItem(new Item.Properties().stacksTo(16)));
 
+    public static final DeferredItem<BlockItem> SMALL_TREASURY_CHEST = ITEMS.registerSimpleBlockItem("small_treasury_chest", ModBlocks.SMALL_TREASURY_CHEST);
+
+    public static final DeferredItem<BlockItem> LARGE_TREASURY_CHEST = ITEMS.registerSimpleBlockItem("large_treasury_chest", ModBlocks.LARGE_TREASURY_CHEST);
+
     public static final DeferredRegister.Items LEGACY_ITEMS = DeferredRegister.createItems("monarchcrownmod");
 
     public static final DeferredItem<CrownItem> LEGACY_MONARCH_CROWN = LEGACY_ITEMS.registerItem("monarch_crown",

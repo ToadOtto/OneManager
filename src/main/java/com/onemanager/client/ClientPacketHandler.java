@@ -36,4 +36,8 @@ public class ClientPacketHandler {
     public static void openRebirthScreen(boolean isRewrite, String name, int age, String race, String appearance, String description) {
         Minecraft.getInstance().setScreen(new RebirthScreen(isRewrite, name, age, race, appearance, description, ""));
     }
+
+    public static void openTreasuryReasonScreen(int amount, boolean demolition, String coords) {
+        Minecraft.getInstance().setScreen(new com.onemanager.client.gui.TreasuryReasonScreen(amount, demolition, coords));
+    }
 }

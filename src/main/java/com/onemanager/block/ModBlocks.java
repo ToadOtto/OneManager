@@ -1,8 +1,10 @@
 package com.onemanager.block;
 
 import com.onemanager.OneManager;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -34,4 +36,20 @@ public class ModBlocks {
                     .mapColor(MapColor.CLAY)
                     .strength(0.5F)
                     .noOcclusion()));
+
+    public static final DeferredBlock<TreasuryChestBlock> SMALL_TREASURY_CHEST = BLOCKS.register("small_treasury_chest",
+            () -> new TreasuryChestBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5F, 3600000.0F)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()
+                    .pushReaction(PushReaction.BLOCK), false));
+
+    public static final DeferredBlock<TreasuryChestBlock> LARGE_TREASURY_CHEST = BLOCKS.register("large_treasury_chest",
+            () -> new TreasuryChestBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5F, 3600000.0F)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()
+                    .pushReaction(PushReaction.BLOCK), true));
 }

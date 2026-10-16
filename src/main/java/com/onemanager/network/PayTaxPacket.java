@@ -35,6 +35,13 @@ public record PayTaxPacket(long amount) implements CustomPacketPayload {
             }
 
             CharacterWorldData worldData = CharacterWorldData.get(player.server);
+            long freeSpace = worldData.getTreasuryFreeSpace();
+            if (freeSpace <= 0) {
+                player.sendSystemMessage(Component.literal("❌ В хранилищах казны нет свободного места для приёма налога! Установите новые сундуки казны.")
+                        .withStyle(ChatFormatting.RED));
+                return;
+            }
+
             double balance = EconomyManager.getBalance(player);
             int taxRate = worldData.getTaxRate();
             long maxStatus = taxRate * 3L;
@@ -43,7 +50,7 @@ public record PayTaxPacket(long amount) implements CustomPacketPayload {
             long currentStatus = pd.getTaxStatus();
             long needed = Math.max(0, maxStatus - currentStatus);
 
-            long toPay = Math.min(payload.amount(), needed);
+            long toPay = Math.min(Math.min(payload.amount(), needed), freeSpace);
             if (toPay <= 0 || balance < toPay) {
                 if (balance < toPay) {
                     player.sendSystemMessage(Component.literal("❌ Недостаточно средств на балансе!").withStyle(ChatFormatting.RED));
@@ -58,7 +65,7 @@ public record PayTaxPacket(long amount) implements CustomPacketPayload {
                 return;
             }
             pd.increaseTaxStatus(toPay, maxStatus);
-            worldData.addTreasury(toPay);
+            worldData.depositToChests(player.server, toPay);
 
             String charName = pd.hasActiveCharacter() ? pd.getActiveCharacter().getName() : player.getScoreboardName();
             String pName = player.getScoreboardName();

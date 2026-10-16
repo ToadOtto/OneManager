@@ -29,5 +29,9 @@
   "item.onemanager.note": "Note",
   "item.onemanager.note_copy": "Note Copy",
   "item.onemanager.memorial_sign": "Memorial Sign",
-  "entity.onemanager.memorial_sign": "Memorial Sign"
+  "entity.onemanager.memorial_sign": "Memorial Sign",
+  "block.onemanager.small_treasury_chest": "Малый Сундук Казны",
+  "block.onemanager.large_treasury_chest": "Большой Сундук Казны",
+  "container.onemanager.small_treasury_chest": "Малый Сундук Казны",
+  "container.onemanager.large_treasury_chest": "Большой Сундук Казны"
 }

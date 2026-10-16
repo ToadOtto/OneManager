@@ -345,6 +345,34 @@ public class CrownEvents {
         }
     }
 
+    @SubscribeEvent
+    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && player.server != null) {
+            com.onemanager.data.CharacterWorldData worldData = com.onemanager.data.CharacterWorldData.get(player.server);
+            if (worldData != null && worldData.completePendingTreasuryReason(player, "Не указана (выход из игры)")) {
+                worldData.setDirty();
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onBlockBreak(net.neoforged.neoforge.event.level.BlockEvent.BreakEvent event) {
+        if (event.getState().getBlock() instanceof com.onemanager.block.TreasuryChestBlock) {
+            if (event.getPlayer() instanceof ServerPlayer player && player.server != null) {
+                com.onemanager.data.CharacterWorldData worldData = com.onemanager.data.CharacterWorldData.get(player.server);
+                if (worldData != null && !worldData.canAccessTreasury(player.getUUID())) {
+                    event.setCanceled(true);
+                    player.sendSystemMessage(
+                            Component.literal("❌ Сломать Сундук Казны может только Князь или Казначей!")
+                                    .withStyle(ChatFormatting.RED)
+                    );
+                }
+            } else {
+                event.setCanceled(true);
+            }
+        }
+    }
+
     /**
      * Register commands.
      */

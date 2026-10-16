@@ -15,10 +15,12 @@ import com.onemanager.data.DeadCharacter;
 import com.onemanager.data.PlayerCharacterData;
 import com.onemanager.data.MailEntry;
 import com.onemanager.data.LawEntry;
+import com.onemanager.data.TreasuryChestEntry;
 import com.onemanager.data.TreasuryLogEntry;
 import com.onemanager.item.ModItems;
 import com.onemanager.client.gui.law.LawEditScreen;
 import com.onemanager.client.gui.note.NoteViewScreen;
+import com.onemanager.network.BuyTreasuryChestC2SPacket;
 import com.onemanager.network.ClaimLetterPacket;
 import com.onemanager.network.RepealLawPacket;
 import com.onemanager.network.DepositTreasuryPacket;
@@ -1859,12 +1861,19 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     // TAB 4: TREASURY (КАЗНА)
     // =========================================================================
 
+    public static boolean canLocalPlayerAccessTreasury() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return false;
+        CharacterWorldData data = com.onemanager.client.ClientPacketHandler.lastKnownWorldData;
+        return data != null && data.canAccessTreasury(mc.player.getUUID());
+    }
+
     private void buildTreasuryTab(FlowLayout parent) {
         FlowLayout treasuryFlow = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
         treasuryFlow.padding(Insets.of(4, 12, 10, 8));
         treasuryFlow.gap(10);
 
-        // --- 1. TOP CARD: Treasury status ---
+        // --- 1. TOP CARD: Treasury status (Current / Max Capacity) ---
         FlowLayout treasuryCard = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
         treasuryCard.surface(Surface.flat(0xFF13171F).and(Surface.outline(0xFF4A3E18)));
         treasuryCard.padding(Insets.of(14, 16, 16, 16));
@@ -1883,12 +1892,16 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         treasuryCard.child(subTitleRow);
 
-        // Current treasury amount
+        // Current treasury amount and capacity separated by slash
         long treasury = worldData != null ? worldData.getTreasury() : 0L;
+        long capacity = worldData != null ? worldData.getTreasuryCapacity() : 0L;
         String formattedTreasury = String.format("%,d", treasury).replace(',', ' ') + " $PR";
-        Component amountComp = Component.literal(formattedTreasury).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
+        String formattedCapacity = String.format("%,d", capacity).replace(',', ' ') + " $PR";
+        Component amountComp = Component.literal(formattedTreasury)
+                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
+                .append(Component.literal(" / " + formattedCapacity).withStyle(ChatFormatting.GRAY));
 
-        float bigScale = 2.4f;
+        float bigScale = 2.0f;
         Font font = Minecraft.getInstance().font;
         int bigWidth = (int) (font.width(amountComp) * bigScale);
         int bigHeight = (int) (font.lineHeight * bigScale) + 2;
@@ -1923,23 +1936,6 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         taxTitleRow.child(Components.label(Component.literal("• ").withStyle(ChatFormatting.GOLD)));
         taxTitleRow.child(Components.label(Component.literal("Налоги").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
-
-        boolean canManage = false;
-        if (Minecraft.getInstance().player != null && worldData != null) {
-            canManage = worldData.canManageTaxes(Minecraft.getInstance().player.getUUID());
-        }
-
-        taxTitleRow.child(Components.box(Sizing.expand(), Sizing.fixed(1)).color(Color.ofArgb(0)));
-        if (canManage) {
-            FlowLayout changeRateBtn = createFlatButton(
-                    Component.literal("Изменить ставку").withStyle(ChatFormatting.GOLD),
-                    110, 18,
-                    0xFF262112, 0xFF3D3219, 0xFFD4AF37,
-                    this::openSetTaxRateModal
-            );
-            changeRateBtn.tooltip(Component.literal("Установить новую ставку налога (только для Князя)").withStyle(ChatFormatting.GRAY));
-            taxTitleRow.child(changeRateBtn);
-        }
 
         taxCard.child(taxTitleRow);
         taxCard.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(2)));
@@ -2043,6 +2039,76 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         taxCard.child(btnCol);
         treasuryFlow.child(taxCard);
+
+        // --- 2b. TREASURY MANAGEMENT CATEGORY ("УПРАВЛЕНИЕ КАЗНОЙ" - Knyaz & Treasurer only) ---
+        boolean canAccessMgmt = false;
+        boolean isKnyaz = false;
+        if (Minecraft.getInstance().player != null && worldData != null) {
+            UUID myUuid = Minecraft.getInstance().player.getUUID();
+            canAccessMgmt = worldData.canAccessTreasury(myUuid);
+            isKnyaz = worldData.isKnyaz(myUuid);
+        }
+
+        if (canAccessMgmt) {
+            FlowLayout mgmtCard = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+            mgmtCard.surface(Surface.flat(0xFF13171F).and(Surface.outline(0xFF4A3E18)));
+            mgmtCard.padding(Insets.of(12, 14, 12, 14));
+            mgmtCard.gap(8);
+
+            FlowLayout mgmtTitleRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(18));
+            mgmtTitleRow.verticalAlignment(VerticalAlignment.CENTER);
+            mgmtTitleRow.gap(6);
+            mgmtTitleRow.child(Components.label(Component.literal("• ").withStyle(ChatFormatting.GOLD)));
+            mgmtTitleRow.child(Components.label(Component.literal("Управление казной").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+            mgmtCard.child(mgmtTitleRow);
+
+            mgmtCard.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(2)));
+
+            FlowLayout mgmtBtnCol = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+            mgmtBtnCol.gap(6);
+
+            // Button 1: "Изменить ставку" (active only for Knyaz)
+            FlowLayout changeRateBtn;
+            if (isKnyaz) {
+                changeRateBtn = createFlatButton(
+                        Component.literal("Изменить ставку").withStyle(ChatFormatting.WHITE),
+                        220, 22,
+                        0xFF262112, 0xFF3D3219, 0xFFD4AF37,
+                        this::openSetTaxRateModal
+                );
+                changeRateBtn.tooltip(Component.literal("Установить новую ставку налога (только для Князя)").withStyle(ChatFormatting.GRAY));
+            } else {
+                changeRateBtn = Containers.horizontalFlow(Sizing.fixed(220), Sizing.fixed(22));
+                changeRateBtn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+                changeRateBtn.surface(Surface.flat(0xFF181B22).and(Surface.outline(0xFF282D38)));
+                changeRateBtn.child(Components.label(Component.literal("Изменить ставку").withStyle(ChatFormatting.DARK_GRAY)));
+                changeRateBtn.tooltip(Component.literal("Налог может менять только Князь").withStyle(ChatFormatting.GRAY));
+            }
+            mgmtBtnCol.child(changeRateBtn);
+
+            // Button 2: "Расширить вместительность казны"
+            FlowLayout expandCapBtn = createFlatButton(
+                    Component.literal("Расширить вместительность казны").withStyle(ChatFormatting.WHITE),
+                    220, 22,
+                    0xFF2A2312, 0xFF3D3219, 0xFFD4AF37,
+                    this::openExpandTreasuryModal
+            );
+            expandCapBtn.tooltip(Component.literal("Приобрести Малый или Большой Сундук Казны для расширения вместимости казны").withStyle(ChatFormatting.GRAY));
+            mgmtBtnCol.child(expandCapBtn);
+
+            // Button 3: "Посмотреть список хранилищ"
+            FlowLayout viewChestsBtn = createFlatButton(
+                    Component.literal("Посмотреть список хранилищ").withStyle(ChatFormatting.WHITE),
+                    220, 22,
+                    0xFF1E222A, 0xFF2A303C, 0xFF3E4656,
+                    this::openTreasuryStoragesModal
+            );
+            viewChestsBtn.tooltip(Component.literal("Показать список всех установленных Сундуков Казны и их координаты").withStyle(ChatFormatting.GRAY));
+            mgmtBtnCol.child(viewChestsBtn);
+
+            mgmtCard.child(mgmtBtnCol);
+            treasuryFlow.child(mgmtCard);
+        }
 
         // --- 3. CATEGORY "ЛОГ КАЗНЫ" ---
         FlowLayout logCard = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
@@ -3712,6 +3778,240 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         );
         confirmBtn.margins(Insets.top(6));
         modal.child(confirmBtn);
+
+        this.uiAdapter.rootComponent.child(overlay);
+    }
+
+    /**
+     * Expand Treasury Capacity Modal ("Расширить вместительность казны")
+     * Allows Knyaz or Treasurer to buy Small (250 $PR -> +500 $PR cap) or Large (500 $PR -> +1250 $PR cap) Treasury Chests.
+     */
+    private void openExpandTreasuryModal() {
+        long currentTreasury = worldData != null ? worldData.getTreasury() : 0L;
+        long currentCap = worldData != null ? worldData.getTreasuryCapacity() : 0L;
+        long personalBal = (long) ClientBankCache.getBalance();
+        long availableFunds = currentTreasury + personalBal;
+
+        FlowLayout modal = Containers.verticalFlow(Sizing.fixed(300), Sizing.content());
+        modal.surface(Surface.flat(0xFF14171E).and(Surface.outline(0xFF4A3E18)));
+        modal.padding(Insets.of(12));
+        modal.gap(8);
+        modal.zIndex(10);
+
+        OverlayContainer<FlowLayout> overlay = createOverlay(modal);
+
+        // Header
+        FlowLayout modalHeader = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(18));
+        modalHeader.verticalAlignment(VerticalAlignment.CENTER);
+        modalHeader.gap(5);
+
+        ItemComponent headerIcon = Components.item(new ItemStack(ModItems.SMALL_TREASURY_CHEST.get()));
+        headerIcon.sizing(Sizing.fixed(14), Sizing.fixed(14));
+        modalHeader.child(headerIcon);
+
+        modalHeader.child(Components.label(Component.literal("Расширение Казны").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+        modalHeader.child(Components.spacer());
+
+        FlowLayout xBtn = createIconButton("✕", 16, 16, 2, 0xFF22262E, 0xFF353B47, 0xFF4A5263, overlay::remove);
+        modalHeader.child(xBtn);
+        modal.child(modalHeader);
+        modal.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(2)));
+
+        // Current Treasury & Capacity info
+        FlowLayout infoRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+        infoRow.verticalAlignment(VerticalAlignment.CENTER);
+        infoRow.child(Components.label(Component.literal("В казне: ").withStyle(ChatFormatting.GRAY)));
+        infoRow.child(Components.label(Component.literal(String.format("%,d", currentTreasury).replace(',', ' ') + " $PR")
+                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+        infoRow.child(Components.label(Component.literal(" / " + String.format("%,d", currentCap).replace(',', ' ') + " $PR")
+                .withStyle(ChatFormatting.GRAY)));
+        modal.child(infoRow);
+
+        // Option 1: Small Treasury Chest (250 $PR -> +500 $PR capacity)
+        modal.child(createChestPurchaseCard(
+                false,
+                "Малый Сундук Казны",
+                TreasuryChestEntry.SMALL_COST,
+                TreasuryChestEntry.SMALL_CAPACITY,
+                new ItemStack(ModItems.SMALL_TREASURY_CHEST.get()),
+                availableFunds >= TreasuryChestEntry.SMALL_COST,
+                overlay
+        ));
+
+        // Option 2: Large Treasury Chest (500 $PR -> +1 250 $PR capacity)
+        modal.child(createChestPurchaseCard(
+                true,
+                "Большой Сундук Казны",
+                TreasuryChestEntry.LARGE_COST,
+                TreasuryChestEntry.LARGE_CAPACITY,
+                new ItemStack(ModItems.LARGE_TREASURY_CHEST.get()),
+                availableFunds >= TreasuryChestEntry.LARGE_COST,
+                overlay
+        ));
+
+        this.uiAdapter.rootComponent.child(overlay);
+    }
+
+    private FlowLayout createChestPurchaseCard(boolean large, String title, int cost, int capacity, ItemStack iconStack, boolean canAfford, OverlayContainer<FlowLayout> overlay) {
+        FlowLayout card = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+        card.surface(Surface.flat(0xFF191D26).and(Surface.outline(0xFF38311B)));
+        card.padding(Insets.of(8));
+        card.gap(4);
+
+        FlowLayout topRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+        topRow.verticalAlignment(VerticalAlignment.CENTER);
+        topRow.gap(8);
+
+        ItemComponent icon = Components.item(iconStack);
+        icon.sizing(Sizing.fixed(20), Sizing.fixed(20));
+        topRow.child(icon);
+
+        FlowLayout textCol = Containers.verticalFlow(Sizing.expand(), Sizing.content());
+        textCol.gap(2);
+
+        textCol.child(Components.label(Component.literal(title).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)));
+
+        String formattedCost = String.format("%,d", cost).replace(',', ' ') + " $PR";
+        String formattedCap = String.format("%,d", capacity).replace(',', ' ') + " $PR";
+
+        FlowLayout priceRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+        priceRow.verticalAlignment(VerticalAlignment.CENTER);
+        priceRow.gap(4);
+        priceRow.child(Components.label(Component.literal("Цена: ").withStyle(ChatFormatting.GRAY)));
+        priceRow.child(Components.label(Component.literal(formattedCost).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+        priceRow.child(Components.label(Component.literal(" ➔ ").withStyle(ChatFormatting.GREEN)));
+        priceRow.child(Components.label(Component.literal("Вместимость: " + formattedCap).withStyle(ChatFormatting.YELLOW)));
+        textCol.child(priceRow);
+
+        // Small gray text explaining how much capacity expands upon placement
+        ScaledLabelComponent expandNote = new ScaledLabelComponent(
+                Component.literal("При установке в мире расширит вместимость казны на +" + formattedCap),
+                0.78f,
+                0xFFAAAAAA,
+                false
+        );
+        textCol.child(expandNote);
+
+        topRow.child(textCol);
+        card.child(topRow);
+
+        FlowLayout buyBtn;
+        if (canAfford) {
+            buyBtn = createFlatButton(
+                    Component.literal("Купить за " + formattedCost).withStyle(ChatFormatting.WHITE),
+                    260, 20,
+                    0xFF2A2312, 0xFF3D3219, 0xFFD4AF37,
+                    () -> {
+                        overlay.remove();
+                        NetworkHandler.sendToServer(new BuyTreasuryChestC2SPacket(large));
+                    }
+            );
+        } else {
+            buyBtn = Containers.horizontalFlow(Sizing.fixed(260), Sizing.fixed(20));
+            buyBtn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            buyBtn.surface(Surface.flat(0xFF14161C).and(Surface.outline(0xFF252932)));
+            buyBtn.child(Components.label(Component.literal("Недостаточно средств (" + formattedCost + ")").withStyle(ChatFormatting.DARK_GRAY)));
+        }
+        buyBtn.margins(Insets.top(2));
+        card.child(buyBtn);
+
+        return card;
+    }
+
+    /**
+     * Treasury Storages List Modal ("Посмотреть список хранилищ")
+     * Displays compact list of all placed Treasury Chests, their stored amount, capacity, and coordinates.
+     */
+    private void openTreasuryStoragesModal() {
+        List<TreasuryChestEntry> chests = worldData != null ? worldData.getTreasuryChests() : Collections.emptyList();
+
+        FlowLayout modal = Containers.verticalFlow(Sizing.fixed(310), Sizing.content());
+        modal.surface(Surface.flat(0xFF14171E).and(Surface.outline(0xFF4A3E18)));
+        modal.padding(Insets.of(12));
+        modal.gap(6);
+        modal.zIndex(10);
+
+        OverlayContainer<FlowLayout> overlay = createOverlay(modal);
+
+        // Header
+        FlowLayout modalHeader = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(18));
+        modalHeader.verticalAlignment(VerticalAlignment.CENTER);
+        modalHeader.gap(5);
+
+        ItemComponent headerIcon = Components.item(new ItemStack(ModItems.SMALL_TREASURY_CHEST.get()));
+        headerIcon.sizing(Sizing.fixed(14), Sizing.fixed(14));
+        modalHeader.child(headerIcon);
+
+        modalHeader.child(Components.label(Component.literal("Список хранилищ казны").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+        modalHeader.child(Components.spacer());
+        modalHeader.child(Components.label(Component.literal("(" + chests.size() + " шт.)").withStyle(ChatFormatting.DARK_GRAY)));
+
+        FlowLayout xBtn = createIconButton("✕", 16, 16, 2, 0xFF22262E, 0xFF353B47, 0xFF4A5263, overlay::remove);
+        modalHeader.child(xBtn);
+        modal.child(modalHeader);
+        modal.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(2)));
+
+        FlowLayout listFlow = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+        listFlow.gap(4);
+
+        if (chests.isEmpty()) {
+            FlowLayout emptyBox = Containers.verticalFlow(Sizing.fill(100), Sizing.fixed(48));
+            emptyBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            emptyBox.surface(Surface.flat(0xFF0E1116).and(Surface.outline(0xFF222834)));
+            emptyBox.gap(2);
+            emptyBox.child(Components.label(Component.literal("Хранилища казны не установлены").withStyle(ChatFormatting.GRAY)));
+            emptyBox.child(new ScaledLabelComponent(Component.literal("Приобретите и установите Сундук Казны в мире."), 0.8f, 0xFF777777, true));
+            listFlow.child(emptyBox);
+        } else {
+            for (int i = 0; i < chests.size(); i++) {
+                TreasuryChestEntry entry = chests.get(i);
+                int num = i + 1;
+
+                FlowLayout rowCard = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+                rowCard.surface(Surface.flat(0xFF0E1116).and(Surface.outline(0xFF262D3B)));
+                rowCard.padding(Insets.of(4, 7, 4, 7));
+                rowCard.gap(2);
+
+                // Line 1: #N Type + Stored / Capacity $PR
+                FlowLayout r1 = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(12));
+                r1.verticalAlignment(VerticalAlignment.CENTER);
+                r1.gap(5);
+
+                r1.child(Components.label(Component.literal("#" + num).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+                r1.child(Components.label(Component.literal(entry.getTypeTitle()).withStyle(ChatFormatting.WHITE)));
+                r1.child(Components.spacer());
+
+                String amtStr = String.format("%,d / %,d $PR", entry.getAmount(), entry.getCapacity()).replace(',', ' ');
+                ChatFormatting amtCol = entry.getAmount() >= entry.getCapacity() ? ChatFormatting.GOLD : (entry.getAmount() > 0 ? ChatFormatting.GREEN : ChatFormatting.GRAY);
+                r1.child(Components.label(Component.literal(amtStr).withStyle(amtCol)));
+                rowCard.child(r1);
+
+                // Line 2: Coordinates + Placed Date
+                FlowLayout r2 = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(11));
+                r2.verticalAlignment(VerticalAlignment.CENTER);
+                r2.gap(5);
+
+                r2.child(Components.label(Component.literal("Координаты: " + entry.getFormattedCoords()).withStyle(ChatFormatting.GRAY)));
+                r2.child(Components.spacer());
+                if (!entry.getPlacedDate().isEmpty()) {
+                    r2.child(Components.label(Component.literal(entry.getPlacedDate()).withStyle(ChatFormatting.DARK_GRAY)));
+                }
+                rowCard.child(r2);
+
+                listFlow.child(rowCard);
+            }
+        }
+
+        int scrollH = chests.isEmpty() ? 52 : Math.min(180, Math.max(60, chests.size() * 34));
+        ScrollContainer<FlowLayout> scroll = Containers.verticalScroll(Sizing.fill(100), Sizing.fixed(scrollH), listFlow);
+        scroll.scrollbar(DARK_SCROLLBAR);
+        scroll.scrollbarThiccness(4);
+        scroll.padding(Insets.right(2));
+        modal.child(scroll);
+
+        FlowLayout closeBtn = createFlatButton(Component.literal("Закрыть").withStyle(ChatFormatting.GRAY), 286, 20, 0xFF1E222A, 0xFF2A303C, 0xFF3E4656, overlay::remove);
+        closeBtn.margins(Insets.top(4));
+        modal.child(closeBtn);
 
         this.uiAdapter.rootComponent.child(overlay);
     }

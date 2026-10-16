@@ -35,8 +35,15 @@ public record DepositTreasuryPacket(long amount) implements CustomPacketPayload 
             }
 
             CharacterWorldData worldData = CharacterWorldData.get(player.server);
+            long freeSpace = worldData.getTreasuryFreeSpace();
+            if (freeSpace <= 0) {
+                player.sendSystemMessage(Component.literal("❌ В хранилищах казны нет свободного места! Установите новые сундуки казны.")
+                        .withStyle(ChatFormatting.RED));
+                return;
+            }
+
             double balance = EconomyManager.getBalance(player);
-            long toPay = payload.amount();
+            long toPay = Math.min(payload.amount(), freeSpace);
 
             if (toPay > 0 && balance >= toPay) {
                 if (!EconomyManager.deductBalance(player, toPay)) {
@@ -44,7 +51,7 @@ public record DepositTreasuryPacket(long amount) implements CustomPacketPayload 
                     return;
                 }
                 PlayerCharacterData pd = worldData.getOrCreatePlayerData(player.getUUID());
-                worldData.addTreasury(toPay);
+                worldData.depositToChests(player.server, toPay);
 
                 int marksEarned = pd.applyBrandDeposit(toPay);
                 if (marksEarned > 0) {

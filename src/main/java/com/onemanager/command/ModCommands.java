@@ -1159,30 +1159,43 @@ public class ModCommands {
                         .then(Commands.argument("amount", IntegerArgumentType.integer(0))
                                 .executes(ctx -> {
                                     int amount = IntegerArgumentType.getInteger(ctx, "amount");
-                                    CharacterWorldData worldData = CharacterWorldData.get(ctx.getSource().getServer());
-                                    worldData.setTreasury(amount);
-                                    logTreasuryCmd(ctx.getSource(), worldData, "= " + String.format("%,d", (long) amount).replace(',', ' ') + " $PR (Команда /oh:treasury set)");
+                                    MinecraftServer srv = ctx.getSource().getServer();
+                                    CharacterWorldData worldData = CharacterWorldData.get(srv);
+                                    if (!worldData.getTreasuryChests().isEmpty()) {
+                                        worldData.withdrawFromChests(srv, Long.MAX_VALUE);
+                                        worldData.depositToChests(srv, amount);
+                                    } else {
+                                        worldData.setTreasury(amount);
+                                    }
+                                    long finalAmt = worldData.getTreasury();
+                                    logTreasuryCmd(ctx.getSource(), worldData, "= " + String.format("%,d", finalAmt).replace(',', ' ') + " $PR (Команда /oh:treasury set)");
                                     worldData.setDirty();
                                     NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));
                                     ctx.getSource().sendSuccess(() -> Component.literal("Казна установлена на: ")
                                             .withStyle(ChatFormatting.GOLD)
-                                            .append(Component.literal(String.format("%,d", (long) amount).replace(',', ' ') + " $PR")
+                                            .append(Component.literal(String.format("%,d", finalAmt).replace(',', ' ') + " $PR")
                                                     .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD)), true);
-                                    return amount;
+                                    return (int) Math.min(Integer.MAX_VALUE, finalAmt);
                                 })))
                 .then(Commands.literal("add")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.argument("amount", IntegerArgumentType.integer(1))
                                 .executes(ctx -> {
                                     int amount = IntegerArgumentType.getInteger(ctx, "amount");
-                                    CharacterWorldData worldData = CharacterWorldData.get(ctx.getSource().getServer());
-                                    worldData.addTreasury(amount);
-                                    logTreasuryCmd(ctx.getSource(), worldData, "+" + String.format("%,d", (long) amount).replace(',', ' ') + " $PR (Команда /oh:treasury add)");
+                                    MinecraftServer srv = ctx.getSource().getServer();
+                                    CharacterWorldData worldData = CharacterWorldData.get(srv);
+                                    long added = !worldData.getTreasuryChests().isEmpty()
+                                            ? worldData.depositToChests(srv, amount)
+                                            : amount;
+                                    if (worldData.getTreasuryChests().isEmpty()) {
+                                        worldData.addTreasury(amount);
+                                    }
+                                    logTreasuryCmd(ctx.getSource(), worldData, "+" + String.format("%,d", added).replace(',', ' ') + " $PR (Команда /oh:treasury add)");
                                     worldData.setDirty();
                                     NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));
                                     ctx.getSource().sendSuccess(() -> Component.literal("В казну добавлено: ")
                                             .withStyle(ChatFormatting.GOLD)
-                                            .append(Component.literal("+" + String.format("%,d", (long) amount).replace(',', ' ') + " $PR")
+                                            .append(Component.literal("+" + String.format("%,d", added).replace(',', ' ') + " $PR")
                                                     .withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD))
                                             .append(Component.literal(" (Всего: " + String.format("%,d", worldData.getTreasury()).replace(',', ' ') + " $PR)")
                                                     .withStyle(ChatFormatting.YELLOW)), true);
@@ -1193,8 +1206,11 @@ public class ModCommands {
                         .then(Commands.argument("amount", IntegerArgumentType.integer(1))
                                 .executes(ctx -> {
                                     int amount = IntegerArgumentType.getInteger(ctx, "amount");
-                                    CharacterWorldData worldData = CharacterWorldData.get(ctx.getSource().getServer());
-                                    long removed = worldData.removeTreasury(amount);
+                                    MinecraftServer srv = ctx.getSource().getServer();
+                                    CharacterWorldData worldData = CharacterWorldData.get(srv);
+                                    long removed = !worldData.getTreasuryChests().isEmpty()
+                                            ? worldData.withdrawFromChests(srv, amount)
+                                            : worldData.removeTreasury(amount);
                                     logTreasuryCmd(ctx.getSource(), worldData, "-" + String.format("%,d", removed).replace(',', ' ') + " $PR (Команда /oh:treasury remove)");
                                     worldData.setDirty();
                                     NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));
@@ -1211,8 +1227,11 @@ public class ModCommands {
                         .then(Commands.argument("amount", IntegerArgumentType.integer(1))
                                 .executes(ctx -> {
                                     int amount = IntegerArgumentType.getInteger(ctx, "amount");
-                                    CharacterWorldData worldData = CharacterWorldData.get(ctx.getSource().getServer());
-                                    long removed = worldData.removeTreasury(amount);
+                                    MinecraftServer srv = ctx.getSource().getServer();
+                                    CharacterWorldData worldData = CharacterWorldData.get(srv);
+                                    long removed = !worldData.getTreasuryChests().isEmpty()
+                                            ? worldData.withdrawFromChests(srv, amount)
+                                            : worldData.removeTreasury(amount);
                                     logTreasuryCmd(ctx.getSource(), worldData, "-" + String.format("%,d", removed).replace(',', ' ') + " $PR (Команда /oh:treasury sub)");
                                     worldData.setDirty();
                                     NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));

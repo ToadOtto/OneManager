@@ -30,46 +30,13 @@ public record WithdrawTreasuryPacket(long amount) implements CustomPacketPayload
 
     public static void handle(WithdrawTreasuryPacket payload, IPayloadContext context) {
         context.enqueueWork(() -> {
-            if (!(context.player() instanceof ServerPlayer player) || player.server == null) {
+            if (!(context.player() instanceof ServerPlayer player)) {
                 return;
             }
-
-            CharacterWorldData worldData = CharacterWorldData.get(player.server);
-            boolean can = worldData.canManageTaxes(player.getUUID()) || player.hasPermissions(2);
-            if (!can) {
-                player.sendSystemMessage(Component.literal("❌ Только Князь или Казначей могут снимать средства из казны!").withStyle(ChatFormatting.RED));
-                return;
-            }
-
-            long toWithdraw = payload.amount();
-            long treasury = worldData.getTreasury();
-
-            if (toWithdraw > 0 && treasury >= toWithdraw) {
-                worldData.removeTreasury(toWithdraw);
-                EconomyManager.addBalance(player, toWithdraw);
-
-                PlayerCharacterData pd = worldData.getPlayerData(player.getUUID());
-                String charName = pd != null && pd.hasActiveCharacter() ? pd.getActiveCharacter().getName() : player.getScoreboardName();
-                String pName = player.getScoreboardName();
-
-                String actionDesc = "-" + String.format("%,d", toWithdraw).replace(',', ' ') + " $PR (Снятие из казны)";
-                worldData.logTransaction(charName, pName, actionDesc, worldData.getTreasury());
-                worldData.setDirty();
-
-                NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));
-
-                player.sendSystemMessage(
-                        Component.literal("💸 Вы сняли из казны: ").withStyle(ChatFormatting.GOLD)
-                                .append(Component.literal(String.format("%,d", toWithdraw).replace(',', ' ') + " $PR")
-                                        .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
-                                .append(Component.literal(" (Остаток в казне: " + String.format("%,d", worldData.getTreasury()).replace(',', ' ') + " $PR)")
-                                        .withStyle(ChatFormatting.GRAY))
-                );
-            } else if (toWithdraw > treasury) {
-                player.sendSystemMessage(
-                        Component.literal("❌ В казне недостаточно средств!").withStyle(ChatFormatting.RED)
-                );
-            }
+            player.sendSystemMessage(
+                    Component.literal("❌ Забрать деньги из казны можно только напрямую из Сундуков Казны в мире!")
+                            .withStyle(ChatFormatting.RED)
+            );
         });
     }
 }

@@ -23,4 +23,10 @@ public class ModBlockEntities {
     public static final Supplier<BlockEntityType<UrnBlockEntity>> URN =
             BLOCK_ENTITIES.register("urn",
                     () -> BlockEntityType.Builder.of(UrnBlockEntity::new, ModBlocks.URN.get()).build(null));
+
+    public static final Supplier<BlockEntityType<TreasuryChestBlockEntity>> TREASURY_CHEST =
+            BLOCK_ENTITIES.register("treasury_chest",
+                    () -> BlockEntityType.Builder.of(TreasuryChestBlockEntity::new,
+                            ModBlocks.SMALL_TREASURY_CHEST.get(),
+                            ModBlocks.LARGE_TREASURY_CHEST.get()).build(null));
 }

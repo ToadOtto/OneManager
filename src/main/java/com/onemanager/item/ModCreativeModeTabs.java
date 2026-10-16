@@ -28,6 +28,8 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.NEW_LIFE_STRUCTURE.get());
                         output.accept(ModItems.NOTE.get());
                         output.accept(ModItems.MEMORIAL_SIGN.get());
+                        output.accept(ModItems.SMALL_TREASURY_CHEST.get());
+                        output.accept(ModItems.LARGE_TREASURY_CHEST.get());
                     })
                     .build()
     );

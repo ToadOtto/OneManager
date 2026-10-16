@@ -1,17 +1,25 @@
 package com.onemanager.data;
 
 import com.onemanager.OneManager;
+import com.onemanager.block.entity.TreasuryChestBlockEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -50,10 +58,13 @@ public class CharacterWorldData extends SavedData {
     public static final String KEY_WEEK_TICKS = "week_ticks";
     public static final String KEY_TREASURY_LOG = "treasury_log";
     public static final String KEY_LAWS = "laws";
+    public static final String KEY_TREASURY_CHESTS = "treasury_chests";
 
     public static final int DEFAULT_TAX_RATE = 10;
     public static final int TAX_CYCLE_TICKS = 24000; // 20 minutes (20 * 60 * 20) = 1 in-game day
     public static final int WEEK_CYCLE_TICKS = 168000; // 140 minutes (7 * 24000) = 1 in-game week
+
+    public record PendingTreasuryReason(int amount, boolean demolition, String coords, String chestType) {}
 
     private final Map<UUID, PlayerCharacterData> players = new ConcurrentHashMap<>();
     private String knyazName = "";
@@ -70,6 +81,8 @@ public class CharacterWorldData extends SavedData {
     private final Set<String> completedAdvancements = ConcurrentHashMap.newKeySet();
     private final List<TreasuryLogEntry> treasuryLog = new CopyOnWriteArrayList<>();
     private final List<LawEntry> laws = new CopyOnWriteArrayList<>();
+    private final List<TreasuryChestEntry> treasuryChests = new CopyOnWriteArrayList<>();
+    private final Map<UUID, PendingTreasuryReason> pendingReasons = new ConcurrentHashMap<>();
 
     public static final SavedData.Factory<CharacterWorldData> FACTORY = new SavedData.Factory<>(
             CharacterWorldData::new,
@@ -574,6 +587,214 @@ public class CharacterWorldData extends SavedData {
         return isKnyaz(uuid);
     }
 
+    public boolean canAccessTreasury(UUID uuid) {
+        return isKnyaz(uuid) || isTreasurer(uuid);
+    }
+
+    // --- Treasury Chests (Физические Хранилища Казны) ---
+
+    public List<TreasuryChestEntry> getTreasuryChests() {
+        return Collections.unmodifiableList(treasuryChests);
+    }
+
+    public long getTreasuryCapacity() {
+        long cap = 0L;
+        for (TreasuryChestEntry entry : treasuryChests) {
+            cap += entry.getCapacity();
+        }
+        return cap;
+    }
+
+    public long getTreasuryFreeSpace() {
+        long space = 0L;
+        for (TreasuryChestEntry entry : treasuryChests) {
+            space += entry.getFreeSpace();
+        }
+        return space;
+    }
+
+    @Nullable
+    public TreasuryChestEntry getTreasuryChestAt(String dim, BlockPos pos) {
+        if (pos == null) return null;
+        for (TreasuryChestEntry entry : treasuryChests) {
+            if (entry.matchesLocation(dim, pos)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    public void recalculateTreasuryFromChests() {
+        long sum = 0L;
+        for (TreasuryChestEntry entry : treasuryChests) {
+            sum += entry.getAmount();
+        }
+        this.treasury = sum;
+        setDirty();
+    }
+
+    public TreasuryChestEntry registerTreasuryChest(String dim, BlockPos pos, boolean large, String placedBy) {
+        TreasuryChestEntry existing = getTreasuryChestAt(dim, pos);
+        if (existing != null) {
+            return existing;
+        }
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        TreasuryChestEntry entry = new TreasuryChestEntry(UUID.randomUUID(), dim, pos, large, 0L, timestamp, placedBy);
+        treasuryChests.add(entry);
+        recalculateTreasuryFromChests();
+        writeChestsToFile();
+        return entry;
+    }
+
+    public void updateTreasuryChestAmount(String dim, BlockPos pos, int amount) {
+        TreasuryChestEntry entry = getTreasuryChestAt(dim, pos);
+        if (entry != null) {
+            entry.setAmount(amount);
+            recalculateTreasuryFromChests();
+            writeChestsToFile();
+        }
+    }
+
+    public boolean removeTreasuryChestAt(String dim, BlockPos pos) {
+        boolean removed = treasuryChests.removeIf(entry -> entry.matchesLocation(dim, pos));
+        if (removed) {
+            recalculateTreasuryFromChests();
+            writeChestsToFile();
+        }
+        return removed;
+    }
+
+    /**
+     * Deposits money into placed Treasury Chests in order from oldest (#1) to newest.
+     * Updates loaded TreasuryChestBlockEntity instances and recalculates total treasury.
+     * Returns actual amount deposited.
+     */
+    public long depositToChests(@Nullable MinecraftServer server, long amount) {
+        if (amount <= 0) return 0L;
+        long remaining = amount;
+        long totalAdded = 0L;
+
+        for (TreasuryChestEntry entry : treasuryChests) {
+            if (remaining <= 0) break;
+            long space = entry.getFreeSpace();
+            if (space > 0) {
+                long add = Math.min(space, remaining);
+                entry.setAmount(entry.getAmount() + add);
+                remaining -= add;
+                totalAdded += add;
+                syncLoadedChestBlockEntity(server, entry);
+            }
+        }
+
+        recalculateTreasuryFromChests();
+        writeChestsToFile();
+        return totalAdded;
+    }
+
+    /**
+     * Withdraws money from placed Treasury Chests (used when buying new treasury chests from treasury).
+     * Updates loaded TreasuryChestBlockEntity instances and recalculates total treasury.
+     * Returns actual amount withdrawn.
+     */
+    public long withdrawFromChests(@Nullable MinecraftServer server, long amount) {
+        if (amount <= 0) return 0L;
+        long remaining = amount;
+        long totalWithdrawn = 0L;
+
+        for (int i = treasuryChests.size() - 1; i >= 0; i--) {
+            if (remaining <= 0) break;
+            TreasuryChestEntry entry = treasuryChests.get(i);
+            long stored = entry.getAmount();
+            if (stored > 0) {
+                long take = Math.min(stored, remaining);
+                entry.setAmount(stored - take);
+                remaining -= take;
+                totalWithdrawn += take;
+                syncLoadedChestBlockEntity(server, entry);
+            }
+        }
+
+        recalculateTreasuryFromChests();
+        writeChestsToFile();
+        return totalWithdrawn;
+    }
+
+    private void syncLoadedChestBlockEntity(@Nullable MinecraftServer server, TreasuryChestEntry entry) {
+        if (server == null || entry == null) return;
+        try {
+            ResourceLocation dimLoc = ResourceLocation.tryParse(entry.getDimension());
+            ServerLevel targetLevel = null;
+            if (dimLoc != null) {
+                ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, dimLoc);
+                targetLevel = server.getLevel(key);
+            }
+            if (targetLevel == null) {
+                targetLevel = server.overworld();
+            }
+            if (targetLevel != null && targetLevel.isLoaded(entry.getPos())) {
+                BlockEntity be = targetLevel.getBlockEntity(entry.getPos());
+                if (be instanceof TreasuryChestBlockEntity chestBe) {
+                    chestBe.setStoredAmountFromWorldData((int) entry.getAmount());
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void writeChestsToFile() {
+        try {
+            Path logDir = Path.of("logs");
+            if (!Files.exists(logDir)) {
+                Files.createDirectories(logDir);
+            }
+            Path chestsFile = logDir.resolve("treasury_chests.txt");
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== СПИСОК ХРАНИЛИЩ КАЗНЫ ===").append(System.lineSeparator());
+            sb.append("Всего в казне: ").append(this.treasury).append(" / ").append(getTreasuryCapacity()).append(" $PR").append(System.lineSeparator());
+            sb.append("Количество хранилищ: ").append(treasuryChests.size()).append(System.lineSeparator());
+            sb.append("--------------------------------------------------").append(System.lineSeparator());
+            for (int i = 0; i < treasuryChests.size(); i++) {
+                sb.append(treasuryChests.get(i).toFileLine(i + 1)).append(System.lineSeparator());
+            }
+            Files.writeString(
+                    chestsFile,
+                    sb.toString(),
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
+        } catch (Exception e) {
+            OneManager.LOGGER.error("Failed to write treasury chests file: logs/treasury_chests.txt", e);
+        }
+    }
+
+    public void setPendingTreasuryReason(UUID playerUuid, PendingTreasuryReason pending) {
+        if (playerUuid != null && pending != null) {
+            pendingReasons.put(playerUuid, pending);
+        }
+    }
+
+    public boolean completePendingTreasuryReason(ServerPlayer player, String reason) {
+        if (player == null) return false;
+        PendingTreasuryReason pending = pendingReasons.remove(player.getUUID());
+        if (pending == null) return false;
+
+        String cleanReason = (reason != null && !reason.trim().isEmpty()) ? reason.trim() : "Не указана";
+        PlayerCharacterData pd = getPlayerData(player.getUUID());
+        String charName = (pd != null && pd.hasActiveCharacter()) ? pd.getActiveCharacter().getName() : player.getScoreboardName();
+        String pName = player.getScoreboardName();
+        String formattedAmt = String.format("%,d", pending.amount()).replace(',', ' ');
+
+        String actionDesc;
+        if (pending.demolition()) {
+            actionDesc = "Снос хранилища (" + pending.chestType() + " [" + pending.coords() + "], выпало " + formattedAmt + " $PR) | Причина: " + cleanReason;
+        } else {
+            actionDesc = "-" + formattedAmt + " $PR (Списание из сундука казны [" + pending.coords() + "]) | Причина: " + cleanReason;
+        }
+        logTransaction(charName, pName, actionDesc, this.treasury);
+        return true;
+    }
+
     public List<TreasuryLogEntry> getTreasuryLog() {
         return Collections.unmodifiableList(treasuryLog);
     }
@@ -653,6 +874,12 @@ public class CharacterWorldData extends SavedData {
         }
         compoundTag.put(KEY_LAWS, lawsList);
 
+        ListTag chestsList = new ListTag();
+        for (TreasuryChestEntry chest : treasuryChests) {
+            chestsList.add(chest.toNBT());
+        }
+        compoundTag.put(KEY_TREASURY_CHESTS, chestsList);
+
         return compoundTag;
     }
 
@@ -716,6 +943,23 @@ public class CharacterWorldData extends SavedData {
                     } catch (Exception e) {
                         OneManager.LOGGER.error("Failed to load law entry from tag", e);
                     }
+                }
+            }
+            if (compoundTag.contains(KEY_TREASURY_CHESTS, Tag.TAG_LIST)) {
+                ListTag chestsList = compoundTag.getList(KEY_TREASURY_CHESTS, Tag.TAG_COMPOUND);
+                for (int i = 0; i < chestsList.size(); i++) {
+                    try {
+                        worldData.treasuryChests.add(TreasuryChestEntry.fromNBT(chestsList.getCompound(i)));
+                    } catch (Exception e) {
+                        OneManager.LOGGER.error("Failed to load treasury chest entry from tag", e);
+                    }
+                }
+                if (!worldData.treasuryChests.isEmpty()) {
+                    long sum = 0L;
+                    for (TreasuryChestEntry c : worldData.treasuryChests) {
+                        sum += c.getAmount();
+                    }
+                    worldData.treasury = sum;
                 }
             }
 
