@@ -275,6 +275,13 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             this.uiAdapter.render(guiGraphics, scaledMouseX, scaledMouseY, partialTick);
         } catch (Throwable t) {
             OneManager.LOGGER.error("Error during CharHistoryScreen render", t);
+            try {
+                while (true) {
+                    io.wispforest.owo.ui.util.ScissorStack.pop();
+                }
+            } catch (Throwable ignored) {
+            }
+            RenderSystem.disableScissor();
         }
         guiGraphics.pose().popPose();
     }
@@ -637,7 +644,19 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             public void draw(OwoUIDrawContext context, int mouseX, int mouseY, float partialTicks, float delta) {
                 RenderSystem.disableDepthTest();
                 super.draw(context, mouseX, mouseY, partialTicks, delta);
+                context.flush();
                 RenderSystem.enableDepthTest();
+            }
+
+            @Override
+            public void drawTooltip(OwoUIDrawContext context, int mouseX, int mouseY, float partialTicks, float delta) {
+                context.pose().pushPose();
+                context.pose().translate(0.0F, 0.0F, 300.0F);
+                RenderSystem.disableDepthTest();
+                super.drawTooltip(context, mouseX, mouseY, partialTicks, delta);
+                context.flush();
+                RenderSystem.enableDepthTest();
+                context.pose().popPose();
             }
         };
         overlay.closeOnClick(true);

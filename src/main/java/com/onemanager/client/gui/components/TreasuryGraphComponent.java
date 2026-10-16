@@ -27,7 +27,7 @@ public class TreasuryGraphComponent extends BaseComponent {
     private final int leftAxisWidth;
     private final int recommendedWidth;
     private final int recommendedHeight;
-    private int lastHoveredIndex = -2;
+    private int hoveredIndex = -1;
 
     public TreasuryGraphComponent(List<TreasuryLogEntry> chronologicalEntries, long currentTreasury, int maxAllowedWidth, int maxAllowedHeight) {
         this.entries = chronologicalEntries != null ? chronologicalEntries : Collections.emptyList();
@@ -174,7 +174,7 @@ public class TreasuryGraphComponent extends BaseComponent {
             String emptyMsg = "Нет операций за последний месяц";
             int msgW = font.width(emptyMsg);
             context.drawString(font, emptyMsg, plotLeft + (plotW - msgW) / 2, yMid - 4, 0xFF6E7685, false);
-            updateHoveredTooltip(-1);
+            this.hoveredIndex = -1;
             return;
         }
 
@@ -219,6 +219,7 @@ public class TreasuryGraphComponent extends BaseComponent {
                 hoveredIdx = i;
             }
         }
+        this.hoveredIndex = hoveredIdx;
 
         // Draw crosshair if a point is hovered
         if (hoveredIdx >= 0) {
@@ -247,23 +248,16 @@ public class TreasuryGraphComponent extends BaseComponent {
                 context.fill(x - 1, y - 1, x + 2, y + 2, coreColor);
             }
         }
-
-        updateHoveredTooltip(hoveredIdx);
     }
 
-    private void updateHoveredTooltip(int hoveredIdx) {
-        if (hoveredIdx == lastHoveredIndex) {
-            return;
-        }
-        lastHoveredIndex = hoveredIdx;
-
-        if (hoveredIdx < 0 || hoveredIdx >= entries.size()) {
-            this.tooltip((Component) null);
+    @Override
+    public void drawTooltip(OwoUIDrawContext context, int mouseX, int mouseY, float partialTicks, float delta) {
+        if (this.hoveredIndex < 0 || this.hoveredIndex >= entries.size()) {
             return;
         }
 
-        TreasuryLogEntry entry = entries.get(hoveredIdx);
-        boolean exp = isPointExpense(hoveredIdx);
+        TreasuryLogEntry entry = entries.get(this.hoveredIndex);
+        boolean exp = isPointExpense(this.hoveredIndex);
         ChatFormatting actColor = exp ? ChatFormatting.RED : ChatFormatting.GREEN;
 
         MutableComponent tip = Component.literal(entry.getDisplayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)
@@ -272,7 +266,19 @@ public class TreasuryGraphComponent extends BaseComponent {
                 .append(Component.literal("\nКазна после: ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(formatVal(entry.treasuryAfter()) + " $PR").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
 
-        this.tooltip(tip);
+        Font font = Minecraft.getInstance().font;
+        java.util.ArrayList<net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent> tooltipLines = new java.util.ArrayList<>();
+        for (net.minecraft.util.FormattedCharSequence seq : font.split(tip, 280)) {
+            tooltipLines.add(net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent.create(seq));
+        }
+
+        context.pose().pushPose();
+        context.pose().translate(0.0F, 0.0F, 300.0F);
+        com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
+        context.drawTooltip(font, mouseX, mouseY, tooltipLines);
+        context.flush();
+        com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+        context.pose().popPose();
     }
 
     private int valueToY(long v, int yTop, int yMid, int yBottom) {
