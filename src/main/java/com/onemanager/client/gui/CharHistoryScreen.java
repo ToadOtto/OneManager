@@ -4127,10 +4127,11 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         // Legend & Hint row
         FlowLayout legendRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(14));
         legendRow.verticalAlignment(VerticalAlignment.CENTER);
-        legendRow.gap(6);
+        legendRow.gap(8);
 
         legendRow.child(Components.label(Component.literal("● Доход").withStyle(ChatFormatting.GREEN)));
         legendRow.child(Components.label(Component.literal("● Расход").withStyle(ChatFormatting.RED)));
+        legendRow.child(Components.label(Component.literal("● Установка").withStyle(ChatFormatting.YELLOW)));
         legendRow.child(Components.spacer());
         legendRow.child(Components.label(Component.literal("Операций: " + monthlyEntries.size()).withStyle(ChatFormatting.GRAY)));
         modal.child(legendRow);

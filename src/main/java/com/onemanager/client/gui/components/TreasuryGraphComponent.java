@@ -1,5 +1,6 @@
 package com.onemanager.client.gui.components;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.onemanager.data.TreasuryLogEntry;
 import io.wispforest.owo.ui.base.BaseComponent;
 import io.wispforest.owo.ui.core.OwoUIDrawContext;
@@ -7,19 +8,42 @@ import io.wispforest.owo.ui.core.Sizing;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.FormattedCharSequence;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Interactive left-to-right line graph component for Treasury income & expenses over the last in-game month
  * (30 in-game days = 600 minutes = 10 hours).
- * Displays 3 marks on the left (Highest, Average, Lowest), colored action dots (green/red),
+ * Displays 3 marks on the left (Highest, Average, Lowest), colored action dots (green/red/yellow),
  * and per-dot hover tooltips showing the exact TreasuryLogEntry.
  */
 public class TreasuryGraphComponent extends BaseComponent {
+    public enum ActionType {
+        INCOME(0xFF42F56C, 0xFF10451D, 0xFF38C958, ChatFormatting.GREEN),
+        EXPENSE(0xFFFF4D4D, 0xFF521616, 0xFFD94343, ChatFormatting.RED),
+        INSTALLATION(0xFFFFD000, 0xFF5C4700, 0xFFFFCC00, ChatFormatting.YELLOW);
+
+        public final int dotColor;
+        public final int borderColor;
+        public final int lineColor;
+        public final ChatFormatting chatColor;
+
+        ActionType(int dotColor, int borderColor, int lineColor, ChatFormatting chatColor) {
+            this.dotColor = dotColor;
+            this.borderColor = borderColor;
+            this.lineColor = lineColor;
+            this.chatColor = chatColor;
+        }
+    }
+
+    private static final List<ClientTooltipComponent> EMPTY_TOOLTIP = Collections.emptyList();
+
     private final List<TreasuryLogEntry> entries;
     private final long maxVal;
     private final long avgVal;
@@ -81,6 +105,7 @@ public class TreasuryGraphComponent extends BaseComponent {
         this.recommendedHeight = clampedPlotH;
 
         this.sizing(Sizing.fixed(this.recommendedWidth), Sizing.fixed(this.recommendedHeight));
+        this.tooltip(EMPTY_TOOLTIP);
     }
 
     public int getRecommendedWidth() {
@@ -107,19 +132,27 @@ public class TreasuryGraphComponent extends BaseComponent {
         return String.format("%,d", v).replace(',', ' ');
     }
 
-    private boolean isPointExpense(int index) {
+    public ActionType getPointActionType(int index) {
+        if (index < 0 || index >= entries.size()) {
+            return ActionType.INCOME;
+        }
         TreasuryLogEntry entry = entries.get(index);
         String act = entry.action() != null ? entry.action().trim() : "";
         if (act.startsWith("-") || act.startsWith("Снос")) {
-            return true;
+            return ActionType.EXPENSE;
         }
-        if (act.startsWith("+") || act.startsWith("Установка")) {
-            return false;
+        if (act.startsWith("Установка")) {
+            return ActionType.INSTALLATION;
+        }
+        if (act.startsWith("+")) {
+            return ActionType.INCOME;
         }
         if (index > 0) {
-            return entry.treasuryAfter() < entries.get(index - 1).treasuryAfter();
+            long prev = entries.get(index - 1).treasuryAfter();
+            if (entry.treasuryAfter() < prev) return ActionType.EXPENSE;
+            if (entry.treasuryAfter() > prev) return ActionType.INCOME;
         }
-        return false;
+        return ActionType.INSTALLATION;
     }
 
     @Override
@@ -155,19 +188,19 @@ public class TreasuryGraphComponent extends BaseComponent {
             yMid = (yTop + yBottom) / 2;
         }
 
-        // Draw horizontal dashed reference lines for the 3 marks
+        // Draw horizontal dashed reference lines for the 3 marks (Average is yellow like chest installation)
         drawDashedHorizontalLine(context, plotLeft, plotRight, yTop, 0x4455FF55);
-        drawDashedHorizontalLine(context, plotLeft, plotRight, yMid, 0x44FFAA00);
+        drawDashedHorizontalLine(context, plotLeft, plotRight, yMid, 0x55FFD000);
         drawDashedHorizontalLine(context, plotLeft, plotRight, yBottom, 0x44FF5555);
 
         // Draw left axis tick notches
         context.fill(plotLeft - 9, yTop, plotLeft - 5, yTop + 1, 0xFF55FF55);
-        context.fill(plotLeft - 9, yMid, plotLeft - 5, yMid + 1, 0xFFFFAA00);
+        context.fill(plotLeft - 9, yMid, plotLeft - 5, yMid + 1, 0xFFFFD000);
         context.fill(plotLeft - 9, yBottom, plotLeft - 5, yBottom + 1, 0xFFFF5555);
 
-        // Draw the 3 marks on the left: Высшее, Среднее, Низшее
+        // Draw the 3 marks on the left: Высшее (green/gold), Среднее (yellow), Низшее (red)
         drawAxisMark(context, font, baseX + 2, yTop, "Высшее:", formatVal(maxVal) + " $PR", 0xFF55FF55);
-        drawAxisMark(context, font, baseX + 2, yMid, "Среднее:", formatVal(avgVal) + " $PR", 0xFFFFAA00);
+        drawAxisMark(context, font, baseX + 2, yMid, "Среднее:", formatVal(avgVal) + " $PR", 0xFFFFD000);
         drawAxisMark(context, font, baseX + 2, yBottom, "Низшее:", formatVal(minVal) + " $PR", 0xFFFF5555);
 
         if (entries.isEmpty()) {
@@ -175,17 +208,18 @@ public class TreasuryGraphComponent extends BaseComponent {
             int msgW = font.width(emptyMsg);
             context.drawString(font, emptyMsg, plotLeft + (plotW - msgW) / 2, yMid - 4, 0xFF6E7685, false);
             this.hoveredIndex = -1;
+            this.tooltip(EMPTY_TOOLTIP);
             return;
         }
 
         int n = entries.size();
         int[] px = new int[n];
         int[] py = new int[n];
-        boolean[] isExpense = new boolean[n];
+        ActionType[] types = new ActionType[n];
 
         for (int i = 0; i < n; i++) {
             TreasuryLogEntry entry = entries.get(i);
-            isExpense[i] = isPointExpense(i);
+            types[i] = getPointActionType(i);
 
             if (n == 1) {
                 px[i] = plotLeft + plotW / 2;
@@ -197,13 +231,11 @@ public class TreasuryGraphComponent extends BaseComponent {
 
         // If only 1 point exists, draw a baseline from the left edge to the point so the left-to-right line is visible
         if (n == 1) {
-            int lineCol = isExpense[0] ? 0xFFD94343 : 0xFF38C958;
-            drawLine(context, plotLeft, yMid, px[0], py[0], lineCol);
+            drawLine(context, plotLeft, yMid, px[0], py[0], types[0].lineColor);
         } else {
             // Draw connecting line segments from left to right
             for (int i = 1; i < n; i++) {
-                int segColor = isExpense[i] ? 0xFFD94343 : 0xFF38C958;
-                drawLine(context, px[i - 1], py[i - 1], px[i], py[i], segColor);
+                drawLine(context, px[i - 1], py[i - 1], px[i], py[i], types[i].lineColor);
             }
         }
 
@@ -229,25 +261,47 @@ public class TreasuryGraphComponent extends BaseComponent {
             context.fill(plotLeft, hy, plotRight, hy + 1, 0x44FFFFFF);
         }
 
-        // Draw action dots (green for income, red for expense)
+        // Draw action dots (green for income, red for expense, yellow for installation)
         for (int i = 0; i < n; i++) {
             int x = px[i];
             int y = py[i];
-            boolean exp = isExpense[i];
-            int coreColor = exp ? 0xFFFF4D4D : 0xFF42F56C;
-            int borderColor = exp ? 0xFF4A1212 : 0xFF10451D;
+            ActionType type = types[i];
 
             if (i == hoveredIdx) {
                 // Highlighted dot on hover
                 context.fill(x - 4, y - 4, x + 5, y + 5, 0xFFFFFFFF);
-                context.fill(x - 3, y - 3, x + 4, y + 4, borderColor);
-                context.fill(x - 2, y - 2, x + 3, y + 3, coreColor);
+                context.fill(x - 3, y - 3, x + 4, y + 4, type.borderColor);
+                context.fill(x - 2, y - 2, x + 3, y + 3, type.dotColor);
             } else {
                 // Standard small dot
-                context.fill(x - 2, y - 2, x + 3, y + 3, borderColor);
-                context.fill(x - 1, y - 1, x + 2, y + 2, coreColor);
+                context.fill(x - 2, y - 2, x + 3, y + 3, type.borderColor);
+                context.fill(x - 1, y - 1, x + 2, y + 2, type.dotColor);
             }
         }
+
+        // Update tooltip components cache so OwO-lib shouldDrawTooltip succeeds
+        if (hoveredIdx >= 0 && hoveredIdx < entries.size()) {
+            TreasuryLogEntry entry = entries.get(hoveredIdx);
+            ActionType type = types[hoveredIdx];
+            MutableComponent tip = Component.literal(entry.getDisplayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)
+                    .append(Component.literal("  •  " + entry.timestamp()).withStyle(ChatFormatting.DARK_GRAY))
+                    .append(Component.literal("\n" + entry.action()).withStyle(type.chatColor, ChatFormatting.BOLD))
+                    .append(Component.literal("\nКазна после: ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(formatVal(entry.treasuryAfter()) + " $PR").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+
+            List<ClientTooltipComponent> tipList = new ArrayList<>();
+            for (FormattedCharSequence seq : font.split(tip, 280)) {
+                tipList.add(ClientTooltipComponent.create(seq));
+            }
+            this.tooltip(tipList);
+        } else {
+            this.tooltip(EMPTY_TOOLTIP);
+        }
+    }
+
+    @Override
+    public boolean shouldDrawTooltip(double mouseX, double mouseY) {
+        return this.hoveredIndex >= 0 && this.hoveredIndex < entries.size();
     }
 
     @Override
@@ -257,27 +311,22 @@ public class TreasuryGraphComponent extends BaseComponent {
         }
 
         TreasuryLogEntry entry = entries.get(this.hoveredIndex);
-        boolean exp = isPointExpense(this.hoveredIndex);
-        ChatFormatting actColor = exp ? ChatFormatting.RED : ChatFormatting.GREEN;
+        ActionType type = getPointActionType(this.hoveredIndex);
 
-        MutableComponent tip = Component.literal(entry.getDisplayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)
-                .append(Component.literal("  •  " + entry.timestamp()).withStyle(ChatFormatting.DARK_GRAY))
-                .append(Component.literal("\n" + entry.action()).withStyle(actColor, ChatFormatting.BOLD))
-                .append(Component.literal("\nКазна после: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(formatVal(entry.treasuryAfter()) + " $PR").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.literal(entry.getDisplayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)
+                .append(Component.literal("  •  " + entry.timestamp()).withStyle(ChatFormatting.DARK_GRAY)));
+        lines.add(Component.literal(entry.action()).withStyle(type.chatColor, ChatFormatting.BOLD));
+        lines.add(Component.literal("Казна после: ").withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(formatVal(entry.treasuryAfter()) + " $PR").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
 
         Font font = Minecraft.getInstance().font;
-        java.util.ArrayList<net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent> tooltipLines = new java.util.ArrayList<>();
-        for (net.minecraft.util.FormattedCharSequence seq : font.split(tip, 280)) {
-            tooltipLines.add(net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent.create(seq));
-        }
-
         context.pose().pushPose();
-        context.pose().translate(0.0F, 0.0F, 300.0F);
-        com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
-        context.drawTooltip(font, mouseX, mouseY, tooltipLines);
+        context.pose().translate(0.0F, 0.0F, 800.0F);
+        RenderSystem.disableDepthTest();
+        context.renderComponentTooltip(font, lines, mouseX, mouseY);
         context.flush();
-        com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+        RenderSystem.enableDepthTest();
         context.pose().popPose();
     }
 
