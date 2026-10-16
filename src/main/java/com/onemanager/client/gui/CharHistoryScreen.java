@@ -2135,6 +2135,9 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout logListFlow = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
         logListFlow.gap(4);
 
+        int contentAreaWidth = Math.max(200, (int) ((this.width / UI_SCALE) * 0.92) - 159);
+        int logEntryMaxWidth = Math.max(180, contentAreaWidth - 60);
+
         if (logEntries.isEmpty()) {
             FlowLayout emptyRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(24));
             emptyRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
@@ -2144,54 +2147,53 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             for (TreasuryLogEntry entry : logEntries) {
                 FlowLayout entryCard = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
                 entryCard.surface(Surface.flat(0xFF0E1116).and(Surface.outline(0xFF222834)));
-                entryCard.padding(Insets.of(4, 8, 4, 8));
-                entryCard.gap(2);
+                entryCard.padding(Insets.of(5, 8, 5, 8));
+                entryCard.gap(3);
 
                 entryCard.mouseEnter().subscribe(() -> entryCard.surface(Surface.flat(0xFF151922).and(Surface.outline(0xFF363F52))));
                 entryCard.mouseLeave().subscribe(() -> entryCard.surface(Surface.flat(0xFF0E1116).and(Surface.outline(0xFF222834))));
 
-                // Row 1: Who + Action
-                FlowLayout r1 = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(12));
-                r1.verticalAlignment(VerticalAlignment.CENTER);
-                r1.gap(6);
+                // Row 1: Who + Time on left, Treasury state after on right
+                FlowLayout topRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(12));
+                topRow.verticalAlignment(VerticalAlignment.CENTER);
+                topRow.gap(4);
 
-                String displayName = entry.getDisplayName();
-                r1.child(Components.label(Component.literal(displayName).withStyle(ChatFormatting.WHITE)));
+                FlowLayout leftMeta = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(12));
+                leftMeta.verticalAlignment(VerticalAlignment.CENTER);
+                leftMeta.gap(4);
+                leftMeta.child(Components.label(Component.literal(entry.getDisplayName()).withStyle(ChatFormatting.WHITE)));
+                leftMeta.child(Components.label(Component.literal("•").withStyle(ChatFormatting.DARK_GRAY)));
+                leftMeta.child(Components.label(Component.literal(entry.timestamp()).withStyle(ChatFormatting.DARK_GRAY)));
+                topRow.child(leftMeta);
 
-                r1.child(Components.box(Sizing.expand(), Sizing.fixed(1)).color(Color.ofArgb(0)));
+                topRow.child(Components.box(Sizing.expand(), Sizing.fixed(1)).color(Color.ofArgb(0)));
 
+                FlowLayout afterRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(12));
+                afterRow.verticalAlignment(VerticalAlignment.CENTER);
+                afterRow.gap(4);
+                afterRow.child(Components.label(Component.literal("Казна после: ").withStyle(ChatFormatting.GRAY)));
+                afterRow.child(Components.label(Component.literal(String.format("%,d", entry.treasuryAfter()).replace(',', ' ') + " $PR").withStyle(ChatFormatting.GOLD)));
+                topRow.child(afterRow);
+
+                entryCard.child(topRow);
+
+                // Row 2: Action description (wrapped so long demolition and withdraw reasons do not overflow)
                 String act = entry.action();
                 ChatFormatting actColor = ChatFormatting.YELLOW;
                 if (act.startsWith("+")) {
                     actColor = ChatFormatting.GREEN;
-                } else if (act.startsWith("-")) {
+                } else if (act.startsWith("-") || act.startsWith("Снос")) {
                     actColor = ChatFormatting.RED;
                 }
-                r1.child(Components.label(Component.literal(act).withStyle(actColor, ChatFormatting.BOLD)));
-                entryCard.child(r1);
-
-                // Row 2: Time + Treasury state after
-                FlowLayout r2 = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(12));
-                r2.verticalAlignment(VerticalAlignment.CENTER);
-                r2.gap(6);
-
-                r2.child(Components.label(Component.literal(entry.timestamp()).withStyle(ChatFormatting.DARK_GRAY)));
-
-                r2.child(Components.box(Sizing.expand(), Sizing.fixed(1)).color(Color.ofArgb(0)));
-
-                FlowLayout afterRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-                afterRow.gap(4);
-                afterRow.child(Components.label(Component.literal("Казна после: ").withStyle(ChatFormatting.GRAY)));
-                afterRow.child(Components.label(Component.literal(String.format("%,d", entry.treasuryAfter()).replace(',', ' ') + " $PR").withStyle(ChatFormatting.GOLD)));
-                r2.child(afterRow);
-
-                entryCard.child(r2);
+                LabelComponent actLabel = Components.label(Component.literal(act).withStyle(actColor, ChatFormatting.BOLD));
+                actLabel.maxWidth(logEntryMaxWidth);
+                entryCard.child(actLabel);
 
                 logListFlow.child(entryCard);
             }
         }
 
-        int logScrollH = Math.min(180, Math.max(80, Math.min(logEntries.size() * 34, 180)));
+        int logScrollH = Math.min(220, Math.max(80, Math.min(logEntries.size() * 38, 220)));
         if (logEntries.isEmpty()) {
             logScrollH = 32;
         }
@@ -2393,6 +2395,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             emptyBox.child(Components.label(Component.literal("Действующий Князь может издать закон при завершении записки.").withStyle(ChatFormatting.DARK_GRAY)));
             content.child(emptyBox);
         } else {
+            int contentAreaWidth = Math.max(200, (int) ((this.width / UI_SCALE) * 0.92) - 159);
+            int buttonsWidth = isKnyaz ? 172 : 76;
+            int lawsInfoMaxWidth = Math.max(140, contentAreaWidth - 60 - buttonsWidth);
+
             for (LawEntry law : lawsList) {
                 FlowLayout card = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
                 card.surface(Surface.flat(0xFF13171F).and(Surface.outline(0xFF262C38)));
@@ -2414,22 +2420,30 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
                 // Title
                 LabelComponent titleLbl = Components.label(Component.literal(law.getTitle()).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+                titleLbl.maxWidth(lawsInfoMaxWidth);
                 infoCol.child(titleLbl);
 
-                // Author & Editors
+                // Author
                 String authorName = law.getAuthor().startsWith("Князь ") ? law.getAuthor() : "Князь " + law.getAuthor();
-                Component metaComp = Component.literal("Автор: " + authorName).withStyle(ChatFormatting.WHITE);
+                LabelComponent authorLbl = Components.label(Component.literal("Автор: " + authorName).withStyle(ChatFormatting.WHITE));
+                authorLbl.maxWidth(lawsInfoMaxWidth);
+                infoCol.child(authorLbl);
+
+                // Editors
                 if (!law.getEditors().isEmpty()) {
-                    metaComp = metaComp.copy().append(Component.literal("  •  Редакторы: " + String.join(", ", law.getEditors())).withStyle(ChatFormatting.GRAY));
+                    LabelComponent editorsLbl = Components.label(Component.literal("Редакторы: " + String.join(", ", law.getEditors())).withStyle(ChatFormatting.GRAY));
+                    editorsLbl.maxWidth(lawsInfoMaxWidth);
+                    infoCol.child(editorsLbl);
                 }
-                infoCol.child(Components.label(metaComp));
 
                 // Dates
                 String dateStr = "Создан: " + law.getCreatedDate();
                 if (law.getLastModifiedDate() != null && !law.getLastModifiedDate().isEmpty() && !law.getLastModifiedDate().equals(law.getCreatedDate())) {
                     dateStr += "  •  Изменен: " + law.getLastModifiedDate();
                 }
-                infoCol.child(Components.label(Component.literal(dateStr).withStyle(ChatFormatting.DARK_GRAY)));
+                LabelComponent dateLbl = Components.label(Component.literal(dateStr).withStyle(ChatFormatting.DARK_GRAY));
+                dateLbl.maxWidth(lawsInfoMaxWidth);
+                infoCol.child(dateLbl);
 
                 card.child(infoCol);
 
@@ -3717,8 +3731,9 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         modalHeader.child(xBtn);
         modal.child(modalHeader);
         modal.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF38311B)).margins(Insets.bottom(4)));
-
-        modal.child(Components.label(Component.literal("Ставка налога начисляется всем игрокам в задолженность каждые 20 минут.").withStyle(ChatFormatting.GRAY)));
+        LabelComponent taxDesc = Components.label(Component.literal("Ставка налога начисляется всем игрокам в задолженность каждые 20 минут.").withStyle(ChatFormatting.GRAY));
+        taxDesc.maxWidth(236);
+        modal.child(taxDesc);
 
         // Amount Input & Stepper Controls Row
         FlowLayout amountRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(24));
@@ -3884,12 +3899,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         textCol.child(priceRow);
 
         // Small gray text explaining how much capacity expands upon placement
-        ScaledLabelComponent expandNote = new ScaledLabelComponent(
-                Component.literal("При установке в мире расширит вместимость казны на +" + formattedCap),
-                0.78f,
-                0xFFAAAAAA,
-                false
+        LabelComponent expandNote = Components.label(
+                Component.literal("При установке в мире расширит вместимость казны на +" + formattedCap).withStyle(ChatFormatting.GRAY)
         );
+        expandNote.maxWidth(225);
         textCol.child(expandNote);
 
         topRow.child(textCol);

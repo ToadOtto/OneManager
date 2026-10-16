@@ -68,14 +68,20 @@ public class TreasuryReasonScreen extends BaseOwoScreen<StackLayout> {
         // Subtitle / Amount info
         String formattedAmt = String.format("%,d", amount).replace(',', ' ') + " $PR";
         if (demolition) {
-            modal.child(Components.label(Component.literal("Хранилище на координатах: [" + coords + "]").withStyle(ChatFormatting.GRAY)));
+            LabelComponent coordsLbl = Components.label(Component.literal("Хранилище на координатах: [" + coords + "]").withStyle(ChatFormatting.GRAY));
+            coordsLbl.maxWidth(236);
+            modal.child(coordsLbl);
             if (amount > 0) {
-                modal.child(Components.label(Component.literal("Изъято содержимого: ").withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal("-" + formattedAmt).withStyle(ChatFormatting.RED, ChatFormatting.BOLD))));
+                LabelComponent amtLbl = Components.label(Component.literal("Изъято содержимого: ").withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal("-" + formattedAmt).withStyle(ChatFormatting.RED, ChatFormatting.BOLD)));
+                amtLbl.maxWidth(236);
+                modal.child(amtLbl);
             }
         } else {
-            modal.child(Components.label(Component.literal("Снято из казны: ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal("-" + formattedAmt).withStyle(ChatFormatting.RED, ChatFormatting.BOLD))));
+            LabelComponent amtLbl = Components.label(Component.literal("Снято из казны: ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal("-" + formattedAmt).withStyle(ChatFormatting.RED, ChatFormatting.BOLD)));
+            amtLbl.maxWidth(236);
+            modal.child(amtLbl);
         }
 
         // Input Box
