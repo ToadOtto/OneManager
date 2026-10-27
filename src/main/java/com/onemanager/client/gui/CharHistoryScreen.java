@@ -129,7 +129,26 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         context.fill(x, y, x + width, y + height, thumbColor);
     };
 
-    private static final float UI_SCALE = 0.70f;
+    public static final float BASE_UI_SCALE = 0.70f;
+    public static final double BASE_GUI_SCALE = 3.0;
+    @Deprecated
+    public static final float UI_SCALE = BASE_UI_SCALE;
+
+    /**
+     * Dynamically calculates UI scale to remain universal and independent of player's GUI scale setting.
+     * GUI Scale 3 is the standard reference scale where BASE_UI_SCALE = 0.70f.
+     */
+    public static float getUiScale() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.getWindow() == null) {
+            return BASE_UI_SCALE;
+        }
+        double currentScale = mc.getWindow().getGuiScale();
+        if (currentScale <= 0.05 || Double.isNaN(currentScale) || Double.isInfinite(currentScale)) {
+            currentScale = BASE_GUI_SCALE;
+        }
+        return (float) (BASE_UI_SCALE * (BASE_GUI_SCALE / currentScale));
+    }
 
     private CharacterWorldData worldData;
     private Tab currentTab = Tab.POPULATION;
@@ -256,8 +275,19 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     protected void init() {
         super.init();
         if (this.uiAdapter != null) {
-            this.uiAdapter.moveAndResize(0, 0, (int) (this.width / UI_SCALE), (int) (this.height / UI_SCALE));
+            float scale = getUiScale();
+            this.uiAdapter.moveAndResize(0, 0, (int) (this.width / scale), (int) (this.height / scale));
         }
+    }
+
+    @Override
+    public void resize(Minecraft client, int width, int height) {
+        super.resize(client, width, height);
+        if (this.uiAdapter != null) {
+            float scale = getUiScale();
+            this.uiAdapter.moveAndResize(0, 0, (int) (this.width / scale), (int) (this.height / scale));
+        }
+        rebuildUI();
     }
 
     @Override
@@ -267,10 +297,11 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             return;
         }
         this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        float scale = getUiScale();
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(UI_SCALE, UI_SCALE, 1.0f);
-        int scaledMouseX = (int) (mouseX / UI_SCALE);
-        int scaledMouseY = (int) (mouseY / UI_SCALE);
+        guiGraphics.pose().scale(scale, scale, 1.0f);
+        int scaledMouseX = (int) (mouseX / scale);
+        int scaledMouseY = (int) (mouseY / scale);
         try {
             this.uiAdapter.render(guiGraphics, scaledMouseX, scaledMouseY, partialTick);
         } catch (Throwable t) {
@@ -289,7 +320,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         try {
-            return this.uiAdapter != null && this.uiAdapter.mouseClicked(mouseX / UI_SCALE, mouseY / UI_SCALE, button);
+            float scale = getUiScale();
+            return this.uiAdapter != null && this.uiAdapter.mouseClicked(mouseX / scale, mouseY / scale, button);
         } catch (Throwable t) {
             OneManager.LOGGER.error("Error during mouseClicked in CharHistoryScreen", t);
             return false;
@@ -299,7 +331,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         try {
-            return this.uiAdapter != null && this.uiAdapter.mouseReleased(mouseX / UI_SCALE, mouseY / UI_SCALE, button);
+            float scale = getUiScale();
+            return this.uiAdapter != null && this.uiAdapter.mouseReleased(mouseX / scale, mouseY / scale, button);
         } catch (Throwable t) {
             OneManager.LOGGER.error("Error during mouseReleased in CharHistoryScreen", t);
             return false;
@@ -309,7 +342,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         try {
-            return this.uiAdapter != null && this.uiAdapter.mouseScrolled(mouseX / UI_SCALE, mouseY / UI_SCALE, scrollX, scrollY);
+            float scale = getUiScale();
+            return this.uiAdapter != null && this.uiAdapter.mouseScrolled(mouseX / scale, mouseY / scale, scrollX, scrollY);
         } catch (Throwable t) {
             OneManager.LOGGER.error("Error during mouseScrolled in CharHistoryScreen", t);
             return false;
@@ -319,7 +353,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         try {
-            return this.uiAdapter != null && this.uiAdapter.mouseDragged(mouseX / UI_SCALE, mouseY / UI_SCALE, button, dragX / UI_SCALE, dragY / UI_SCALE);
+            float scale = getUiScale();
+            return this.uiAdapter != null && this.uiAdapter.mouseDragged(mouseX / scale, mouseY / scale, button, dragX / scale, dragY / scale);
         } catch (Throwable t) {
             OneManager.LOGGER.error("Error during mouseDragged in CharHistoryScreen", t);
             return false;
@@ -868,7 +903,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         if (unburiedList.isEmpty()) {
             rightFlow.child(Components.label(Component.literal("✔ Все предки упокоены").withStyle(ChatFormatting.GRAY)));
         } else {
-            int uiWidth = (int) (this.width / UI_SCALE);
+            float scale = getUiScale();
+            int uiWidth = (int) (this.width / scale);
             int totalColumnsWidth = Math.max(200, (int) (uiWidth * 0.92) - 159);
             int rightColWidth = Math.max(120, (int) (totalColumnsWidth * 0.42) - 6);
             int unburiedCauseMaxWidth = Math.max(80, rightColWidth - 78);
@@ -2180,7 +2216,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout logListFlow = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
         logListFlow.gap(4);
 
-        int contentAreaWidth = Math.max(200, (int) ((this.width / UI_SCALE) * 0.92) - 159);
+        float scale = getUiScale();
+        int contentAreaWidth = Math.max(200, (int) ((this.width / scale) * 0.92) - 159);
         int logEntryMaxWidth = Math.max(180, contentAreaWidth - 60);
 
         if (logEntries.isEmpty()) {
@@ -2440,7 +2477,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             emptyBox.child(Components.label(Component.literal("Действующий Князь может издать закон при завершении записки.").withStyle(ChatFormatting.DARK_GRAY)));
             content.child(emptyBox);
         } else {
-            int contentAreaWidth = Math.max(200, (int) ((this.width / UI_SCALE) * 0.92) - 159);
+            float scale = getUiScale();
+            int contentAreaWidth = Math.max(200, (int) ((this.width / scale) * 0.92) - 159);
             int buttonsWidth = isKnyaz ? 172 : 76;
             int lawsInfoMaxWidth = Math.max(140, contentAreaWidth - 60 - buttonsWidth);
 
@@ -2976,7 +3014,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             detailsFlow.child(descLabel);
         }
 
-        int scrollH = Math.min(200, Math.max(120, (int) (this.height / UI_SCALE) - 150));
+        float scale = getUiScale();
+        int scrollH = Math.min(200, Math.max(120, (int) (this.height / scale) - 150));
         ScrollContainer<FlowLayout> detailsScroll = Containers.verticalScroll(Sizing.fill(100), Sizing.fixed(scrollH), detailsFlow);
         detailsScroll.scrollbar(DARK_SCROLLBAR);
         detailsScroll.scrollbarThiccness(4);
@@ -3069,7 +3108,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             detailsFlow.child(descLabel);
         }
 
-        int scrollH = Math.min(200, Math.max(120, (int) (this.height / UI_SCALE) - 150));
+        float scale = getUiScale();
+        int scrollH = Math.min(200, Math.max(120, (int) (this.height / scale) - 150));
         ScrollContainer<FlowLayout> detailsScroll = Containers.verticalScroll(Sizing.fill(100), Sizing.fixed(scrollH), detailsFlow);
         detailsScroll.scrollbar(DARK_SCROLLBAR);
         detailsScroll.scrollbarThiccness(4);
@@ -4082,8 +4122,9 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         List<TreasuryLogEntry> monthlyEntries = worldData != null ? worldData.getMonthlyTreasuryLog() : Collections.emptyList();
         long currentTreasury = worldData != null ? worldData.getTreasury() : 0L;
 
-        int uiWidth = (int) (this.width / UI_SCALE);
-        int uiHeight = (int) (this.height / UI_SCALE);
+        float scale = getUiScale();
+        int uiWidth = (int) (this.width / scale);
+        int uiHeight = (int) (this.height / scale);
         int maxGraphW = Math.max(280, (int) (uiWidth * 0.78));
         int maxGraphH = Math.max(130, (int) (uiHeight * 0.56));
 
