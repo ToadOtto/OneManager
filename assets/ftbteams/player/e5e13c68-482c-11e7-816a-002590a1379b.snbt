@@ -1,0 +1,15 @@
+{
+	id: "e5e13c68-482c-11e7-816a-002590a1379b"
+	type: "player"
+	player_name: "artpik13"
+	ranks: { }
+	properties: {
+		"ftbteams:display_name": "artpik13"
+		"ftbteams:description": ""
+		"ftbteams:color": "#59FFAE"
+		"ftbteams:free_to_join": 0b
+		"ftbteams:max_msg_history_size": 1000
+	}
+	message_history: [ ]
+	extra: { }
+}

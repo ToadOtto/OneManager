@@ -1,0 +1,17 @@
+{
+	id: "24dda9a7-d01f-4196-962f-6c3c6487694c"
+	type: "party"
+	owner: "e5e13c68-482c-11e7-816a-002590a1379b"
+	ranks: {
+		e5e13c68-482c-11e7-816a-002590a1379b: "owner"
+	}
+	properties: {
+		"ftbteams:display_name": "oh3"
+		"ftbteams:description": ""
+		"ftbteams:color": "#FF5F59"
+		"ftbteams:free_to_join": 0b
+		"ftbteams:max_msg_history_size": 1000
+	}
+	message_history: [{ from: "00000000-0000-0000-0000-000000000000", date: 1783019919436L, text: "{\"color\":\"yellow\",\"translate\":\"ftbteams.message.joined\",\"with\":[{\"text\":\"artpik13\"}]}" }]
+	extra: { }
+}

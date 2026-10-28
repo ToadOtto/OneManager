@@ -1,0 +1,22 @@
+{
+	version: 1
+	uuid: "e5e13c68482c11e7816a002590a1379b"
+	name: "artpik13#e5e13c68"
+	lock: false
+	rewards_blocked: false
+	task_progress: { }
+	started: {
+		761EFE481ADB7D51: 1783019889858L
+		0000000000000001: 1783019889858L
+	}
+	completed: { }
+	repeatable: { }
+	completion_count: { }
+	claimed_rewards: { }
+	player_data: {
+		e5e13c68482c11e7816a002590a1379b: {
+			can_edit: 1b
+			chapter_pinned: 1b
+		}
+	}
+}
