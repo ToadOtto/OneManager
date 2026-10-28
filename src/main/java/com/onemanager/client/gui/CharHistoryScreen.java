@@ -194,7 +194,6 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     private LabelComponent cycleTimerLabel = null;
 
     public static final java.util.Set<UUID> SEEN_LETTER_IDS = new java.util.HashSet<>();
-    public static final Map<String, Long> ABILITY_COOLDOWNS = new HashMap<>();
 
     public boolean hasUnreadLetters() {
         PlayerCharacterData pd = getMyPlayerData();
@@ -1136,49 +1135,28 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         }
 
         subHeader.child(slotIndicators);
-
-        // Weekly grants pill to the right of slot indicators
-        int weeklyGrantsCount = getMyOccupiedProfessions().size();
-        FlowLayout weeklyPill = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(20));
-        weeklyPill.surface(Surface.flat(0xFF1F232D).and(Surface.outline(0xFF323946)));
-        weeklyPill.padding(Insets.horizontal(6));
-        weeklyPill.verticalAlignment(VerticalAlignment.CENTER);
-        weeklyPill.gap(4);
-
-        weeklyPill.child(Components.label(Component.literal("Недельные грамоты:").withStyle(ChatFormatting.GRAY)));
-        weeklyPill.child(Components.label(Component.literal(String.valueOf(weeklyGrantsCount)).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
-        weeklyPill.child(new TextureIconComponent(ICON_STATE_BRAND, 12));
-        weeklyPill.tooltip(Component.literal("Недельные грамоты: раз в неделю (140 мин.) на ваш счёт приходят Гос. Марки ровно в размере числа занятых профессий (" + weeklyGrantsCount + " шт.).").withStyle(ChatFormatting.GRAY));
-
-        subHeader.child(weeklyPill);
         parent.child(subHeader);
 
-        // Scrollable content with 3 separated categories
+        // Scrollable content with separated categories (Main & Secondary)
         FlowLayout scrollContent = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
         scrollContent.padding(Insets.of(6, 16, 16, 8));
         scrollContent.gap(10);
 
-        List<Profession> stateProfs = new ArrayList<>();
         List<Profession> mainProfs = new ArrayList<>();
         List<Profession> secProfs = new ArrayList<>();
 
         for (Profession prof : ProfessionRegistry.getAll()) {
-            if (prof.getType() == ProfessionCategory.STATE) {
-                stateProfs.add(prof);
-            } else if (prof.getType() == ProfessionCategory.MAIN) {
+            if (prof.getType() == ProfessionCategory.MAIN) {
                 mainProfs.add(prof);
             } else {
                 secProfs.add(prof);
             }
         }
 
-        // 1) Государственные должности - красный (0xFFE53935)
-        buildProfessionCategorySection(scrollContent, "Государственные должности", 0xFFE53935, stateProfs);
-
-        // 2) Основные профессии - зелёный (0xFF4CAF50)
+        // 1) Основные профессии - зелёный (0xFF4CAF50)
         buildProfessionCategorySection(scrollContent, "Основные профессии", 0xFF4CAF50, mainProfs);
 
-        // 3) Дополнительные профессии - оранжевый (0xFFFFA500)
+        // 2) Дополнительные профессии - оранжевый (0xFFFFA500)
         buildProfessionCategorySection(scrollContent, "Дополнительные профессии", 0xFFFFA500, secProfs);
 
         ScrollContainer<FlowLayout> profScroll = Containers.verticalScroll(Sizing.fill(100), Sizing.expand(), scrollContent);
@@ -1235,10 +1213,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         ProfessionCategory cat = prof.getType();
         int catColor = cat.getColor();
 
-        int borderColor = isFull ? 0xFF353B46 : (cat == ProfessionCategory.STATE ? 0xFF8B2525 : (cat == ProfessionCategory.MAIN ? 0xFF2E7D32 : 0xFFB36B00));
+        int borderColor = isFull ? 0xFF353B46 : (cat == ProfessionCategory.MAIN ? 0xFF2E7D32 : 0xFFB36B00);
         int hoverBorder = isFull ? 0xFF4A5260 : catColor;
-        int bgColor = isFull ? 0xFF14171E : (cat == ProfessionCategory.STATE ? 0xFF241416 : (cat == ProfessionCategory.MAIN ? 0xFF122216 : 0xFF241A12));
-        int hoverBg = isFull ? 0xFF1A1E26 : (cat == ProfessionCategory.STATE ? 0xFF331C1F : (cat == ProfessionCategory.MAIN ? 0xFF182E1E : 0xFF362416));
+        int bgColor = isFull ? 0xFF14171E : (cat == ProfessionCategory.MAIN ? 0xFF122216 : 0xFF241A12);
+        int hoverBg = isFull ? 0xFF1A1E26 : (cat == ProfessionCategory.MAIN ? 0xFF182E1E : 0xFF362416);
 
         // Square card: 60px wide, 66px high to fit larger icon and scaled font cleanly
         FlowLayout card = Containers.verticalFlow(Sizing.fixed(60), Sizing.fixed(66));
@@ -1329,7 +1307,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         for (int i = 0; i < maxOccupants; i++) {
             boolean isFree = i < freeSlots;
             int litBg = catColor;
-            int litBorder = cat == ProfessionCategory.MAIN ? 0xFF66BB6A : (cat == ProfessionCategory.SECONDARY ? 0xFFFFB74D : 0xFFEF5350);
+            int litBorder = cat == ProfessionCategory.MAIN ? 0xFF66BB6A : 0xFFFFB74D;
             int unlitBg = 0xFF181B22;
             int unlitBorder = 0xFF353B47;
             Component lampTip = Component.literal(isFree ? "Свободное место (" + freeSlots + " из " + maxOccupants + ")" : "Место занято");
@@ -1347,47 +1325,6 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         return card;
     }
 
-    public record ProfessionAbility(ItemStack icon, String name, boolean isActive, String description) {}
-
-    private List<ProfessionAbility> getProfessionAbilities(Profession prof) {
-        if (prof == null) return Collections.emptyList();
-        String title = prof.getTitle().toLowerCase();
-        if (title.contains("фермер")) {
-            return List.of(
-                    new ProfessionAbility(new ItemStack(Items.WHEAT_SEEDS), "Песнь Плодородия", true, "Ускоренный рост зерновых и повышенный урожай."),
-                    new ProfessionAbility(new ItemStack(Items.GOLDEN_CARROT), "Благодать Пастбищ", false, "Увеличенный приплод и здоровье животных.")
-            );
-        } else if (title.contains("повар")) {
-            return List.of(
-                    new ProfessionAbility(new ItemStack(Items.COOKED_BEEF), "Кулинарный Шедевр", false, "Приготовление питательных блюд с усиленным насыщением."),
-                    new ProfessionAbility(new ItemStack(Items.GOLDEN_APPLE), "Праздничный Пир", true, "Блюда с эффектами регенерации и восстановления сил.")
-            );
-        } else if (title.contains("охотник")) {
-            return List.of(
-                    new ProfessionAbility(new ItemStack(Items.BOW), "Зоркий Стрелок", false, "Повышенный урон и точность критических выстрелов."),
-                    new ProfessionAbility(new ItemStack(Items.FEATHER), "Следопыт", true, "Маскировка и быстрое выслеживание добычи.")
-            );
-        } else if (title.contains("казначей")) {
-            return List.of(
-                    new ProfessionAbility(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()), "Государственная Пошлина", false, "Сбор налогов и контроль государственной казны."),
-                    new ProfessionAbility(new ItemStack(Items.EMERALD), "Финансовый Аудит", true, "Регулирование торговых сделок и оборот Гос. Марок.")
-            );
-        } else if (title.contains("флорист")) {
-            return List.of(
-                    new ProfessionAbility(new ItemStack(Items.POPPY), "Цветущий Оазис", false, "Селекция и размножение редких декоративных цветов."),
-                    new ProfessionAbility(new ItemStack(Items.BONE_MEAL), "Природный Экстракт", true, "Производство ярких натуральных красителей.")
-            );
-        } else if (title.contains("зельевар")) {
-            return List.of(
-                    new ProfessionAbility(new ItemStack(Items.BREWING_STAND), "Мастер Дистилляции", false, "Варка сложных зелий и целебных эликсиров."),
-                    new ProfessionAbility(new ItemStack(Items.GLOWSTONE_DUST), "Катализатор Судьбы", true, "Увеличение концентрации и продолжительности зелий.")
-            );
-        }
-        return List.of(
-                new ProfessionAbility(new ItemStack(Items.EXPERIENCE_BOTTLE), "Мастерство Ремесла", false, "Особые профессиональные навыки.")
-        );
-    }
-
     private List<Profession> getMyOccupiedProfessions() {
         List<Profession> list = new ArrayList<>();
         PlayerCharacterData pd = getMyPlayerData();
@@ -1400,9 +1337,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             }
         }
         list.sort(Comparator.comparingInt(p -> switch (p.getType()) {
-            case STATE -> 0;
-            case MAIN -> 1;
-            case SECONDARY -> 2;
+            case MAIN -> 0;
+            case SECONDARY -> 1;
         }));
         return list;
     }
@@ -1421,18 +1357,14 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             baseBorder = 0xFF1C4222;
             baseBg = 0xFF101712;
             hoverBg = 0xFF152618;
-        } else if (cat == ProfessionCategory.SECONDARY) {
+        } else {
             baseBorder = 0xFF5C3B14;
             baseBg = 0xFF17130F;
             hoverBg = 0xFF281E13;
-        } else {
-            baseBorder = 0xFF581D21;
-            baseBg = 0xFF161012;
-            hoverBg = 0xFF261417;
         }
 
-        // Rectangular vertical card: ~23% width (max 4 per row, centered), fixed 205px height
-        FlowLayout card = Containers.verticalFlow(Sizing.fill(23), Sizing.fixed(205));
+        // Rectangular vertical card: ~23% width (max 4 per row, centered), fixed 140px height
+        FlowLayout card = Containers.verticalFlow(Sizing.fill(23), Sizing.fixed(140));
         card.padding(Insets.of(6, 6, 6, 6));
         card.horizontalAlignment(HorizontalAlignment.CENTER);
         card.cursorStyle(CursorStyle.HAND);
@@ -1525,7 +1457,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             long hrs = remMs / 3600000L;
             long mins = (remMs % 3600000L) / 60000L;
             fullTip += "\n⏳ Кулдаун длинного цикла: " + hrs + "ч " + mins + "м";
-        } else if (cat != ProfessionCategory.STATE) {
+        } else {
             fullTip += "\nЛимит: 1 раз в неделю (140 мин.)";
         }
 
@@ -1547,113 +1479,11 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         ProfessionProgressBarComponent progressBar = new ProfessionProgressBarComponent(progress);
         card.child(progressBar);
 
-        // 4. Abilities section
-        FlowLayout abilitiesRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        abilitiesRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        abilitiesRow.gap(5);
-        abilitiesRow.margins(Insets.top(8));
-
-        long now = System.currentTimeMillis();
-        List<ProfessionAbility> abilities = getProfessionAbilities(prof);
-        for (ProfessionAbility ab : abilities) {
-            String abilityKey = prof.getId() + "_" + ab.name();
-            Long cdExpire = ABILITY_COOLDOWNS.get(abilityKey);
-            boolean onCd = ab.isActive() && cdExpire != null && cdExpire > now;
-            long remainingSec = onCd ? Math.max(1, (cdExpire - now + 999) / 1000) : 0L;
-
-            StackLayout abSlot = Containers.stack(Sizing.fixed(28), Sizing.fixed(28));
-            abSlot.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-
-            int slotBorder;
-            int slotBg;
-            if (!ab.isActive()) {
-                slotBorder = 0xFF505A6B;
-                slotBg = 0xFF141720;
-            } else if (onCd) {
-                slotBorder = 0xFF22303C;
-                slotBg = 0xFF0E1217;
-            } else {
-                slotBorder = 0xFF2E6B9E;
-                slotBg = 0xFF12222E;
-            }
-
-            int fSlotBorder = slotBorder;
-            int fSlotBg = slotBg;
-            boolean fOnCd = onCd;
-
-            abSlot.surface((ctx, comp) -> {
-                int x = comp.x();
-                int y = comp.y();
-                int w = comp.width();
-                int h = comp.height();
-                ctx.fill(x + 1, y, x + w - 1, y + h, fSlotBg);
-                ctx.fill(x, y + 1, x + w, y + h - 1, fSlotBg);
-
-                ctx.fill(x + 1, y, x + w - 1, y + 1, fSlotBorder);
-                ctx.fill(x + 1, y + h - 1, x + w - 1, y + h, fSlotBorder);
-                ctx.fill(x, y + 1, x + 1, y + h - 1, fSlotBorder);
-                ctx.fill(x + w - 1, y + 1, x + w, y + h - 1, fSlotBorder);
-
-                if (fOnCd) {
-                    ctx.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xAF080B10);
-                }
-            });
-
-            ItemComponent abIcon = Components.item(ab.icon());
-            abIcon.sizing(Sizing.fixed(20), Sizing.fixed(20));
-            abSlot.child(abIcon);
-
-            if (onCd) {
-                LabelComponent cdLabel = Components.label(Component.literal(remainingSec + "с").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
-                abSlot.child(cdLabel);
-            }
-
-            Component tip;
-            if (ab.isActive()) {
-                if (onCd) {
-                    tip = Component.literal(ab.name() + " (активная)").withStyle(ChatFormatting.DARK_AQUA)
-                            .append(Component.literal("\n" + ab.description()).withStyle(ChatFormatting.GRAY))
-                            .append(Component.literal("\n⏳ Перезарядка: " + remainingSec + " сек.").withStyle(ChatFormatting.RED));
-                } else {
-                    tip = Component.literal(ab.name() + " (активная)").withStyle(ChatFormatting.AQUA)
-                            .append(Component.literal("\n" + ab.description()).withStyle(ChatFormatting.GRAY))
-                            .append(Component.literal("\n[ЛКМ: Активировать способность]").withStyle(ChatFormatting.YELLOW));
-                    abSlot.cursorStyle(CursorStyle.HAND);
-                }
-
-                abSlot.mouseDown().subscribe((mouseX, mouseY, button) -> {
-                    if (button == 0) {
-                        long cur = System.currentTimeMillis();
-                        Long exp = ABILITY_COOLDOWNS.get(abilityKey);
-                        if (exp != null && exp > cur) {
-                            long sec = Math.max(1, (exp - cur + 999) / 1000);
-                            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.VILLAGER_NO, 1.0F));
-                            if (Minecraft.getInstance().player != null) {
-                                Minecraft.getInstance().player.displayClientMessage(
-                                        Component.literal("⏳ Способность «" + ab.name() + "» восстанавливается! Осталось " + sec + " сек.").withStyle(ChatFormatting.RED), false);
-                            }
-                        } else {
-                            ABILITY_COOLDOWNS.put(abilityKey, cur + 30_000L);
-                            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.PLAYER_LEVELUP, 1.2F));
-                            if (Minecraft.getInstance().player != null) {
-                                Minecraft.getInstance().player.displayClientMessage(
-                                        Component.literal("✨ Использована способность: ").withStyle(ChatFormatting.AQUA)
-                                                .append(Component.literal(ab.name()).withStyle(ChatFormatting.YELLOW)), false);
-                            }
-                            rebuildUI();
-                        }
-                        return true;
-                    }
-                    return false;
-                });
-            } else {
-                tip = Component.literal(ab.name() + " (пассивная)").withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal("\n" + ab.description()).withStyle(ChatFormatting.DARK_GRAY));
-            }
-            abSlot.tooltip(tip);
-            abilitiesRow.child(abSlot);
-        }
-        card.child(abilitiesRow);
+        // Achievements completed label (gray, below progress bar)
+        LabelComponent achLabel = Components.label(Component.literal("13/32").withStyle(ChatFormatting.GRAY));
+        achLabel.tooltip(Component.literal("Выполнено достижений: 13 из 32").withStyle(ChatFormatting.GRAY));
+        achLabel.margins(Insets.top(3));
+        card.child(achLabel);
 
         return card;
     }
@@ -1738,12 +1568,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             modal.child(brandsRow);
         }
 
-        if (cat != ProfessionCategory.STATE) {
-            FlowLayout limitRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-            limitRow.child(Components.label(Component.literal("Лимит цикла: ").withStyle(ChatFormatting.DARK_GRAY)));
-            limitRow.child(Components.label(Component.literal("1 смена в неделю (140 мин.)").withStyle(ChatFormatting.GRAY)));
-            modal.child(limitRow);
-        }
+        FlowLayout limitRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+        limitRow.child(Components.label(Component.literal("Лимит цикла: ").withStyle(ChatFormatting.DARK_GRAY)));
+        limitRow.child(Components.label(Component.literal("1 смена в неделю (140 мин.)").withStyle(ChatFormatting.GRAY)));
+        modal.child(limitRow);
 
         if (onCooldown && pd != null) {
             long remMs = pd.getLongCycleRemainingMs();
@@ -2121,7 +1949,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         taxCard.child(taxBodyRow);
         treasuryFlow.child(taxCard);
 
-        // --- 2b. TREASURY MANAGEMENT CATEGORY ("УПРАВЛЕНИЕ КАЗНОЙ" - Knyaz & Treasurer only) ---
+        // --- 2b. TREASURY MANAGEMENT CATEGORY ("УПРАВЛЕНИЕ КАЗНОЙ" - Knyaz only) ---
         boolean canAccessMgmt = false;
         boolean isKnyaz = false;
         if (Minecraft.getInstance().player != null && worldData != null) {
@@ -2311,7 +2139,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout descRow2 = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
         descRow2.gap(4);
         descRow2.child(Components.label(Component.literal("• ").withStyle(ChatFormatting.GOLD)));
-        descRow2.child(Components.label(Component.literal("Казначей и Правящий Князь единолично распоряжаются казной.").withStyle(ChatFormatting.GRAY)));
+        descRow2.child(Components.label(Component.literal("Правящий Князь единолично распоряжается казной.").withStyle(ChatFormatting.GRAY)));
         infoCard.child(descRow2);
 
         FlowLayout descRow3 = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
@@ -3136,7 +2964,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     private void openProfessionModal(Profession prof) {
         ProfessionCategory cat = prof.getType();
         int modalBorder = cat.getColor();
-        int dividerColor = cat == ProfessionCategory.STATE ? 0xFF5A1E20 : (cat == ProfessionCategory.MAIN ? 0xFF1E3824 : 0xFF4A2B18);
+        int dividerColor = cat == ProfessionCategory.MAIN ? 0xFF1E3824 : 0xFF4A2B18;
 
         FlowLayout modal = Containers.verticalFlow(Sizing.fixed(320), Sizing.content());
         modal.surface(Surface.flat(0xFF14171E).and(Surface.outline(modalBorder)));
@@ -3159,11 +2987,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         // Occupants section
         List<LivingEntry> occupants = getProfessionOccupants(prof);
-        String occHeader = cat == ProfessionCategory.STATE ? "Занимают должность (" : "Занимаются профессией (";
-        modal.child(Components.label(Component.literal(occHeader + occupants.size() + "/" + prof.getMaxOccupants() + "):").withStyle(ChatFormatting.WHITE)));
+        modal.child(Components.label(Component.literal("Занимаются профессией (" + occupants.size() + "/" + prof.getMaxOccupants() + "):").withStyle(ChatFormatting.WHITE)));
 
         if (occupants.isEmpty()) {
-            modal.child(Components.label(Component.literal("Пока никто не занимает эту должность.").withStyle(ChatFormatting.DARK_GRAY)));
+            modal.child(Components.label(Component.literal("Пока никто не занимается этой профессией.").withStyle(ChatFormatting.DARK_GRAY)));
         } else {
             for (LivingEntry occ : occupants) {
                 FlowLayout occRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
@@ -3188,47 +3015,38 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         descLabel.maxWidth(290);
         modal.child(descLabel);
 
-        // Action button or State notice
-        if (cat == ProfessionCategory.STATE) {
-            FlowLayout noteBox = Containers.horizontalFlow(Sizing.fixed(290), Sizing.fixed(22));
-            noteBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-            noteBox.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2C323E)));
-            noteBox.child(Components.label(Component.literal("Государственная должность назначается правителем").withStyle(ChatFormatting.GRAY)));
-            noteBox.margins(Insets.top(8));
-            modal.child(noteBox);
-        } else {
-            boolean isFull = occupants.size() >= prof.getMaxOccupants();
-            boolean alreadyHave = isClientInProfession(prof);
+        // Action button
+        boolean isFull = occupants.size() >= prof.getMaxOccupants();
+        boolean alreadyHave = isClientInProfession(prof);
 
-            FlowLayout selectBtn;
-            if (alreadyHave) {
-                selectBtn = Containers.horizontalFlow(Sizing.fixed(290), Sizing.fixed(22));
-                selectBtn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                selectBtn.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2C323E)));
-                selectBtn.child(Components.label(Component.literal("Вы уже выбрали эту профессию").withStyle(ChatFormatting.GRAY)));
-            } else if (isFull) {
-                selectBtn = Containers.horizontalFlow(Sizing.fixed(290), Sizing.fixed(22));
-                selectBtn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                selectBtn.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2C323E)));
-                selectBtn.child(Components.label(Component.literal("Все места заняты").withStyle(ChatFormatting.GRAY)));
-            } else {
-                boolean isMain = cat == ProfessionCategory.MAIN;
-                int btnBg = isMain ? 0xFF142B1A : 0xFF2E1B12;
-                int btnHover = isMain ? 0xFF1E3D25 : 0xFF402619;
-                int btnBorder = isMain ? 0xFF2E7D32 : 0xFFFFA500;
-                selectBtn = createFlatButton(
-                        Component.literal("Выбрать профессию").withStyle(ChatFormatting.WHITE),
-                        290, 22,
-                        btnBg, btnHover, btnBorder,
-                        () -> {
-                            overlay.remove();
-                            NetworkHandler.sendToServer(new SelectProfessionPacket(prof.getId()));
-                        }
-                );
-            }
-            selectBtn.margins(Insets.top(8));
-            modal.child(selectBtn);
+        FlowLayout selectBtn;
+        if (alreadyHave) {
+            selectBtn = Containers.horizontalFlow(Sizing.fixed(290), Sizing.fixed(22));
+            selectBtn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            selectBtn.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2C323E)));
+            selectBtn.child(Components.label(Component.literal("Вы уже выбрали эту профессию").withStyle(ChatFormatting.GRAY)));
+        } else if (isFull) {
+            selectBtn = Containers.horizontalFlow(Sizing.fixed(290), Sizing.fixed(22));
+            selectBtn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            selectBtn.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2C323E)));
+            selectBtn.child(Components.label(Component.literal("Все места заняты").withStyle(ChatFormatting.GRAY)));
+        } else {
+            boolean isMain = cat == ProfessionCategory.MAIN;
+            int btnBg = isMain ? 0xFF142B1A : 0xFF2E1B12;
+            int btnHover = isMain ? 0xFF1E3D25 : 0xFF402619;
+            int btnBorder = isMain ? 0xFF2E7D32 : 0xFFFFA500;
+            selectBtn = createFlatButton(
+                    Component.literal("Выбрать профессию").withStyle(ChatFormatting.WHITE),
+                    290, 22,
+                    btnBg, btnHover, btnBorder,
+                    () -> {
+                        overlay.remove();
+                        NetworkHandler.sendToServer(new SelectProfessionPacket(prof.getId()));
+                    }
+            );
         }
+        selectBtn.margins(Insets.top(8));
+        modal.child(selectBtn);
 
         this.uiAdapter.rootComponent.child(overlay);
     }
@@ -3784,7 +3602,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
 
     /**
-     * Set Tax Rate Modal (Knyaz / Treasurer only)
+     * Set Tax Rate Modal (Knyaz only)
      */
     private int newTaxRateSetting = 10;
 
@@ -3884,7 +3702,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
     /**
      * Expand Treasury Capacity Modal ("Расширить вместительность казны")
-     * Allows Knyaz or Treasurer to buy Small (250 $PR -> +500 $PR cap) or Large (500 $PR -> +1250 $PR cap) Treasury Chests.
+     * Allows Knyaz to buy Small (250 $PR -> +500 $PR cap) or Large (500 $PR -> +1250 $PR cap) Treasury Chests.
      */
     private void openExpandTreasuryModal() {
         long currentTreasury = worldData != null ? worldData.getTreasury() : 0L;

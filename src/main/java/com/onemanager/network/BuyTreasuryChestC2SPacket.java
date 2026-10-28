@@ -40,7 +40,7 @@ public record BuyTreasuryChestC2SPacket(boolean large) implements CustomPacketPa
 
             CharacterWorldData worldData = CharacterWorldData.get(player.server);
             if (!worldData.canAccessTreasury(player.getUUID())) {
-                player.sendSystemMessage(Component.literal("❌ Покупать хранилища казны может только Князь или Казначей!")
+                player.sendSystemMessage(Component.literal("❌ Покупать хранилища казны может только Князь!")
                         .withStyle(ChatFormatting.RED));
                 return;
             }

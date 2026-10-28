@@ -575,22 +575,12 @@ public class CharacterWorldData extends SavedData {
         return weekCompletedThisTick;
     }
 
-    public boolean isTreasurer(UUID uuid) {
-        if (uuid == null) return false;
-        PlayerCharacterData pd = getPlayerData(uuid);
-        if (pd != null) {
-            Set<String> profs = pd.getProfessions();
-            return profs != null && (profs.contains("Казначей") || profs.contains("treasurer"));
-        }
-        return false;
-    }
-
     public boolean canManageTaxes(UUID uuid) {
         return isKnyaz(uuid);
     }
 
     public boolean canAccessTreasury(UUID uuid) {
-        return isKnyaz(uuid) || isTreasurer(uuid);
+        return isKnyaz(uuid);
     }
 
     // --- Treasury Chests (Физические Хранилища Казны) ---

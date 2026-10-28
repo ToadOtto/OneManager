@@ -71,11 +71,6 @@ public record SelectProfessionPacket(int professionId) implements CustomPacketPa
                 return;
             }
 
-            if (prof.getType() == ProfessionCategory.STATE) {
-                player.sendSystemMessage(Component.literal("Государственные должности назначаются правителем!").withStyle(ChatFormatting.RED));
-                return;
-            }
-
             // Check player available slots
             boolean isMain = prof.getType() == ProfessionCategory.MAIN;
             int mainSlots = pd.getMainProfessionSlots();

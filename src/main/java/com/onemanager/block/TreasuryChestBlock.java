@@ -110,7 +110,7 @@ public class TreasuryChestBlock extends BaseEntityBlock {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
         int cap = getCapacity();
         tooltipComponents.add(Component.literal("Вместимость: " + String.format("%,d", cap).replace(',', ' ') + " $PR").withStyle(ChatFormatting.GOLD));
-        tooltipComponents.add(Component.literal("Доступно только Князю и Казначею").withStyle(ChatFormatting.GRAY));
+        tooltipComponents.add(Component.literal("Доступно только Князю").withStyle(ChatFormatting.GRAY));
     }
 
     @Override
@@ -173,7 +173,7 @@ public class TreasuryChestBlock extends BaseEntityBlock {
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
             CharacterWorldData worldData = CharacterWorldData.get(serverLevel);
             if (!worldData.canAccessTreasury(serverPlayer.getUUID())) {
-                serverPlayer.sendSystemMessage(Component.literal("❌ Открыть Сундук Казны может только Князь или Казначей!")
+                serverPlayer.sendSystemMessage(Component.literal("❌ Открыть Сундук Казны может только Князь!")
                         .withStyle(ChatFormatting.RED));
                 level.playSound(null, pos, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 0.8F, 1.0F);
                 return InteractionResult.FAIL;

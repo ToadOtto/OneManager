@@ -363,7 +363,7 @@ public class CrownEvents {
                 if (worldData != null && !worldData.canAccessTreasury(player.getUUID())) {
                     event.setCanceled(true);
                     player.sendSystemMessage(
-                            Component.literal("❌ Сломать Сундук Казны может только Князь или Казначей!")
+                            Component.literal("❌ Сломать Сундук Казны может только Князь!")
                                     .withStyle(ChatFormatting.RED)
                     );
                 }

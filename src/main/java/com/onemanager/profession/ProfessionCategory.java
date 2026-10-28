@@ -1,7 +1,6 @@
 package com.onemanager.profession;
 
 public enum ProfessionCategory {
-    STATE("Государственная должность", 1, 0xFFE53935),
     MAIN("Основная", 2, 0xFF4CAF50),
     SECONDARY("Дополнительная", 1, 0xFFFFA500);
 
