@@ -20,3 +20,6 @@
 - **Tooltip & Scissor Safety**:
   - Never call `tooltip((Component) null)`—use explicit `shouldDrawTooltip()` checks or remove listeners to prevent scissor stack corruptions.
   - When rendering tooltips over modal dialogs or graph overlays, disable depth test and elevate Z-index (`Z >= 800`) to prevent modals from drawing over them.
+
+## 3. Project Knowledge Base
+- **Full Architecture & Features**: Always refer to `PROJECT_CONTEXT.md` for complete documentation on all existing systems (Treasury, Chests, Graph, Characters, Laws, Notes, GUI tabs, Networking, Data storage). Update `PROJECT_CONTEXT.md` upon user request when new features are added.
