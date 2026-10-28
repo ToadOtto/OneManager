@@ -105,8 +105,12 @@ public record SelectProfessionPacket(int professionId) implements CustomPacketPa
                 return;
             }
 
-            // Assign profession
-            pd.addProfession(prof.getTitle());
+            // Assign profession with date
+            int day = worldData.getCurrentDay();
+            int week = worldData.getCurrentWeek();
+            int month = (week - 1) / 4;
+            String startDate = String.format("%02d.%02d.%02d", day, week, month);
+            pd.addProfession(prof.getTitle(), startDate);
             worldData.setDirty();
 
             NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));

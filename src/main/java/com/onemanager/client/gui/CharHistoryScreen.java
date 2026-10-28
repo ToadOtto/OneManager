@@ -1033,13 +1033,66 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     private void buildMyProfessionsCategory(FlowLayout parent) {
         List<Profession> myOccupied = getMyOccupiedProfessions();
 
+        FlowLayout scrollContent = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+        scrollContent.alignment(HorizontalAlignment.CENTER, VerticalAlignment.TOP);
+        scrollContent.padding(Insets.of(6, 12, 16, 12));
+        scrollContent.gap(6);
+
+        // 1. Top Centered Character & Weekly Grants Header
+        FlowLayout headerBox = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+        headerBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        headerBox.gap(3);
+
+        UUID myUuid = Minecraft.getInstance().player != null ? Minecraft.getInstance().player.getUUID() : null;
+        PlayerCharacterData myData = getMyPlayerData();
+
+        // 1a. Large Character Avatar (head like in population tab, framed in dark box)
+        FlowLayout avatarFrame = Containers.horizontalFlow(Sizing.fixed(52), Sizing.fixed(52));
+        avatarFrame.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        avatarFrame.surface(Surface.flat(0xFF0F1115).and(Surface.outline(0xFF2A2E38)));
+        avatarFrame.child(new PlayerAvatarComponent(myUuid, 48));
+        headerBox.child(avatarFrame);
+
+        // 1b. Character Name below avatar
+        String charName = (myData != null && myData.hasActiveCharacter() && !myData.getActiveCharacter().getName().isEmpty())
+                ? myData.getActiveCharacter().getName()
+                : (Minecraft.getInstance().player != null ? Minecraft.getInstance().player.getScoreboardName() : "Персонаж");
+        LabelComponent nameLabel = Components.label(Component.literal(charName).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD));
+        headerBox.child(nameLabel);
+
+        // 1c. Heading "Недельные грамоты:"
+        LabelComponent grantsTitle = Components.label(Component.literal("Недельные грамоты:").withStyle(ChatFormatting.GRAY));
+        grantsTitle.margins(Insets.top(2));
+        headerBox.child(grantsTitle);
+
+        // 1d. Medium state brand icon with count number on the left
+        int weeklyGrantsCount = myOccupied.size();
+        FlowLayout brandRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(18));
+        brandRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        brandRow.gap(5);
+
+        LabelComponent countLabel = Components.label(Component.literal(String.valueOf(weeklyGrantsCount)).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        TextureIconComponent brandIcon = new TextureIconComponent(ICON_STATE_BRAND, 16);
+        brandRow.child(countLabel);
+        brandRow.child(brandIcon);
+        brandRow.tooltip(Component.literal("Недельные грамоты: раз в неделю (140 мин.) на ваш счёт начисляются Гос. Марки (" + weeklyGrantsCount + " шт.).").withStyle(ChatFormatting.GRAY));
+        headerBox.child(brandRow);
+
+        // 1e. Below icon: gray text "всего занято профессий: n"
+        LabelComponent occCountLabel = Components.label(Component.literal("всего занято профессий: " + myOccupied.size()).withStyle(ChatFormatting.GRAY));
+        headerBox.child(occCountLabel);
+
+        scrollContent.child(headerBox);
+
+        // 2. Occupied Profession Cards or Empty State
         if (myOccupied.isEmpty()) {
-            FlowLayout emptyBox = Containers.verticalFlow(Sizing.fill(100), Sizing.expand());
+            FlowLayout emptyBox = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
             emptyBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-            emptyBox.gap(8);
+            emptyBox.gap(6);
+            emptyBox.margins(Insets.top(12));
 
             ItemComponent emptyIcon = Components.item(new ItemStack(Items.IRON_PICKAXE));
-            emptyIcon.sizing(Sizing.fixed(32), Sizing.fixed(32));
+            emptyIcon.sizing(Sizing.fixed(28), Sizing.fixed(28));
             emptyBox.child(emptyIcon);
 
             emptyBox.child(Components.label(Component.literal("У вашего персонажа пока нет выбранных профессий").withStyle(ChatFormatting.WHITE)));
@@ -1057,21 +1110,26 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             goCatalogBtn.margins(Insets.top(4));
             emptyBox.child(goCatalogBtn);
 
-            parent.child(emptyBox);
-            return;
+            scrollContent.child(emptyBox);
+        } else {
+            // Horizontal row: cards are centered up to 4
+            FlowLayout cardsRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
+            cardsRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            cardsRow.gap(12);
+            cardsRow.padding(Insets.horizontal(8));
+            cardsRow.margins(Insets.top(8));
+
+            for (Profession prof : myOccupied) {
+                cardsRow.child(createOccupiedProfessionCard(prof));
+            }
+
+            scrollContent.child(cardsRow);
         }
 
-        // Horizontal row: cards are centered up to 4
-        FlowLayout cardsRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.expand());
-        cardsRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        cardsRow.gap(12);
-        cardsRow.padding(Insets.horizontal(8));
-
-        for (Profession prof : myOccupied) {
-            cardsRow.child(createOccupiedProfessionCard(prof));
-        }
-
-        parent.child(cardsRow);
+        ScrollContainer<FlowLayout> scroll = Containers.verticalScroll(Sizing.fill(100), Sizing.expand(), scrollContent);
+        scroll.scrollbar(DARK_SCROLLBAR);
+        scroll.scrollbarThiccness(4);
+        parent.child(scroll);
     }
 
     private void buildProfessionCatalogCategory(FlowLayout parent) {
@@ -1363,11 +1421,14 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             hoverBg = 0xFF281E13;
         }
 
-        // Rectangular vertical card: ~23% width (max 4 per row, centered), fixed 140px height
-        FlowLayout card = Containers.verticalFlow(Sizing.fill(23), Sizing.fixed(140));
+        // Rectangular vertical card: ~23% width (max 4 per row, centered), fixed 152px height
+        FlowLayout card = Containers.verticalFlow(Sizing.fill(23), Sizing.fixed(152));
         card.padding(Insets.of(6, 6, 6, 6));
         card.horizontalAlignment(HorizontalAlignment.CENTER);
         card.cursorStyle(CursorStyle.HAND);
+        card.tooltip(Component.literal(prof.getTitle())
+                .append(Component.literal("\nКатегория: " + cat.getDisplayName()).withStyle(style -> style.withColor(catColor)))
+                .append(Component.literal("\nНажмите, чтобы открыть подробности").withStyle(ChatFormatting.DARK_GRAY)));
 
         // Smooth fade hover animation state
         float[] hoverProgress = new float[]{0.0f};
@@ -1409,6 +1470,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         // Click card to open profession modal details
         card.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 openProfessionModal(prof);
                 return true;
             }
@@ -1484,6 +1546,14 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         achLabel.tooltip(Component.literal("Выполнено достижений: 13 из 32").withStyle(ChatFormatting.GRAY));
         achLabel.margins(Insets.top(3));
         card.child(achLabel);
+
+        // Visible neutral date label ("С 01.04.00" - day::week::month)
+        String startDate = pd != null ? pd.getProfessionStartDate(prof.getTitle()) : "01.04.00";
+        LabelComponent dateLabel = Components.label(Component.literal("С " + startDate));
+        dateLabel.color(Color.ofRgb(0xFFB0B7C3));
+        dateLabel.tooltip(Component.literal("Занимает профессию с: " + startDate + " (день.неделя.месяц)").withStyle(ChatFormatting.GRAY));
+        dateLabel.margins(Insets.top(3));
+        card.child(dateLabel);
 
         return card;
     }

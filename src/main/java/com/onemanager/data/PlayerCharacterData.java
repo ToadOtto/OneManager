@@ -41,6 +41,7 @@ public class PlayerCharacterData {
     public static final String KEY_LEFT_SEC_CYCLE = "leftSecCycle";
     public static final String KEY_MAILBOX = "mailbox";
     public static final String KEY_PROFESSION_PROGRESS = "professionProgress";
+    public static final String KEY_PROFESSION_START_DATES = "professionStartDates";
     public static final String KEY_ONLINE_BRAND_TICKS = "onlineBrandTicks";
     public static final String KEY_WEEKLY_DEPOSIT = "weeklyDeposit";
 
@@ -52,6 +53,7 @@ public class PlayerCharacterData {
     private String lastKnownPlayerName = "";
     private final Set<String> professions = new LinkedHashSet<>();
     private final Map<String, Integer> professionProgress = new LinkedHashMap<>();
+    private final Map<String, String> professionStartDates = new LinkedHashMap<>();
     private String lineage = "";
     private String faction = "";
     private final Set<String> licenses = new LinkedHashSet<>();
@@ -104,15 +106,41 @@ public class PlayerCharacterData {
         }
     }
 
+    public String getProfessionStartDate(String profession) {
+        if (profession == null) return "01.04.00";
+        String date = professionStartDates.get(profession.trim());
+        if (date != null && !date.isEmpty()) {
+            return date;
+        }
+        return "01.04.00";
+    }
+
+    public void setProfessionStartDate(String profession, String date) {
+        if (profession != null && date != null) {
+            professionStartDates.put(profession.trim(), date.trim());
+        }
+    }
+
     public boolean addProfession(String profession) {
+        return addProfession(profession, "01.04.00");
+    }
+
+    public boolean addProfession(String profession, String startDate) {
         if (profession != null && !profession.trim().isEmpty()) {
-            return this.professions.add(profession.trim());
+            boolean added = this.professions.add(profession.trim());
+            if (startDate != null && !startDate.trim().isEmpty()) {
+                this.professionStartDates.put(profession.trim(), startDate.trim());
+            } else if (!this.professionStartDates.containsKey(profession.trim())) {
+                this.professionStartDates.put(profession.trim(), "01.04.00");
+            }
+            return added;
         }
         return false;
     }
 
     public boolean removeProfession(String profession) {
         if (profession != null) {
+            this.professionStartDates.remove(profession.trim());
             return this.professions.remove(profession.trim());
         }
         return false;
@@ -125,6 +153,7 @@ public class PlayerCharacterData {
 
     public void clearProfessions() {
         this.professions.clear();
+        this.professionStartDates.clear();
     }
 
     public int getProfessionProgress(String profession) {
@@ -650,6 +679,12 @@ public class PlayerCharacterData {
         }
         tag.put(KEY_PROFESSION_PROGRESS, progTag);
 
+        CompoundTag startDatesTag = new CompoundTag();
+        for (Map.Entry<String, String> entry : professionStartDates.entrySet()) {
+            startDatesTag.putString(entry.getKey(), entry.getValue());
+        }
+        tag.put(KEY_PROFESSION_START_DATES, startDatesTag);
+
         return tag;
     }
 
@@ -762,6 +797,12 @@ public class PlayerCharacterData {
             CompoundTag progTag = tag.getCompound(KEY_PROFESSION_PROGRESS);
             for (String key : progTag.getAllKeys()) {
                 data.setProfessionProgress(key, progTag.getInt(key));
+            }
+        }
+        if (tag.contains(KEY_PROFESSION_START_DATES, Tag.TAG_COMPOUND)) {
+            CompoundTag startDatesTag = tag.getCompound(KEY_PROFESSION_START_DATES);
+            for (String key : startDatesTag.getAllKeys()) {
+                data.setProfessionStartDate(key, startDatesTag.getString(key));
             }
         }
 

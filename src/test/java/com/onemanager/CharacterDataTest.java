@@ -559,5 +559,27 @@ public class CharacterDataTest {
         assertEquals(CharacterWorldData.WEEK_CYCLE_TICKS, loaded.getWeekTicksRemaining());
         assertEquals(CharacterWorldData.TAX_CYCLE_TICKS, loaded.getTaxTicksRemaining());
     }
+
+    @Test
+    public void testProfessionStartDates() {
+        UUID uuid = UUID.randomUUID();
+        PlayerCharacterData pd = new PlayerCharacterData(uuid);
+
+        pd.addProfession("Фермер-скотовод", "01.04.00");
+        pd.addProfession("Шеф-повар", "03.02.01");
+
+        assertEquals("01.04.00", pd.getProfessionStartDate("Фермер-скотовод"));
+        assertEquals("03.02.01", pd.getProfessionStartDate("Шеф-повар"));
+        assertEquals("01.04.00", pd.getProfessionStartDate("Неизвестная"));
+
+        CompoundTag tag = pd.toNBT();
+        PlayerCharacterData loaded = PlayerCharacterData.fromNBT(tag);
+
+        assertEquals("01.04.00", loaded.getProfessionStartDate("Фермер-скотовод"));
+        assertEquals("03.02.01", loaded.getProfessionStartDate("Шеф-повар"));
+
+        loaded.removeProfession("Шеф-повар");
+        assertEquals("01.04.00", loaded.getProfessionStartDate("Шеф-повар"));
+    }
 }
 
