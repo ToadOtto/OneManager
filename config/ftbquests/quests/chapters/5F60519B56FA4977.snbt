@@ -1,0 +1,122 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "5F60519B56FA4977"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		id: "ftbquests:custom_icon"
+		count: 1
+		components: {
+			"ftbquests:icon": "dynamic_fps:textures/battery/icon/charging_0.png"
+		}
+	}
+	id: "5F60519B56FA4977"
+	order_index: 9
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				""
+				"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+			]
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "alexsmobs:textures/mob_effect/earthquake.png"
+				}
+			}
+			icon_scale: 0.7d
+			id: "57B5309CB46E5CDE"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+50)"
+				id: "15584DE08DFE4654"
+				title: "Мир +50"
+				type: "command"
+			}]
+			shape: "hexagon"
+			size: 3.0d
+			subtitle: "Займите профессию артиста"
+			tasks: [{
+				id: "2539E7936E539D39"
+				type: "checkmark"
+			}]
+			title: "Артист"
+			x: -6.5d
+			y: 0.5d
+		}
+		{
+			id: "098AB5FB4A14BB0A"
+			subtitle: "Заведите двух &l&nгрязных&r свиней"
+			tasks: [{
+				id: "6534579041F59273"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Бафы"
+			x: -7.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["098AB5FB4A14BB0A"]
+			id: "50C12C759764108F"
+			tasks: [{
+				id: "6BF0CA3A75C3D761"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Экстаз"
+			x: -9.5d
+			y: -2.5d
+		}
+		{
+			id: "50CEEFD332FE8771"
+			subtitle: "Заведите двух &l&nгрязных&r свиней"
+			tasks: [{
+				id: "467FD7BEB51D7FBD"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Дебафы"
+			x: -6.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["50CEEFD332FE8771"]
+			id: "0BEF7C524CB6FF5C"
+			tasks: [{
+				id: "4FFDC3FDC9193EDE"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Эксперимент на человеке"
+			x: -3.5d
+			y: -2.5d
+		}
+		{
+			dependencies: ["0BEF7C524CB6FF5C"]
+			id: "155707732C18C5D3"
+			tasks: [{
+				id: "743E796EA9FEF39A"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Массовая истерия"
+			x: -1.0d
+			y: -3.5d
+		}
+		{
+			dependencies: ["0BEF7C524CB6FF5C"]
+			id: "754604FD517F2364"
+			tasks: [{
+				id: "7558AD659D3DE900"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Чума"
+			x: -1.0d
+			y: -2.0d
+		}
+	]
+	title: "Зельевар"
+}

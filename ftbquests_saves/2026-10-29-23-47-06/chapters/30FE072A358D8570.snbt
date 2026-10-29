@@ -1,0 +1,120 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "30FE072A358D8570"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "dynamic_fps:textures/battery/icon/charging_10.png"
+		}
+	}
+	id: "30FE072A358D8570"
+	order_index: 7
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				""
+				"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+			]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "alexsmobs:textures/mob_effect/earthquake.png"
+				}
+			}
+			icon_scale: 0.7d
+			id: "1E140EEE7A9E6FA2"
+			shape: "gear"
+			size: 3.0d
+			subtitle: "Займите профессию артиста"
+			tasks: [
+				{
+					id: "3C35E5B531D1BD94"
+					type: "checkmark"
+				}
+				{
+					consume_items: true
+					id: "4888FDA73819550D"
+					item: {
+						Count: 1
+						id: "minecraft:filled_map"
+						tag: {
+							Enchantments: [{ }]
+							display: {
+								Lore: [
+									"[{\"text\":\"Примените на первом достижении во вкладке основной профессии, чтобы разблокировать ее. \",\"italic\":false,\"color\":\"white\"}]"
+									"[\"\"]"
+									"[{\"text\":\"МОЖНО ПРИМЕНИТЬ ТОЛЬКО 1 РАЗ!\",\"italic\":false,\"underlined\":true}]"
+								]
+								Name: "[\"\",{\"text\":\"Лицензия на основную профессию\",\"color\":\"yellow\"}]"
+							}
+						}
+					}
+					type: "item"
+				}
+			]
+			title: "Артист"
+			x: -6.5d
+			y: -2.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/check"
+				}
+			}
+			id: "3CB3A27A536050BB"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/approval"
+				id: "3D36D7357B66BA83"
+				type: "command"
+			}]
+			subtitle: "Выразить &lодобрение&r Князя (Репутация +2)"
+			tasks: [{
+				id: "646A859FCC386026"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Одобрение"
+			x: -4.5d
+			y: -3.0d
+		}
+		{
+			can_repeat: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/close"
+				}
+			}
+			id: "311E24D693CFA3ED"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/disapproval"
+				id: "3FFB657AF0EF33FE"
+				type: "command"
+			}]
+			subtitle: "Выразить &lнеодобрение&r Князя (Репутация -2)"
+			tasks: [{
+				id: "5A2936FB16F5B779"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Неодобрение"
+			x: -4.5d
+			y: -2.0d
+		}
+	]
+	title: "Эколог-Зоолог"
+}

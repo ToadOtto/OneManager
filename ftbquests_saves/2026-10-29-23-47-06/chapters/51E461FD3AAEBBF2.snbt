@@ -1,0 +1,140 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "51E461FD3AAEBBF2"
+	group: ""
+	icon: {
+		Count: 1
+		id: "monarchcrownmod:monarch_crown"
+		tag: {
+			Damage: 0
+			Enchantments: [{
+				id: "minecraft:binding_curse"
+				lvl: 1s
+			}]
+		}
+	}
+	id: "51E461FD3AAEBBF2"
+	order_index: 0
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				""
+				"{image:sullysmod:item/lost_crown width:100 height:100 align:center}"
+			]
+			icon: {
+				Count: 1
+				id: "monarchcrownmod:monarch_crown"
+				tag: {
+					Damage: 0
+					Enchantments: [{
+						id: "minecraft:binding_curse"
+						lvl: 1s
+					}]
+				}
+			}
+			icon_scale: 0.7d
+			id: "259E29F329E0A78D"
+			rewards: [
+				{
+					command: "/oh:updateScoreboard_Worldborder(+50)"
+					id: "52D7DD3018CEE333"
+					title: "Мир +50"
+					type: "command"
+				}
+				{
+					command: "/oh:give_crown"
+					id: "3C308C9049244E9A"
+					type: "command"
+				}
+			]
+			shape: "octagon"
+			size: 3.0d
+			subtitle: "Займите роль первого КНЯЗЯ"
+			tasks: [{
+				id: "71DCFB91965945FD"
+				type: "checkmark"
+			}]
+			title: "КНЯЖЕСТВО"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["259E29F329E0A78D"]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "minecraft:textures/entity/decorated_pot/skull_pottery_pattern.png"
+				}
+			}
+			id: "7ACFDF29E7C5A7FD"
+			rewards: [{
+				command: "/worldborder add 10"
+				id: "394825F808A23B2F"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Казните жителя на площади"
+			tasks: [{
+				id: "41A40279CD3D1EED"
+				type: "checkmark"
+			}]
+			title: "КАЗНЬ"
+			x: 3.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["7ACFDF29E7C5A7FD"]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "alexscaves:block/hazmat_skull_block"
+				}
+			}
+			id: "1001BB84DCA87865"
+			rewards: [{
+				command: "/worldborder add 10"
+				id: "74955E1EBDD7E686"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Проведите 3 казни"
+			tasks: [{
+				id: "6F339F14E4C7D935"
+				type: "checkmark"
+			}]
+			title: "ГОЛОВУ С ПЛЕЧ"
+			x: 5.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["7ACFDF29E7C5A7FD"]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "realms:textures/gui/realms/reject_icon.png"
+				}
+			}
+			id: "02FC3F5337796A20"
+			rewards: [{
+				command: "/worldborder add 10"
+				id: "5CDD2EC405A1EC18"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Казните двух жителей на площади одновременно"
+			tasks: [{
+				id: "0F9D0E3A2997E78D"
+				type: "checkmark"
+			}]
+			title: "ДВОЙНОЙ ПРИГОВОР"
+			x: 5.0d
+			y: -1.5d
+		}
+	]
+	title: "КНЯЗЬ"
+}

@@ -1,0 +1,48 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "7022A113BEF87144"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "dynamic_fps:textures/battery/icon/charging_0.png"
+		}
+	}
+	id: "7022A113BEF87144"
+	order_index: 10
+	quest_links: [ ]
+	quests: [{
+		description: [
+			""
+			"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+		]
+		icon: {
+			Count: 1
+			id: "ftbquests:custom_icon"
+			tag: {
+				Icon: "alexsmobs:textures/mob_effect/earthquake.png"
+			}
+		}
+		icon_scale: 0.7d
+		id: "0C28137308B5BF61"
+		rewards: [{
+			command: "/oh:updateScoreboard_Worldborder(+50)"
+			id: "2A3EC86F28D31DD3"
+			title: "Мир +50"
+			type: "command"
+		}]
+		shape: "hexagon"
+		size: 3.0d
+		subtitle: "Займите профессию артиста"
+		tasks: [{
+			id: "0CD5333B05CB5AAF"
+			type: "checkmark"
+		}]
+		title: "Артист"
+		x: -6.5d
+		y: 0.5d
+	}]
+	title: "Флорист"
+}

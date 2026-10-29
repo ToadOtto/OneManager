@@ -1,0 +1,118 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "29B98C65615B2660"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		id: "ftbquests:custom_icon"
+		count: 1
+		components: {
+			"ftbquests:icon": "dynamic_fps:textures/battery/icon/charging_10.png"
+		}
+	}
+	id: "29B98C65615B2660"
+	order_index: 5
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				""
+				"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+			]
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "alexsmobs:textures/mob_effect/earthquake.png"
+				}
+			}
+			icon_scale: 0.7d
+			id: "0E7C6E35D74AE80C"
+			shape: "gear"
+			size: 3.0d
+			subtitle: "Займите профессию артиста"
+			tasks: [
+				{
+					id: "30BA69BF44D33831"
+					type: "checkmark"
+				}
+				{
+					consume_items: true
+					id: "7D64DFF898277045"
+					item: {
+						id: "minecraft:filled_map"
+						count: 1
+						components: {
+							"minecraft:lore": [
+								"[{\"text\":\"Примените на первом достижении во вкладке основной профессии, чтобы разблокировать ее. \",\"italic\":false,\"color\":\"white\"}]"
+								"[\"\"]"
+								"[{\"text\":\"МОЖНО ПРИМЕНИТЬ ТОЛЬКО 1 РАЗ!\",\"italic\":false,\"underlined\":true}]"
+							]
+							"minecraft:custom_name": "[\"\",{\"text\":\"Лицензия на основную профессию\",\"color\":\"yellow\"}]"
+							"minecraft:enchantment_glint_override": 1b
+						}
+					}
+					type: "item"
+				}
+			]
+			title: "Артист"
+			x: -6.5d
+			y: -2.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/check"
+				}
+			}
+			id: "7B6F23C123838E24"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/approval"
+				id: "526B347739EAD21C"
+				type: "command"
+			}]
+			subtitle: "Выразить &lодобрение&r Князя (Репутация +2)"
+			tasks: [{
+				id: "25A267652EBCF935"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Одобрение"
+			x: -4.5d
+			y: -3.0d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/close"
+				}
+			}
+			id: "5D35DAD4F38D5501"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/disapproval"
+				id: "6F39378138F7B8C5"
+				type: "command"
+			}]
+			subtitle: "Выразить &lнеодобрение&r Князя (Репутация -2)"
+			tasks: [{
+				id: "1D2B6DD5F6E32173"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Неодобрение"
+			x: -4.5d
+			y: -2.0d
+		}
+	]
+	title: "Архитектор-Строитель"
+}

@@ -1,0 +1,105 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "5B8DE323906E5DDF"
+	group: "39E62EF58A8B4AE0"
+	icon: "create:wrench"
+	id: "5B8DE323906E5DDF"
+	order_index: 3
+	quest_links: [ ]
+	quests: [
+		{
+			description: [""]
+			icon: "create:wrench"
+			icon_scale: 0.7d
+			id: "0EBE91B31603287B"
+			shape: "gear"
+			size: 3.0d
+			subtitle: "Займите профессию Механика-Инженера"
+			tasks: [
+				{
+					id: "5DB574408CBB6A4F"
+					type: "checkmark"
+				}
+				{
+					consume_items: true
+					id: "59DB99EB2F6BC6F2"
+					item: {
+						Count: 1
+						id: "minecraft:filled_map"
+						tag: {
+							Enchantments: [{ }]
+							display: {
+								Lore: [
+									"[{\"text\":\"Примените на первом достижении во вкладке основной профессии, чтобы разблокировать ее. \",\"italic\":false,\"color\":\"white\"}]"
+									"[\"\"]"
+									"[{\"text\":\"МОЖНО ПРИМЕНИТЬ ТОЛЬКО 1 РАЗ!\",\"italic\":false,\"underlined\":true}]"
+								]
+								Name: "[\"\",{\"text\":\"Лицензия на основную профессию\",\"color\":\"yellow\"}]"
+							}
+						}
+					}
+					type: "item"
+				}
+			]
+			title: "Механик-Инженер"
+			x: 0.0d
+			y: -2.0d
+		}
+		{
+			can_repeat: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/check"
+				}
+			}
+			id: "518B881BF765C660"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/approval"
+				id: "2201194EC76670F8"
+				type: "command"
+			}]
+			subtitle: "Выразить &lодобрение&r Князя (Репутация +2)"
+			tasks: [{
+				id: "5767A64F330DCC6E"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Одобрение"
+			x: 2.0d
+			y: -2.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/close"
+				}
+			}
+			id: "18CC7C05F92A6AB4"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/disapproval"
+				id: "5A0BF0E2F02891B0"
+				type: "command"
+			}]
+			subtitle: "Выразить &lнеодобрение&r Князя (Репутация -2)"
+			tasks: [{
+				id: "3E67B7AC3EC96202"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Неодобрение"
+			x: 2.0d
+			y: -1.5d
+		}
+	]
+	title: "Механик-Инженер"
+}

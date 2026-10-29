@@ -1,0 +1,82 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "038D2928CCDF1238"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "dynamic_fps:textures/battery/icon/charging_10.png"
+		}
+	}
+	id: "038D2928CCDF1238"
+	order_index: 8
+	quest_links: [ ]
+	quests: [
+		{
+			id: "4BEA77C3A25429A7"
+			tasks: [{
+				id: "1E5563D14835FBAE"
+				type: "checkmark"
+			}]
+			x: 2.0d
+			y: 0.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/check"
+				}
+			}
+			id: "2A9B7B0F3C0B4F56"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/approval"
+				id: "684028CA4F3FBA1B"
+				type: "command"
+			}]
+			subtitle: "Выразить &lодобрение&r Князя (Репутация +2)"
+			tasks: [{
+				id: "32AC920434432876"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Одобрение"
+			x: 3.5d
+			y: 0.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/close"
+				}
+			}
+			id: "623F586DD7B5B70D"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/disapproval"
+				id: "2555D90634318616"
+				type: "command"
+			}]
+			subtitle: "Выразить &lнеодобрение&r Князя (Репутация -2)"
+			tasks: [{
+				id: "7650AB6056C80E18"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Неодобрение"
+			x: 3.5d
+			y: 1.5d
+		}
+	]
+	title: "Казначей-Бюрократ"
+}

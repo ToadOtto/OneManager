@@ -1,0 +1,115 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "5AF2956F1B381C4C"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		id: "farmersdelight:skillet"
+		count: 1
+		components: {
+			"minecraft:damage": 0
+		}
+	}
+	id: "5AF2956F1B381C4C"
+	order_index: 1
+	quest_links: [ ]
+	quests: [
+		{
+			description: [""]
+			icon: {
+				id: "farmersdelight:skillet"
+				count: 1
+				components: {
+					"minecraft:damage": 0
+				}
+			}
+			icon_scale: 0.7d
+			id: "0BF517D2A3516009"
+			shape: "gear"
+			size: 3.0d
+			subtitle: "Займите профессию Шеф-Повара"
+			tasks: [
+				{
+					id: "23F1094E82846323"
+					type: "checkmark"
+				}
+				{
+					consume_items: true
+					id: "7099725351CD7EBC"
+					item: {
+						id: "minecraft:filled_map"
+						count: 1
+						components: {
+							"minecraft:lore": [
+								"[{\"text\":\"Примените на первом достижении во вкладке основной профессии, чтобы разблокировать ее. \",\"italic\":false,\"color\":\"white\"}]"
+								"[\"\"]"
+								"[{\"text\":\"МОЖНО ПРИМЕНИТЬ ТОЛЬКО 1 РАЗ!\",\"italic\":false,\"underlined\":true}]"
+							]
+							"minecraft:custom_name": "[\"\",{\"text\":\"Лицензия на основную профессию\",\"color\":\"yellow\"}]"
+							"minecraft:enchantment_glint_override": 1b
+						}
+					}
+					type: "item"
+				}
+			]
+			title: "&lШеф-Повар&r"
+			x: 3.0d
+			y: -1.0d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/check"
+				}
+			}
+			id: "3A771B9A9D25AA73"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/approval"
+				id: "69BAB62022B83E0A"
+				type: "command"
+			}]
+			subtitle: "Выразить &lодобрение&r Князя (Репутация +2)"
+			tasks: [{
+				id: "091B25AC7E27E4D9"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Одобрение"
+			x: 5.0d
+			y: -1.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/close"
+				}
+			}
+			id: "7AE6A26C66FFCBDC"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/disapproval"
+				id: "389DA4D5E00FBEB3"
+				type: "command"
+			}]
+			subtitle: "Выразить &lнеодобрение&r Князя (Репутация -2)"
+			tasks: [{
+				id: "41E612A8356B4D6D"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Неодобрение"
+			x: 5.0d
+			y: -0.5d
+		}
+	]
+	title: "Шеф-повар"
+}

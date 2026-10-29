@@ -1,0 +1,943 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "761EFE481ADB7D51"
+	group: ""
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "ftblibrary:icons/blue_grid"
+		}
+	}
+	id: "761EFE481ADB7D51"
+	images: [{
+		height: 1.0d
+		image: "ftblibrary:icons/star"
+		rotation: 0.0d
+		width: 1.0d
+		x: 0.009863945578253208d
+		y: -1.7850340136054612d
+	}]
+	order_index: 1
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				""
+				"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+			]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/heart"
+				}
+			}
+			icon_scale: 0.7d
+			id: "4A94D355ABCBBC3C"
+			rewards: [
+				{
+					command: "/oh:updateScoreboard_Worldborder(+50)"
+					id: "0C1D34D91CF38D34"
+					title: "Мир +50"
+					type: "command"
+				}
+				{
+					id: "1F968B9F668E3043"
+					item: {
+						Count: 1
+						id: "minecraft:filled_map"
+						tag: {
+							Enchantments: [{ }]
+							display: {
+								Lore: [
+									"[{\"text\":\"Примените на первом достижении во вкладке основной профессии, чтобы разблокировать ее. \",\"italic\":false,\"color\":\"white\"}]"
+									"[\"\"]"
+									"[{\"text\":\"МОЖНО ПРИМЕНИТЬ ТОЛЬКО 1 РАЗ!\",\"italic\":false,\"underlined\":true}]"
+								]
+								Name: "[\"\",{\"text\":\"Лицензия на основную профессию\",\"color\":\"yellow\"}]"
+							}
+						}
+					}
+					team_reward: false
+					type: "item"
+				}
+			]
+			shape: "gear"
+			size: 3.0d
+			subtitle: "Поставьте в центре дома &nверстак&r"
+			tasks: [{
+				id: "2D079315917D93AC"
+				type: "checkmark"
+			}]
+			title: "Основание"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["4A94D355ABCBBC3C"]
+			description: [""]
+			icon: "minecraft:campfire"
+			id: "78FF171584BB9CFF"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "3A2CD1DA58991854"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Разместите возле центра костёр, печку и сундук"
+			tasks: [{
+				id: "77761A056E7325D1"
+				type: "checkmark"
+			}]
+			title: "Под открытым небом"
+			x: 2.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["78FF171584BB9CFF"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "another_furniture:block/unused/path/oak_path"
+				}
+			}
+			id: "19B30B317DE38A98"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "3BFB3997C6DA763E"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Постройте жилище на выделенной територии"
+			tasks: [{
+				id: "64678CFBA8E0F200"
+				type: "checkmark"
+			}]
+			title: "Хата"
+			x: 4.0d
+			y: -1.0d
+		}
+		{
+			dependencies: ["78FF171584BB9CFF"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/bed"
+				}
+			}
+			id: "5A38F15B5CE90619"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "459F0FF8B3BC6F05"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Соорудите несколько спальных мест возле центра"
+			tasks: [{
+				id: "2FA5E5D83FBDD5BF"
+				type: "checkmark"
+			}]
+			title: "Лагерь для беженцев"
+			x: 4.0d
+			y: 0.0d
+		}
+		{
+			dependencies: [
+				"5A38F15B5CE90619"
+				"19B30B317DE38A98"
+			]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/friends"
+				}
+			}
+			id: "635F1A75E8728EF0"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+20)"
+				id: "6039BB60D12B1EB9"
+				title: "Мир +20"
+				type: "command"
+			}]
+			shape: "square"
+			subtitle: "Постройте жилища на каждом из выделенных мест"
+			tasks: [{
+				id: "72F070559E6B5510"
+				type: "checkmark"
+			}]
+			title: "Окупасы"
+			x: 5.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["4A94D355ABCBBC3C"]
+			description: [
+				"*Поверхность"
+				"*Камнерез"
+				"*Печки"
+			]
+			icon: "minecraft:stonecutter"
+			id: "437780A05A6F3D6D"
+			rewards: [{
+				command: "/worldborder add 10"
+				id: "6B2E1754C73D1CC7"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Создайте поверхность для обработки камня*"
+			tasks: [{
+				id: "658217A43F4AA0DA"
+				type: "checkmark"
+			}]
+			title: "Обработка камня"
+			x: 1.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["12B2A1DCF5FE1F79"]
+			description: [""]
+			icon: "quark:stripped_oak_post"
+			id: "17A9F2503B03924B"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "487AA87DC751DE92"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Соорудите путевой указатель"
+			tasks: [{
+				id: "006A0FA062B8DA11"
+				type: "checkmark"
+			}]
+			title: "На лево пойдёшь"
+			x: 5.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["17A9F2503B03924B"]
+			description: [""]
+			icon: "quark:stripped_oak_post"
+			id: "764778806243232F"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "735AC651D1C00B2A"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Соорудите ещё несколько путевых указателей на достаточном расстоянии друг от друга"
+			tasks: [{
+				id: "22A86BD83AE42B22"
+				type: "checkmark"
+			}]
+			title: "На право пойдёшь"
+			x: 7.0d
+			y: 1.5d
+		}
+		{
+			dependencies: [
+				"764778806243232F"
+				"635F1A75E8728EF0"
+			]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "farmersdelight:item/hanging_canvas_sign"
+				}
+			}
+			id: "735FB37043B14B12"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "05FB8A3AE94ED160"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Прикрепите к каждому жилищу таблички, на которых указаны жильцы\\владельцы жилища"
+			tasks: [{
+				id: "1116212E7C63A89E"
+				type: "checkmark"
+			}]
+			title: "Доксинг: вступление"
+			x: 7.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["735FB37043B14B12"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "farmersdelight:item/hanging_canvas_sign"
+				}
+			}
+			id: "568281ADCDDA2E7C"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "05199AAD7800B44E"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Дополните таблички: напишите адресс домов"
+			tasks: [{
+				id: "0E23F0032E452F0F"
+				type: "checkmark"
+			}]
+			title: "Доксинг: основа"
+			x: 8.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["735FB37043B14B12"]
+			description: ["*Помещение достаточного размера для размещения архивных полок, где хранятся документы"]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "farmersdelight:item/hanging_canvas_sign"
+				}
+			}
+			id: "478D5AF3FEA3B108"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+30)"
+				id: "1BCC2E725EBA3D54"
+				title: "Мир +30"
+				type: "command"
+			}]
+			shape: "rsquare"
+			subtitle: "Создайте регистр: книги с адрессами и именам владельцев жилищ.                          Постройте реестр жителей* и поместите его туда"
+			tasks: [{
+				id: "2744E7510F597738"
+				type: "checkmark"
+			}]
+			title: "Доксинг: реестр"
+			x: 10.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["635F1A75E8728EF0"]
+			description: [""]
+			icon: "minecraft:dirt_path"
+			id: "12B2A1DCF5FE1F79"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "7BF95C149E0B9D6E"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Проведите тропинки между домами жителей"
+			tasks: [{
+				id: "6F48729C40E80610"
+				type: "checkmark"
+			}]
+			title: "Тропинки"
+			x: 5.5d
+			y: 1.5d
+		}
+		{
+			description: [""]
+			icon: "minecraft:lectern"
+			id: "4E0E7F6D51E0B3A5"
+			rewards: [{
+				command: "/worldborder add 40"
+				id: "6A923CB29BA6A85C"
+				title: "Мир +40"
+				type: "command"
+			}]
+			shape: "diamond"
+			subtitle: "Постройте зал для собраний жителей"
+			tasks: [{
+				id: "6B31D4C21B92B81F"
+				type: "checkmark"
+			}]
+			title: "Городской совет"
+			x: 13.5d
+			y: -5.0d
+		}
+		{
+			dependencies: ["17A9F2503B03924B"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "caverns_and_chasms:block/andesite_pillar"
+				}
+			}
+			id: "70A49E7CE3A670CF"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+20)"
+				id: "70A50E95C16D5A06"
+				title: "Мир +20"
+				type: "command"
+			}]
+			shape: "square"
+			subtitle: "Проложите дороги из города до ближайших биомов или важных обьектов"
+			tasks: [{
+				id: "29169978E7DA6313"
+				type: "checkmark"
+			}]
+			title: "Дороги"
+			x: 8.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["4A94D355ABCBBC3C"]
+			description: [""]
+			icon: "another_furniture:oak_bench"
+			id: "0794BA97F9724C40"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "1BCEFE93AFB3CF36"
+				title: "Мир +10"
+				type: "command"
+			}]
+			shape: "circle"
+			subtitle: "Разместите возле центра лавочки"
+			tasks: [{
+				id: "4E2AF33776B07F34"
+				type: "checkmark"
+			}]
+			title: "Спальное место: бесплатное"
+			x: 1.5d
+			y: 1.5d
+		}
+		{
+			dependencies: [
+				"78FF171584BB9CFF"
+				"0794BA97F9724C40"
+			]
+			description: [""]
+			icon: "minecraft:torch"
+			id: "4A4E1B040B0DC6CE"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "0BD643D469FA04C0"
+				title: "Мир +10"
+				type: "command"
+			}]
+			shape: "circle"
+			subtitle: "Осветите центр"
+			tasks: [{
+				id: "7085DAC0D469C40E"
+				type: "checkmark"
+			}]
+			title: "Мотыльки!"
+			x: 4.0d
+			y: 1.5d
+		}
+		{
+			dependencies: [
+				"764778806243232F"
+				"70A49E7CE3A670CF"
+			]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "caverns_and_chasms:block/andesite_pillar"
+				}
+			}
+			id: "46C8867D7C7A005A"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+30)"
+				id: "22B08904AFDE4E9D"
+				title: "Мир +30"
+				type: "command"
+			}]
+			shape: "rsquare"
+			subtitle: "Замкните дороги в кольцо"
+			tasks: [{
+				id: "557861DF62DC253D"
+				type: "checkmark"
+			}]
+			title: "Окружная"
+			x: 8.5d
+			y: 1.5d
+		}
+		{
+			dependencies: [
+				"4A4E1B040B0DC6CE"
+				"12B2A1DCF5FE1F79"
+			]
+			description: [""]
+			icon: "minecraft:torch"
+			id: "1C7DC99226A32CEE"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "631C2317827C6997"
+				title: "Мир +10"
+				type: "command"
+			}]
+			shape: "circle"
+			subtitle: "Осветите тропинки"
+			tasks: [{
+				id: "5CBB0C013EA826FF"
+				type: "checkmark"
+			}]
+			title: "Всё равно страшно"
+			x: 4.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["635F1A75E8728EF0"]
+			description: [""]
+			icon: "waystones:waystone"
+			id: "04A188203F86DA06"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "0EABA7CD058FC2A6"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Согласуйте название поселения и визуально закрепите его в центре"
+			tasks: [{
+				id: "7C456C098C9642AA"
+				type: "checkmark"
+			}]
+			title: "Нулевая координата"
+			x: 5.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["635F1A75E8728EF0"]
+			description: [""]
+			icon: "minecraft:white_banner"
+			id: "35B0C931C24BB985"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "3AA84A1106182640"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Создайте флаг поселения и поднимите его над высокой точкой"
+			tasks: [{
+				id: "28BAF28E21D1248C"
+				type: "checkmark"
+			}]
+			title: "Водружение"
+			x: 8.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["35B0C931C24BB985"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "irons_spellbooks:item/lightning_rod"
+				}
+			}
+			id: "48D1CB63EC8EE811"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "531322B17BF0CCB0"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Постройте высокий флагшток"
+			tasks: [{
+				id: "2ED5D72CE541EE5B"
+				type: "checkmark"
+			}]
+			title: "Флагшток"
+			x: 10.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["0794BA97F9724C40"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftblibrary:icons/bin"
+				}
+			}
+			id: "7D0FF350DB60B4CF"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "18EEC7A061444CB5"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "Постройте урны для мусора возле лавочек (рабочие, должны удалять предметы)"
+			tasks: [{
+				id: "52A21A3E0434C774"
+				type: "checkmark"
+			}]
+			title: "У мусора есть дом"
+			x: 2.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["4A94D355ABCBBC3C"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "create:item/tree_fertilizer"
+				}
+			}
+			id: "595431919D44CCBE"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "61CCFBC23F9B0DE8"
+				title: "Мир +10"
+				type: "command"
+			}]
+			shape: "circle"
+			subtitle: "Посадите вокруг центра деревья и можно парочку цветов (опционально)"
+			tasks: [{
+				id: "19F41FB5047FA5F5"
+				type: "checkmark"
+			}]
+			title: "Позитивчик"
+			x: 0.0d
+			y: 2.0d
+		}
+		{
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftbteams:textures/accept.png"
+				}
+			}
+			id: "3FEE51EC3C799422"
+			rewards: [{
+				command: "/worldborder add 40"
+				id: "2D816E8F43C620D7"
+				title: "Мир +40"
+				type: "command"
+			}]
+			shape: "diamond"
+			tasks: [{
+				id: "359D9A3F630730CD"
+				type: "checkmark"
+			}]
+			title: "Ярмарка"
+			x: 13.5d
+			y: -4.0d
+		}
+		{
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftbteams:textures/accept.png"
+				}
+			}
+			id: "4E2339078D954DD8"
+			rewards: [{
+				command: "/worldborder add 40"
+				id: "5A80CE0BF1A1122E"
+				title: "Мир +40"
+				type: "command"
+			}]
+			shape: "diamond"
+			tasks: [{
+				id: "3B1CF37C750170BF"
+				type: "checkmark"
+			}]
+			title: "Отель"
+			x: 13.5d
+			y: -3.0d
+		}
+		{
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftbteams:textures/accept.png"
+				}
+			}
+			id: "6DE8EB372476538D"
+			rewards: [{
+				command: "/worldborder add 40"
+				id: "77EEBB6394AF01E3"
+				title: "Мир +40"
+				type: "command"
+			}]
+			shape: "diamond"
+			tasks: [{
+				id: "7B07F2435A59589B"
+				type: "checkmark"
+			}]
+			title: "Ботанический сад"
+			x: 13.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["635F1A75E8728EF0"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "create:block/palettes/stone_types/polished/andesite_cut_polished"
+				}
+			}
+			id: "28E1E641ECF7AFF2"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+20)"
+				id: "13B66E57B92D167E"
+				title: "Мир +20"
+				type: "command"
+			}]
+			subtitle: "Постройте площадь: просторное место для собраний под открытым небом"
+			tasks: [{
+				id: "3404FC873A501B91"
+				type: "checkmark"
+			}]
+			title: "Площадь"
+			x: 5.5d
+			y: -4.0d
+		}
+		{
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftbteams:textures/accept.png"
+				}
+			}
+			id: "43590004376EE9C3"
+			rewards: [{
+				command: "/worldborder add 40"
+				id: "37ED955FFBDC8456"
+				title: "Мир +40"
+				type: "command"
+			}]
+			shape: "diamond"
+			subtitle: "Постройте баню/сауну/хамам"
+			tasks: [{
+				id: "3CFDB02352A3C97B"
+				type: "checkmark"
+			}]
+			title: "С лёгким паром"
+			x: 13.5d
+			y: -1.0d
+		}
+		{
+			description: [""]
+			icon: {
+				Count: 1
+				id: "magistuarmory:iron_bastardsword"
+				tag: {
+					Damage: 0
+				}
+			}
+			id: "53B6EAC630239868"
+			rewards: [{
+				command: "/worldborder add 40"
+				id: "5B46C36A3595D8E9"
+				title: "Мир +40"
+				type: "command"
+			}]
+			shape: "diamond"
+			subtitle: "Постройте баню/сауну/хамам"
+			tasks: [{
+				id: "072AA17CF08B0D10"
+				type: "checkmark"
+			}]
+			title: "Дуельная площадка"
+			x: 13.5d
+			y: 0.0d
+		}
+		{
+			dependencies: [
+				"39923A00FDD37579"
+				"35B0C931C24BB985"
+			]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "sullysmod:item/lost_crown"
+				}
+			}
+			id: "08488D42E01B76B3"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "372B4082BDF114C9"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "БОГОМ БЫЛ ИЗБРАН НАШ ЛИДЕР, ПРАВИТЕЛЬ ПОСЕЛЕНИЯ"
+			tasks: [{
+				id: "4FDFEC2AB778EDBF"
+				type: "checkmark"
+			}]
+			title: "ДА ЗДРАВСТВУЕТ НОВЫЙ КНЯЗЬ"
+			x: 8.5d
+			y: -5.5d
+		}
+		{
+			dependencies: ["28E1E641ECF7AFF2"]
+			description: [""]
+			icon: "another_furniture:bamboo_chair"
+			id: "39923A00FDD37579"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "1336D9ED8CA67199"
+				title: "Мир +10"
+				type: "command"
+			}]
+			subtitle: "ЗДЕСЬ ВОССЯДЕТ БУДУЩИЙ КНЯЗЬ"
+			tasks: [{
+				id: "3FFC8772D4B1D3AD"
+				type: "checkmark"
+			}]
+			title: "ТРОН"
+			x: 5.5d
+			y: -5.5d
+		}
+		{
+			dependencies: ["2C8154437B50384A"]
+			description: [""]
+			icon: "create:limestone_pillar"
+			id: "751CE2CBA39DB1E7"
+			rewards: [
+				{
+					command: "/oh:updateScoreboard_Worldborder(+50)"
+					id: "1C1BB80FDA13DA1E"
+					title: "Мир +50"
+					type: "command"
+				}
+				{
+					command: "/oh:updateScoreboard_Worldborder(+30)"
+					id: "5E31543F3AD3F605"
+					title: "Мир +30"
+					type: "command"
+				}
+			]
+			shape: "gear"
+			subtitle: "ДВОРЕЦ ВЕЛИКОГО ГОСУДАРЯ"
+			tasks: [{
+				id: "6746E58AC7886035"
+				type: "checkmark"
+			}]
+			title: "ДВОРЕЦ КНЯЖЕСКИЙ"
+			x: 7.0d
+			y: -9.5d
+		}
+		{
+			dependencies: ["08488D42E01B76B3"]
+			description: [""]
+			icon: "minecraft:red_carpet"
+			id: "2C8154437B50384A"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+20)"
+				id: "69729576CB5690D9"
+				title: "Мир +20"
+				type: "command"
+			}]
+			shape: "square"
+			subtitle: "ОБРАТИСЬ К КНЯЗЮ!"
+			tasks: [{
+				id: "64B3C6CE8CA9B350"
+				type: "checkmark"
+			}]
+			title: "ТРОННЫЙ ЗАЛ"
+			x: 7.0d
+			y: -7.5d
+		}
+		{
+			dependencies: ["08488D42E01B76B3"]
+			description: [""]
+			icon: {
+				Count: 1
+				id: "minecraft:iron_axe"
+				tag: {
+					Damage: 0
+				}
+			}
+			id: "23009A396C95D3C5"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+20)"
+				id: "23F264D69DDA0625"
+				title: "Мир +20"
+				type: "command"
+			}]
+			shape: "square"
+			subtitle: "Постройте Эшафот - место для казней"
+			tasks: [{
+				id: "64A81AAE8C3566A7"
+				type: "checkmark"
+			}]
+			title: "ЭШАФОТ"
+			x: 9.0d
+			y: -7.5d
+		}
+		{
+			dependencies: ["4A94D355ABCBBC3C"]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "cuffed:block/toilet_water"
+				}
+			}
+			id: "3AB9385BAA380A4D"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "21083A82D79C4933"
+				title: "Мир +10"
+				type: "command"
+			}]
+			shape: "circle"
+			subtitle: "Создайте бесконечный источник воды"
+			tasks: [{
+				id: "41F3C79F06A9B06D"
+				type: "checkmark"
+			}]
+			title: "Первый закон термодинамики"
+			x: -2.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["3AB9385BAA380A4D"]
+			description: [
+				"*Поверхность"
+				"*Хранилище с мотыгой и семенами"
+				"*Хранилище для агрокультур"
+			]
+			icon: "minecraft:wheat_seeds"
+			id: "05A4C8876B2E2A9D"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+10)"
+				id: "5B489B9824086079"
+				title: "Мир +10"
+				type: "command"
+			}]
+			shape: "circle"
+			subtitle: "Создайте поверхность для возделывания земли*"
+			tasks: [{
+				id: "0506DCC9A730F6BB"
+				type: "checkmark"
+			}]
+			title: "Сельское хозяйство"
+			x: -3.5d
+			y: 0.0d
+		}
+	]
+	title: "Общее"
+}

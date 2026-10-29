@@ -1,0 +1,118 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "0D43BB0401CAFA8B"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		id: "ftbquests:custom_icon"
+		count: 1
+		components: {
+			"ftbquests:icon": "dynamic_fps:textures/battery/icon/charging_10.png"
+		}
+	}
+	id: "0D43BB0401CAFA8B"
+	order_index: 4
+	quest_links: [ ]
+	quests: [
+		{
+			description: [""]
+			icon: {
+				id: "irons_spellbooks:wizard_hat"
+				count: 1
+				components: {
+					"minecraft:damage": 0
+					"minecraft:custom_data": {
+						"irons_spellbooks:clothing_variant": "hat"
+					}
+				}
+			}
+			icon_scale: 0.7d
+			id: "73F8088302E18841"
+			shape: "gear"
+			size: 3.0d
+			subtitle: "Займите профессию Волшебника-Мудреца"
+			tasks: [
+				{
+					id: "132366B3811B5E57"
+					type: "checkmark"
+				}
+				{
+					consume_items: true
+					id: "06B517C5DDE6D97E"
+					item: {
+						id: "minecraft:filled_map"
+						count: 1
+						components: {
+							"minecraft:lore": [
+								"[{\"text\":\"Примените на первом достижении во вкладке основной профессии, чтобы разблокировать ее. \",\"italic\":false,\"color\":\"white\"}]"
+								"[\"\"]"
+								"[{\"text\":\"МОЖНО ПРИМЕНИТЬ ТОЛЬКО 1 РАЗ!\",\"italic\":false,\"underlined\":true}]"
+							]
+							"minecraft:custom_name": "[\"\",{\"text\":\"Лицензия на основную профессию\",\"color\":\"yellow\"}]"
+							"minecraft:enchantment_glint_override": 1b
+						}
+					}
+					type: "item"
+				}
+			]
+			title: "Волшебник-Мудрец"
+			x: -6.5d
+			y: -2.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/check"
+				}
+			}
+			id: "73B77AD3546AB436"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/approval"
+				id: "0315872F3200ECA0"
+				type: "command"
+			}]
+			subtitle: "Выразить &lодобрение&r Князя (Репутация +2)"
+			tasks: [{
+				id: "1E2B9248B05E8711"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Одобрение"
+			x: -4.5d
+			y: -3.0d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/close"
+				}
+			}
+			id: "4EEA909703EEA30F"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/disapproval"
+				id: "4E45D7DBFFA343CE"
+				type: "command"
+			}]
+			subtitle: "Выразить &lнеодобрение&r Князя (Репутация -2)"
+			tasks: [{
+				id: "3DE7410589286D28"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Неодобрение"
+			x: -4.5d
+			y: -2.0d
+		}
+	]
+	title: "Волшебник-Мудрец"
+}

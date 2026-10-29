@@ -1,0 +1,62 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "7090B089B2CCE53D"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "dynamic_fps:textures/battery/icon/charging_0.png"
+		}
+	}
+	id: "7090B089B2CCE53D"
+	order_index: 15
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				""
+				"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+			]
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "alexsmobs:textures/mob_effect/earthquake.png"
+				}
+			}
+			icon_scale: 0.7d
+			id: "4AAC2D894E272570"
+			rewards: [{
+				command: "/oh:updateScoreboard_Worldborder(+50)"
+				id: "33A17ECB1B5A96B1"
+				title: "Мир +50"
+				type: "command"
+			}]
+			shape: "hexagon"
+			size: 3.0d
+			subtitle: "Займите профессию артиста"
+			tasks: [{
+				id: "6937FF03360C2B04"
+				type: "checkmark"
+			}]
+			title: "Артист"
+			x: 0.5d
+			y: 1.0d
+		}
+		{
+			id: "3FCDF0A460B9E425"
+			subtitle: "Заведите двух &l&nгрязных&r свиней"
+			tasks: [{
+				id: "29109ABC9F8E599A"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Шут"
+			x: 2.0d
+			y: -1.5d
+		}
+	]
+	title: "Артист"
+}

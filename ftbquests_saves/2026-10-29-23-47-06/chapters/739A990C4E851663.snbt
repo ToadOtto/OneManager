@@ -1,0 +1,216 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	disable_toast: true
+	filename: "739A990C4E851663"
+	group: ""
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "ftblibrary:icons/friends"
+		}
+	}
+	id: "739A990C4E851663"
+	images: [
+		{
+			height: 3.0d
+			image: "supplementaries:item/statue"
+			rotation: 0.0d
+			width: 3.0d
+			x: 0.6071428571428967d
+			y: -3.2857142857142847d
+		}
+		{
+			height: 2.0d
+			image: "bhc:item/red_heart"
+			rotation: 0.0d
+			width: 2.0d
+			x: 3.0261904761904646d
+			y: -3.5d
+		}
+		{
+			height: 2.5d
+			image: "irons_lib:textures/gui/sprites/statue_pose_screen/flip_pose.png"
+			rotation: 90.0d
+			width: 2.5d
+			x: 4.0d
+			y: 1.0d
+		}
+		{
+			height: 2.0d
+			image: "irons_spellbooks:textures/mob_effect/heartstop.png"
+			rotation: 0.0d
+			width: 2.0d
+			x: -2.0d
+			y: -3.5d
+		}
+		{
+			height: 1.0d
+			image: "sullysmod:item/lost_crown"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5357142857143344d
+			y: -4.642857142857153d
+		}
+		{
+			color: 16316927
+			height: 1.0d
+			image: "minecraft:textures/entity/banner/stripe_middle.png"
+			rotation: 90.0d
+			width: 200.0d
+			x: -8.0d
+			y: 4.0d
+		}
+		{
+			color: 12171195
+			height: 1.0d
+			image: "minecraft:item/light_00"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5d
+			y: 10.0d
+		}
+		{
+			color: 2940714
+			height: 1.0d
+			image: "minecraft:item/light_03"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5d
+			y: 14.5d
+		}
+		{
+			color: 2940714
+			height: 1.0d
+			image: "minecraft:item/light_01"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5d
+			y: 11.5d
+		}
+		{
+			color: 2940714
+			height: 1.0d
+			image: "minecraft:item/light_02"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5d
+			y: 13.0d
+		}
+		{
+			color: 7780891
+			height: 2.0d
+			image: "ftbquests:textures/shapes/square/outline.png"
+			rotation: 0.0d
+			width: 2.0d
+			x: 3.0d
+			y: -3.5d
+		}
+		{
+			color: 12779777
+			height: 2.0d
+			image: "ftbquests:textures/shapes/square/outline.png"
+			rotation: 0.0d
+			width: 2.0d
+			x: -2.0d
+			y: -3.5d
+		}
+		{
+			color: 16631589
+			height: 1.0d
+			image: "minecraft:item/light_01"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5d
+			y: 8.5d
+		}
+		{
+			color: 16631589
+			height: 1.0d
+			image: "minecraft:item/light_02"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5d
+			y: 7.0d
+		}
+		{
+			color: 16631589
+			height: 1.0d
+			image: "minecraft:item/light_03"
+			rotation: 0.0d
+			width: 1.0d
+			x: 0.5d
+			y: 5.5d
+		}
+	]
+	order_index: 3
+	quest_links: [ ]
+	quests: [
+		{
+			can_repeat: true
+			description: [""]
+			disable_toast: true
+			hide_until_deps_complete: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftbquests:block/barrier"
+				}
+			}
+			icon_scale: 0.7d
+			id: "744B736AEBF08CEF"
+			optional: true
+			repeat_cooldown: 5
+			rewards: [{
+				command: "/rep_event_plus_30"
+				id: "6DBC528D974F8FFF"
+				type: "command"
+			}]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "Расширить мир на 100 блоков"
+			tasks: [{
+				id: "76E67AC13E949812"
+				type: "checkmark"
+			}]
+			title: "(+30) Экспансия Владений"
+			x: 8.190476190476147d
+			y: -1.9166666666666714d
+		}
+		{
+			can_repeat: true
+			description: [""]
+			disable_toast: true
+			hide_until_deps_complete: true
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "ftbquests:block/barrier"
+				}
+			}
+			icon_scale: 0.7d
+			id: "7820C52F30383B1F"
+			optional: true
+			repeat_cooldown: 5
+			rewards: [{
+				command: "/rep_event_plus_30"
+				id: "05AEED45735E0EB5"
+				type: "command"
+			}]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "Расширить мир на 100 блоков"
+			tasks: [{
+				id: "4603849E3BE00CA0"
+				type: "checkmark"
+			}]
+			title: "(+30) Экспансия Владений"
+			x: 10.0d
+			y: -4.0d
+		}
+	]
+	title: "Политика"
+}

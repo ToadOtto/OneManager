@@ -1,0 +1,48 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "1625317011968DDE"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "dynamic_fps:textures/battery/icon/charging_0.png"
+		}
+	}
+	id: "1625317011968DDE"
+	order_index: 17
+	quest_links: [ ]
+	quests: [{
+		description: [
+			""
+			"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+		]
+		icon: {
+			Count: 1
+			id: "ftbquests:custom_icon"
+			tag: {
+				Icon: "alexsmobs:textures/mob_effect/earthquake.png"
+			}
+		}
+		icon_scale: 0.7d
+		id: "7DBABB11C20EA6C3"
+		rewards: [{
+			command: "/oh:updateScoreboard_Worldborder(+50)"
+			id: "10EA6EB7BA7EEFB4"
+			title: "Мир +50"
+			type: "command"
+		}]
+		shape: "hexagon"
+		size: 3.0d
+		subtitle: "Займите профессию артиста"
+		tasks: [{
+			id: "3AE1A109B5BBCCA9"
+			type: "checkmark"
+		}]
+		title: "Артист"
+		x: -6.5d
+		y: 0.5d
+	}]
+	title: "Летописец"
+}

@@ -1,0 +1,253 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "36F305A1271B0A1F"
+	group: ""
+	icon: {
+		Count: 1
+		id: "ftbquests:custom_icon"
+		tag: {
+			Icon: "ftblibrary:icons/lock_open"
+		}
+	}
+	id: "36F305A1271B0A1F"
+	order_index: 2
+	quest_links: [ ]
+	quests: [
+		{
+			icon: {
+				Count: 1
+				id: "ftbquests:custom_icon"
+				tag: {
+					Icon: "minecraft:block/nether_portal"
+				}
+			}
+			id: "535AA8EDF537FC75"
+			tasks: [{
+				id: "602C491819015AD5"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Врата в Преисподнюю"
+			x: 1.5d
+			y: -6.5d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "0F79185D8073E75A"
+			rewards: [{
+				id: "477D5F66B2B7EE94"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "3D02DAFE2F7486D3"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Первый кусок древней конструкции"
+			x: 4.0d
+			y: -7.5d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "53A32658D6F73BC0"
+			rewards: [{
+				id: "791D697B31729D6C"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "6EC2248F0EFF429A"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Второй кусок древней конструкции"
+			x: 5.0d
+			y: -8.0d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "280CFCBF7338F97E"
+			rewards: [{
+				id: "4A1FC716B81997EF"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "25C59DEFC635665B"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Третий кусок древней конструкции"
+			x: 6.0d
+			y: -8.0d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "761C09F4D5562700"
+			rewards: [{
+				id: "68609D249555C0AA"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "1585A97976B2BE4A"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Четвертый кусок древней конструкции"
+			x: 7.0d
+			y: -8.0d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "296217E6E62B04B0"
+			rewards: [{
+				id: "3B44216094F08C31"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "0BB98C0DE0B19743"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Пятый кусок древней конструкции"
+			x: 8.0d
+			y: -7.5d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "5ADADA411C393D5B"
+			rewards: [{
+				id: "04D73206357A88F8"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "490C68581BFDF8CE"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Шестой кусок древней конструкции"
+			x: 8.0d
+			y: -6.5d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "65DB8C3741549FE7"
+			rewards: [{
+				id: "25A769A92DB79FE3"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "19C7F1F6EB0E563A"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Седьмой кусок древней конструкции"
+			x: 8.0d
+			y: -5.5d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "594F2D0F3CF2240B"
+			rewards: [{
+				id: "6254A3B1F7B345B7"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "2E4DBF5AB5927CF2"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Восьмой кусок древней конструкции"
+			x: 7.0d
+			y: -5.0d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "09765CB04349A0DA"
+			rewards: [{
+				id: "3A6DCE551F79742F"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "364ACDD9B7A3602F"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Девятый кусок древней конструкции"
+			x: 6.0d
+			y: -5.0d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "13F1A404DD8EAD27"
+			rewards: [{
+				id: "5DA078103B28B267"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "6B35299A981C5C10"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Десятый кусок древней конструкции"
+			x: 5.0d
+			y: -5.0d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "23D42B4E42197A4E"
+			rewards: [{
+				id: "5A05B992A0AB5A4A"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "211CBE59B5B598E4"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Одиннадцатый кусок древней конструкции"
+			x: 4.0d
+			y: -5.5d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "7CAC85D8C2E9EA80"
+			rewards: [{
+				id: "051B4B78C79164E5"
+				item: "minecraft:end_portal_frame"
+				type: "item"
+			}]
+			tasks: [{
+				id: "100657939D3C4E51"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Двенадцатый кусок древней конструкции"
+			x: 4.0d
+			y: -6.5d
+		}
+		{
+			icon: "minecraft:end_portal_frame"
+			id: "396160EC255509D2"
+			tasks: [{
+				id: "75131B56C8A84093"
+				title: "{ezklj"
+				type: "checkmark"
+			}]
+			title: "Войдите в древний портал"
+			x: 6.0d
+			y: -6.5d
+		}
+	]
+	title: "Прогрессия"
+}

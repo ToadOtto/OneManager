@@ -1,0 +1,115 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "1C6B149EF93A2ACF"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		id: "ftbquests:custom_icon"
+		count: 1
+		components: {
+			"ftbquests:icon": "minecraft:item/bow_pulling_0"
+		}
+	}
+	id: "1C6B149EF93A2ACF"
+	order_index: 2
+	quest_links: [ ]
+	quests: [
+		{
+			description: [""]
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "minecraft:item/bow_pulling_0"
+				}
+			}
+			icon_scale: 0.7d
+			id: "47B1B2A3F31D6113"
+			shape: "gear"
+			size: 3.0d
+			subtitle: "Займите профессию Охотника-Авантюриста"
+			tasks: [
+				{
+					id: "4599A5BBE22E74DE"
+					type: "checkmark"
+				}
+				{
+					consume_items: true
+					id: "03AFC1A7F4539F5F"
+					item: {
+						id: "minecraft:filled_map"
+						count: 1
+						components: {
+							"minecraft:lore": [
+								"[{\"text\":\"Примените на первом достижении во вкладке основной профессии, чтобы разблокировать ее. \",\"italic\":false,\"color\":\"white\"}]"
+								"[\"\"]"
+								"[{\"text\":\"МОЖНО ПРИМЕНИТЬ ТОЛЬКО 1 РАЗ!\",\"italic\":false,\"underlined\":true}]"
+							]
+							"minecraft:custom_name": "[\"\",{\"text\":\"Лицензия на основную профессию\",\"color\":\"yellow\"}]"
+							"minecraft:enchantment_glint_override": 1b
+						}
+					}
+					type: "item"
+				}
+			]
+			title: "Охотник-Авантюрист"
+			x: -1.0d
+			y: -1.0d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/check"
+				}
+			}
+			id: "48C3E8D71E36DEDD"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/approval"
+				id: "0F6EE386DA49D88A"
+				type: "command"
+			}]
+			subtitle: "Выразить &lодобрение&r Князя (Репутация +2)"
+			tasks: [{
+				id: "77E3173AAC3EE296"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Одобрение"
+			x: 1.0d
+			y: -1.5d
+		}
+		{
+			can_repeat: true
+			icon: {
+				id: "ftbquests:custom_icon"
+				count: 1
+				components: {
+					"ftbquests:icon": "ftblibrary:icons/close"
+				}
+			}
+			id: "75EE4444970A154C"
+			optional: true
+			repeat_cooldown: 1200
+			rewards: [{
+				command: "/disapproval"
+				id: "0CCF798CB442B3C2"
+				type: "command"
+			}]
+			subtitle: "Выразить &lнеодобрение&r Князя (Репутация -2)"
+			tasks: [{
+				id: "79966208034E61D4"
+				title: "Свиньи"
+				type: "checkmark"
+			}]
+			title: "Неодобрение"
+			x: 1.0d
+			y: -0.5d
+		}
+	]
+	title: "Охотник-Авантюрист"
+}

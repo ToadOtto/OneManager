@@ -1,0 +1,48 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "5C036864C171EE09"
+	group: "39E62EF58A8B4AE0"
+	icon: {
+		id: "ftbquests:custom_icon"
+		count: 1
+		components: {
+			"ftbquests:icon": "dynamic_fps:textures/battery/icon/charging_0.png"
+		}
+	}
+	id: "5C036864C171EE09"
+	order_index: 18
+	quest_links: [ ]
+	quests: [{
+		description: [
+			""
+			"{image:ftblibrary:icons/heart width:100 height:100 align:center}"
+		]
+		icon: {
+			id: "ftbquests:custom_icon"
+			count: 1
+			components: {
+				"ftbquests:icon": "alexsmobs:textures/mob_effect/earthquake.png"
+			}
+		}
+		icon_scale: 0.7d
+		id: "28A10FBA6CC6BC4A"
+		rewards: [{
+			command: "/oh:updateScoreboard_Worldborder(+50)"
+			id: "3ECBD4E26682952E"
+			title: "Мир +50"
+			type: "command"
+		}]
+		shape: "hexagon"
+		size: 3.0d
+		subtitle: "Займите профессию артиста"
+		tasks: [{
+			id: "38865AA87C0FBA19"
+			type: "checkmark"
+		}]
+		title: "Артист"
+		x: -6.5d
+		y: 0.5d
+	}]
+	title: "Целитель"
+}
