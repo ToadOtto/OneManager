@@ -596,7 +596,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         });
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                UiSoundHelper.playButtonClick();
                 setTab(tab);
                 return true;
             }
@@ -617,7 +617,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                UiSoundHelper.playButtonClick();
                 onClick.run();
                 return true;
             }
@@ -644,7 +644,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                UiSoundHelper.playButtonClick();
                 onClick.run();
                 return true;
             }
@@ -766,6 +766,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 // Click opens dossier modal
                 card.mouseDown().subscribe((mouseX, mouseY, button) -> {
                     if (button == 0) {
+                        UiSoundHelper.playButtonClick();
                         openCharacterDetailModal(entry);
                         return true;
                     }
@@ -841,6 +842,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
                 card.mouseDown().subscribe((mouseX, mouseY, button) -> {
                     if (button == 0) {
+                        UiSoundHelper.playButtonClick();
                         openDeadCharacterDetailModal(entry);
                         return true;
                     }
@@ -925,6 +927,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
                 card.mouseDown().subscribe((mouseX, mouseY, button) -> {
                     if (button == 0) {
+                        UiSoundHelper.playButtonClick();
                         openDeadCharacterDetailModal(entry);
                         return true;
                     }
@@ -1020,7 +1023,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                UiSoundHelper.playButtonClick();
                 onClick.run();
                 return true;
             }
@@ -1331,6 +1334,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         // Click opens profession dialog
         card.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 openProfessionModal(prof);
                 return true;
             }
@@ -1487,7 +1491,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         // Click card to open profession modal details
         card.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                UiSoundHelper.playButtonClick();
                 openProfessionModal(prof);
                 return true;
             }
@@ -3580,6 +3584,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 cell.mouseLeave().subscribe(() -> cell.surface(Surface.flat(0xFF222733).and(Surface.outline(0xFF3E485C))));
                 cell.mouseDown().subscribe((mx, my, btn) -> {
                     if (btn == 0) {
+                        UiSoundHelper.playButtonClick();
                         depositTreasuryAmount = Math.min(tierCost, Math.max(1, balance));
                         amtBox.setValue(String.valueOf(depositTreasuryAmount));
                         return true;
@@ -3596,6 +3601,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 cell.mouseLeave().subscribe(() -> cell.surface(Surface.flat(0xFF1B1E26).and(Surface.outline(0xFF2D3442))));
                 cell.mouseDown().subscribe((mx, my, btn) -> {
                     if (btn == 0) {
+                        UiSoundHelper.playButtonClick();
                         depositTreasuryAmount = Math.min(tierCost, Math.max(1, balance));
                         amtBox.setValue(String.valueOf(depositTreasuryAmount));
                         return true;

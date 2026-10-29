@@ -183,7 +183,7 @@ public class RebirthScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                UiSoundHelper.playButtonClick();
                 onClick.run();
                 return true;
             }

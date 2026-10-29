@@ -1,5 +1,6 @@
 package com.onemanager.client.gui.note;
 
+import com.onemanager.client.gui.UiSoundHelper;
 import com.onemanager.item.ModItems;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.Components;
@@ -164,6 +165,7 @@ public class NoteViewScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(0xFF1E222A).and(Surface.outline(0xFF353B47))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }
@@ -182,6 +184,7 @@ public class NoteViewScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(0xFF1E222A).and(Surface.outline(0xFF353B47))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }

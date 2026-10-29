@@ -1,6 +1,7 @@
 package com.onemanager.client.gui.note;
 
 import com.onemanager.client.ClientPacketHandler;
+import com.onemanager.client.gui.UiSoundHelper;
 import com.onemanager.client.gui.components.EditBoxComponent;
 import com.onemanager.data.ActiveCharacter;
 import com.onemanager.data.CharacterWorldData;
@@ -226,6 +227,7 @@ public class SendNoteScreen extends BaseOwoScreen<FlowLayout> {
 
             anonRow.mouseDown().subscribe((mouseX, mouseY, button) -> {
                 if (button == 0) {
+                    UiSoundHelper.playButtonClick();
                     hideAuthor = !hideAuthor;
                     checkMark.text(Component.literal(hideAuthor ? "[✔] " : "[  ] ").withStyle(hideAuthor ? ChatFormatting.GREEN : ChatFormatting.GRAY));
                     anonLabel.text(Component.literal("Скрыть авторство").withStyle(hideAuthor ? ChatFormatting.WHITE : ChatFormatting.GRAY));
@@ -287,6 +289,7 @@ public class SendNoteScreen extends BaseOwoScreen<FlowLayout> {
 
             row.mouseDown().subscribe((mouseX, mouseY, button) -> {
                 if (button == 0) {
+                    UiSoundHelper.playButtonClick();
                     selectedRecipientUuid = r.uuid();
                     populateRecipients(searchBox != null ? searchBox.getValue().trim().toLowerCase() : "");
                     updateSendButtonState();
@@ -382,6 +385,7 @@ public class SendNoteScreen extends BaseOwoScreen<FlowLayout> {
         });
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }
@@ -400,6 +404,7 @@ public class SendNoteScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(0xFF222733).and(Surface.outline(0xFF3B4456))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }

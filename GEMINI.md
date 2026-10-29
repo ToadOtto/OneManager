@@ -20,6 +20,10 @@
 - **Tooltip & Scissor Safety**:
   - Never call `tooltip((Component) null)`—use explicit `shouldDrawTooltip()` checks or remove listeners to prevent scissor stack corruptions.
   - When rendering tooltips over modal dialogs or graph overlays, disable depth test and elevate Z-index (`Z >= 800`) to prevent modals from drawing over them.
+- **Button Click Audio Feedback (Standard Minecraft Button Click)**:
+  - All primary navigation tab buttons in the left list, category switching buttons (such as in the professions tab), sub-tabs, interactive cards, and action buttons MUST play the standard Minecraft button click sound from settings:
+    `UiSoundHelper.playButtonClick();` (invoking `Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));`).
+  - Since custom owo-ui container components (`FlowLayout`, `StackLayout`) used as buttons do not play sound automatically, always ensure this sound is explicitly called in `mouseDown()` / click handlers when `button == 0`.
 
 ## 3. Project Knowledge Base
 - **Full Architecture & Features**: Always refer to `PROJECT_CONTEXT.md` for complete documentation on all existing systems (Treasury, Chests, Graph, Characters, Laws, Notes, GUI tabs, Networking, Data storage). Update `PROJECT_CONTEXT.md` upon user request when new features are added.

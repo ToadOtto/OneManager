@@ -111,7 +111,7 @@ public class TreasuryReasonScreen extends BaseOwoScreen<StackLayout> {
         confirmBtn.mouseLeave().subscribe(() -> confirmBtn.surface(Surface.flat(btnBg).and(Surface.outline(btnBorder))));
         confirmBtn.mouseDown().subscribe((mx, my, button) -> {
             if (button == 0) {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                UiSoundHelper.playButtonClick();
                 trySubmit();
                 return true;
             }

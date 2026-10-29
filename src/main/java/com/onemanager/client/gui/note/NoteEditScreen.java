@@ -2,6 +2,7 @@ package com.onemanager.client.gui.note;
 
 import com.onemanager.client.ClientPacketHandler;
 import com.onemanager.client.gui.CharHistoryScreen;
+import com.onemanager.client.gui.UiSoundHelper;
 import com.onemanager.client.gui.components.EditBoxComponent;
 import com.onemanager.client.gui.components.MultiLineEditBoxComponent;
 import com.onemanager.client.gui.components.TextureIconComponent;
@@ -231,6 +232,7 @@ public class NoteEditScreen extends BaseOwoScreen<FlowLayout> {
             lawBtn.mouseLeave().subscribe(() -> lawBtn.surface(Surface.flat(0xFF231D12).and(Surface.outline(0xFFD4AF37))));
             lawBtn.mouseDown().subscribe((mouseX, mouseY, button) -> {
                 if (button == 0) {
+                    UiSoundHelper.playButtonClick();
                     openEnactLawConfirmation();
                     return true;
                 }
@@ -389,6 +391,7 @@ public class NoteEditScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }
@@ -407,6 +410,7 @@ public class NoteEditScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(0xFF1E222A).and(Surface.outline(0xFF353B47))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }

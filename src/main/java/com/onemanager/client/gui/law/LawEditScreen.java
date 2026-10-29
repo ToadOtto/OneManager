@@ -1,6 +1,7 @@
 package com.onemanager.client.gui.law;
 
 import com.onemanager.client.gui.CharHistoryScreen;
+import com.onemanager.client.gui.UiSoundHelper;
 import com.onemanager.client.gui.components.MultiLineEditBoxComponent;
 import com.onemanager.client.gui.components.TextureIconComponent;
 import com.onemanager.network.EditLawPacket;
@@ -229,6 +230,7 @@ public class LawEditScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }
@@ -247,6 +249,7 @@ public class LawEditScreen extends BaseOwoScreen<FlowLayout> {
         btn.mouseLeave().subscribe(() -> btn.surface(Surface.flat(0xFF1E222A).and(Surface.outline(0xFF353B47))));
         btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
+                UiSoundHelper.playButtonClick();
                 action.run();
                 return true;
             }
