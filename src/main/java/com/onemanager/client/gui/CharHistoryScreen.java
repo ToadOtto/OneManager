@@ -1060,8 +1060,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         LabelComponent nameLabel = Components.label(Component.literal(charName).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD));
         headerBox.child(nameLabel);
 
-        // 1c. Heading "Недельные грамоты:"
-        LabelComponent grantsTitle = Components.label(Component.literal("Недельные грамоты:").withStyle(ChatFormatting.GRAY));
+        // 1c. Heading "Недельные грамоты (=ваши профессии)"
+        LabelComponent grantsTitle = Components.label(Component.literal("Недельные грамоты (=ваши профессии)").withStyle(ChatFormatting.GRAY));
         grantsTitle.margins(Insets.top(2));
         headerBox.child(grantsTitle);
 
@@ -1077,10 +1077,6 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         brandRow.child(brandIcon);
         brandRow.tooltip(Component.literal("Недельные грамоты: раз в неделю (140 мин.) на ваш счёт начисляются Гос. Марки (" + weeklyGrantsCount + " шт.).").withStyle(ChatFormatting.GRAY));
         headerBox.child(brandRow);
-
-        // 1e. Below icon: gray text "всего занято профессий: n"
-        LabelComponent occCountLabel = Components.label(Component.literal("всего занято профессий: " + myOccupied.size()).withStyle(ChatFormatting.GRAY));
-        headerBox.child(occCountLabel);
 
         scrollContent.child(headerBox);
 
@@ -1111,19 +1107,36 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             emptyBox.child(goCatalogBtn);
 
             scrollContent.child(emptyBox);
-        } else {
-            // Horizontal row: cards are centered up to 4
+        } else if (myOccupied.size() < 5) {
+            // Horizontal row: cards are centered up to 4, shifted 1px up
             FlowLayout cardsRow = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
             cardsRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
             cardsRow.gap(12);
             cardsRow.padding(Insets.horizontal(8));
-            cardsRow.margins(Insets.top(8));
+            cardsRow.margins(Insets.top(7));
 
             for (Profession prof : myOccupied) {
-                cardsRow.child(createOccupiedProfessionCard(prof));
+                cardsRow.child(createOccupiedProfessionCard(prof, false));
             }
 
             scrollContent.child(cardsRow);
+        } else {
+            // 5 or more cards: scrollable horizontal row with horizontal scrollbar at bottom, shifted 1px up
+            FlowLayout cardsRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+            cardsRow.alignment(HorizontalAlignment.LEFT, VerticalAlignment.CENTER);
+            cardsRow.gap(12);
+            cardsRow.padding(Insets.of(0, 8, 10, 8));
+
+            for (Profession prof : myOccupied) {
+                cardsRow.child(createOccupiedProfessionCard(prof, true));
+            }
+
+            ScrollContainer<FlowLayout> hScroll = Containers.horizontalScroll(Sizing.fill(100), Sizing.fixed(164), cardsRow);
+            hScroll.scrollbar(DARK_SCROLLBAR);
+            hScroll.scrollbarThiccness(4);
+            hScroll.margins(Insets.top(7));
+
+            scrollContent.child(hScroll);
         }
 
         ScrollContainer<FlowLayout> scroll = Containers.verticalScroll(Sizing.fill(100), Sizing.expand(), scrollContent);
@@ -1402,6 +1415,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     }
 
     private FlowLayout createOccupiedProfessionCard(Profession prof) {
+        return createOccupiedProfessionCard(prof, false);
+    }
+
+    private FlowLayout createOccupiedProfessionCard(Profession prof, boolean fixedWidth) {
         ProfessionCategory cat = prof.getType();
         int catColor = cat.getColor();
 
@@ -1421,8 +1438,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             hoverBg = 0xFF281E13;
         }
 
-        // Rectangular vertical card: ~23% width (max 4 per row, centered), fixed 152px height
-        FlowLayout card = Containers.verticalFlow(Sizing.fill(23), Sizing.fixed(152));
+        // Rectangular vertical card: ~23% width (max 4 per row, centered), fixed 152px height (or fixed 160px width when scrollable)
+        FlowLayout card = Containers.verticalFlow(fixedWidth ? Sizing.fixed(160) : Sizing.fill(23), Sizing.fixed(152));
         card.padding(Insets.of(6, 6, 6, 6));
         card.horizontalAlignment(HorizontalAlignment.CENTER);
         card.cursorStyle(CursorStyle.HAND);
