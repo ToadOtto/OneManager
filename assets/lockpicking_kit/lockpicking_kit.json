@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "## ",
+    ".S.",
+    "~=="
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:leather"
+    },
+    ".": {
+      "item": "minecraft:red_concrete_powder"
+    },
+    "S": {
+      "item": "minecraft:shears"
+    },
+    "~": {
+      "item": "minecraft:string"
+    },
+    "=": {
+      "item": "minecraft:copper_ingot"
+    }
+  },
+  "result": {}
+}

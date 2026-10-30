@@ -145,6 +145,36 @@ public class NetworkHandler {
                 OpenTreasuryReasonScreenS2CPacket::handle
         );
 
+        registrar.playToServer(
+                LockpickQteAnswerC2SPacket.TYPE,
+                LockpickQteAnswerC2SPacket.STREAM_CODEC,
+                LockpickQteAnswerC2SPacket::handle
+        );
+
+        registrar.playToServer(
+                LockpickCancelC2SPacket.TYPE,
+                LockpickCancelC2SPacket.STREAM_CODEC,
+                LockpickCancelC2SPacket::handle
+        );
+
+        registrar.playToClient(
+                OpenLockpickScreenS2CPacket.TYPE,
+                OpenLockpickScreenS2CPacket.STREAM_CODEC,
+                OpenLockpickScreenS2CPacket::handle
+        );
+
+        registrar.playToClient(
+                LockpickQteS2CPacket.TYPE,
+                LockpickQteS2CPacket.STREAM_CODEC,
+                LockpickQteS2CPacket::handle
+        );
+
+        registrar.playToClient(
+                LockpickEndS2CPacket.TYPE,
+                LockpickEndS2CPacket.STREAM_CODEC,
+                LockpickEndS2CPacket::handle
+        );
+
         OneManager.LOGGER.info("Registered network payloads for OneManager.");
     }
 

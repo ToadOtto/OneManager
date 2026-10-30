@@ -30,6 +30,8 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.MEMORIAL_SIGN.get());
                         output.accept(ModItems.SMALL_TREASURY_CHEST.get());
                         output.accept(ModItems.LARGE_TREASURY_CHEST.get());
+                        output.accept(ModItems.LOCKPICK.get());
+                        output.accept(ModItems.LOCKPICK_KIT.get());
                     })
                     .build()
     );

@@ -41,6 +41,12 @@ public class ModItems {
 
     public static final DeferredItem<BlockItem> LARGE_TREASURY_CHEST = ITEMS.registerSimpleBlockItem("large_treasury_chest", ModBlocks.LARGE_TREASURY_CHEST);
 
+    public static final DeferredItem<LockpickItem> LOCKPICK = ITEMS.register("lockpick",
+            () -> new LockpickItem(new Item.Properties().stacksTo(16), 2400, "tooltip.onemanager.lockpick", 160, 300, 40, 0));
+
+    public static final DeferredItem<LockpickItem> LOCKPICK_KIT = ITEMS.register("lockpick_kit",
+            () -> new LockpickItem(new Item.Properties().stacksTo(4), 1200, "tooltip.onemanager.lockpick_kit", 120, 240, 30, 1));
+
     public static final DeferredRegister.Items LEGACY_ITEMS = DeferredRegister.createItems("monarchcrownmod");
 
     public static final DeferredItem<CrownItem> LEGACY_MONARCH_CROWN = LEGACY_ITEMS.registerItem("monarch_crown",

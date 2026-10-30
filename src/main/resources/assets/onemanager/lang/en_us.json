@@ -33,5 +33,9 @@
   "block.onemanager.small_treasury_chest": "Малый Сундук Казны",
   "block.onemanager.large_treasury_chest": "Большой Сундук Казны",
   "container.onemanager.small_treasury_chest": "Малый Сундук Казны",
-  "container.onemanager.large_treasury_chest": "Большой Сундук Казны"
+  "container.onemanager.large_treasury_chest": "Большой Сундук Казны",
+  "item.onemanager.lockpick": "Lockpick",
+  "tooltip.onemanager.lockpick": "Basic tool for delicately bypassing treasury locks",
+  "item.onemanager.lockpick_kit": "Lockpicking Kit",
+  "tooltip.onemanager.lockpick_kit": "Professional set of tension wrenches and picks. Speeds up lockpicking 2x"
 }

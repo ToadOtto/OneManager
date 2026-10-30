@@ -3975,9 +3975,12 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             for (int i = 0; i < chests.size(); i++) {
                 TreasuryChestEntry entry = chests.get(i);
                 int num = i + 1;
+                boolean sealBroken = entry.isSealBroken();
 
                 FlowLayout rowCard = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
-                rowCard.surface(Surface.flat(0xFF0E1116).and(Surface.outline(0xFF262D3B)));
+                int cardBorder = sealBroken ? 0xFF662222 : 0xFF262D3B;
+                int cardBg = sealBroken ? 0xFF140D0F : 0xFF0E1116;
+                rowCard.surface(Surface.flat(cardBg).and(Surface.outline(cardBorder)));
                 rowCard.padding(Insets.of(4, 7, 4, 7));
                 rowCard.gap(2);
 
@@ -3987,11 +3990,14 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 r1.gap(5);
 
                 r1.child(Components.label(Component.literal("#" + num).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
-                r1.child(Components.label(Component.literal(entry.getTypeTitle()).withStyle(ChatFormatting.WHITE)));
+                r1.child(Components.label(Component.literal(entry.getTypeTitle()).withStyle(sealBroken ? ChatFormatting.GRAY : ChatFormatting.WHITE)));
+                if (sealBroken) {
+                    r1.child(Components.label(Component.literal("[Не активен / Взломан]").withStyle(ChatFormatting.RED, ChatFormatting.BOLD)));
+                }
                 r1.child(Components.spacer());
 
                 String amtStr = String.format("%,d / %,d $PR", entry.getAmount(), entry.getCapacity()).replace(',', ' ');
-                ChatFormatting amtCol = entry.getAmount() >= entry.getCapacity() ? ChatFormatting.GOLD : (entry.getAmount() > 0 ? ChatFormatting.GREEN : ChatFormatting.GRAY);
+                ChatFormatting amtCol = sealBroken ? ChatFormatting.DARK_RED : (entry.getAmount() >= entry.getCapacity() ? ChatFormatting.GOLD : (entry.getAmount() > 0 ? ChatFormatting.GREEN : ChatFormatting.GRAY));
                 r1.child(Components.label(Component.literal(amtStr).withStyle(amtCol)));
                 rowCard.child(r1);
 

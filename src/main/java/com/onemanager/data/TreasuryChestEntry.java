@@ -16,6 +16,8 @@ public class TreasuryChestEntry {
     private final BlockPos pos;
     private final boolean large;
     private long amount;
+    private long pendingStolen = 0L;
+    private boolean sealBroken = false;
     private final String placedDate;
     private final String placedBy;
 
@@ -57,6 +59,34 @@ public class TreasuryChestEntry {
         this.amount = Math.max(0L, Math.min(getCapacity(), amount));
     }
 
+    public long getPendingStolen() {
+        return pendingStolen;
+    }
+
+    public void setPendingStolen(long pendingStolen) {
+        this.pendingStolen = Math.max(0L, pendingStolen);
+    }
+
+    public boolean isSealBroken() {
+        return sealBroken;
+    }
+
+    public void setSealBroken(boolean sealBroken) {
+        this.sealBroken = sealBroken;
+    }
+
+    public boolean isInactive() {
+        return sealBroken;
+    }
+
+    public boolean isLooted() {
+        return pendingStolen > 0 || sealBroken;
+    }
+
+    public long getEffectiveAmount() {
+        return Math.max(0L, amount - pendingStolen);
+    }
+
     public long getFreeSpace() {
         return Math.max(0L, getCapacity() - amount);
     }
@@ -92,6 +122,8 @@ public class TreasuryChestEntry {
         tag.putInt("z", pos.getZ());
         tag.putBoolean("large", large);
         tag.putLong("amount", amount);
+        tag.putLong("pendingStolen", pendingStolen);
+        tag.putBoolean("sealBroken", sealBroken);
         tag.putString("placedDate", placedDate);
         tag.putString("placedBy", placedBy);
         return tag;
@@ -105,7 +137,14 @@ public class TreasuryChestEntry {
         long amount = tag.getLong("amount");
         String placedDate = tag.getString("placedDate");
         String placedBy = tag.getString("placedBy");
-        return new TreasuryChestEntry(id, dim, pos, large, amount, placedDate, placedBy);
+        TreasuryChestEntry entry = new TreasuryChestEntry(id, dim, pos, large, amount, placedDate, placedBy);
+        if (tag.contains("pendingStolen")) {
+            entry.setPendingStolen(tag.getLong("pendingStolen"));
+        }
+        if (tag.contains("sealBroken")) {
+            entry.setSealBroken(tag.getBoolean("sealBroken"));
+        }
+        return entry;
     }
 
     public String toFileLine(int number) {

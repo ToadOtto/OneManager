@@ -8,6 +8,8 @@ import com.onemanager.client.gui.CharHistoryScreen;
 import com.onemanager.data.CharacterWorldData;
 import com.onemanager.data.PlayerCharacterData;
 import com.onemanager.data.TreasuryChestEntry;
+import com.onemanager.heist.HeistManager;
+import com.onemanager.item.LockpickItem;
 import com.onemanager.network.NetworkHandler;
 import com.onemanager.network.OpenTreasuryReasonScreenS2CPacket;
 import com.onemanager.network.SyncAllCharactersPacket;
@@ -21,7 +23,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -165,6 +169,20 @@ public class TreasuryChestBlock extends BaseEntityBlock {
     }
 
     @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (stack.getItem() instanceof LockpickItem) {
+            if (level.isClientSide) {
+                return ItemInteractionResult.SUCCESS;
+            }
+            if (player instanceof ServerPlayer serverPlayer) {
+                HeistManager.tryStartLockpick(serverPlayer, hand, pos);
+            }
+            return ItemInteractionResult.CONSUME;
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
@@ -186,6 +204,20 @@ public class TreasuryChestBlock extends BaseEntityBlock {
                 PlayerCharacterData pd = worldData.getPlayerData(serverPlayer.getUUID());
                 String charName = (pd != null && pd.hasActiveCharacter()) ? pd.getActiveCharacter().getName() : serverPlayer.getScoreboardName();
                 entry = worldData.registerTreasuryChest(dim, pos, large, charName);
+            }
+
+            // If chest was tampered with during heist vacuum, Knyaz discovers it immediately
+            if (entry.getPendingStolen() > 0) {
+                HeistManager.onChestDiscovered(serverLevel.getServer(), entry, serverPlayer);
+            }
+
+            // If seals were broken, Knyaz inspecting the chest restores seals and capacity
+            if (entry.isSealBroken()) {
+                entry.setSealBroken(false);
+                worldData.setDirty();
+                NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(worldData.save(new CompoundTag()), false));
+                serverPlayer.sendSystemMessage(Component.literal("🛡️ Вы восстановили государственные пломбы на хранилище. Вместимость казны возвращена!")
+                        .withStyle(ChatFormatting.GREEN));
             }
 
             BlockEntity be = level.getBlockEntity(pos);
@@ -214,7 +246,11 @@ public class TreasuryChestBlock extends BaseEntityBlock {
                 stored = chestBe.getStoredAmount();
                 chestBe.setStoredAmountFromWorldData(0);
             } else if (entry != null) {
-                stored = (int) entry.getAmount();
+                stored = (int) entry.getEffectiveAmount();
+            }
+
+            if (entry != null && entry.getPendingStolen() > 0) {
+                HeistManager.onChestDiscovered(serverLevel.getServer(), entry, serverPlayer);
             }
 
             // Drop all stored Sprota items

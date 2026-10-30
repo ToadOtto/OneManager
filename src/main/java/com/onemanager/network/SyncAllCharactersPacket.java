@@ -11,6 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record SyncAllCharactersPacket(CompoundTag worldDataTag, boolean openGui) implements CustomPacketPayload {
+    public SyncAllCharactersPacket(CompoundTag worldDataTag, boolean openGui) {
+        this.worldDataTag = com.onemanager.data.CharacterWorldData.stripServerSecrets(worldDataTag);
+        this.openGui = openGui;
+    }
+
     public static final Type<SyncAllCharactersPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "sync_all_characters"));
 
     public static final StreamCodec<ByteBuf, SyncAllCharactersPacket> STREAM_CODEC = StreamCodec.composite(

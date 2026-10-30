@@ -2,6 +2,7 @@ package com.onemanager.data;
 
 import com.onemanager.OneManager;
 import com.onemanager.block.entity.TreasuryChestBlockEntity;
+import com.onemanager.heist.HeistSession;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -59,6 +60,7 @@ public class CharacterWorldData extends SavedData {
     public static final String KEY_TREASURY_LOG = "treasury_log";
     public static final String KEY_LAWS = "laws";
     public static final String KEY_TREASURY_CHESTS = "treasury_chests";
+    public static final String KEY_HEIST_SESSIONS = "heist_sessions";
 
     public static final int DEFAULT_TAX_RATE = 10;
     public static final int TAX_CYCLE_TICKS = 24000; // 20 minutes (20 * 60 * 20) = 1 in-game day
@@ -85,6 +87,7 @@ public class CharacterWorldData extends SavedData {
     private final List<LawEntry> laws = new CopyOnWriteArrayList<>();
     private final List<TreasuryChestEntry> treasuryChests = new CopyOnWriteArrayList<>();
     private final Map<UUID, PendingTreasuryReason> pendingReasons = new ConcurrentHashMap<>();
+    private final Map<UUID, HeistSession> heistSessions = new ConcurrentHashMap<>();
 
     public static final SavedData.Factory<CharacterWorldData> FACTORY = new SavedData.Factory<>(
             CharacterWorldData::new,
@@ -592,7 +595,9 @@ public class CharacterWorldData extends SavedData {
     public long getTreasuryCapacity() {
         long cap = 0L;
         for (TreasuryChestEntry entry : treasuryChests) {
-            cap += entry.getCapacity();
+            if (!entry.isSealBroken()) {
+                cap += entry.getCapacity();
+            }
         }
         return cap;
     }
@@ -667,6 +672,7 @@ public class CharacterWorldData extends SavedData {
         long totalAdded = 0L;
 
         for (TreasuryChestEntry entry : treasuryChests) {
+            if (entry.isLooted()) continue;
             if (remaining <= 0) break;
             long space = entry.getFreeSpace();
             if (space > 0) {
@@ -696,6 +702,7 @@ public class CharacterWorldData extends SavedData {
         for (int i = treasuryChests.size() - 1; i >= 0; i--) {
             if (remaining <= 0) break;
             TreasuryChestEntry entry = treasuryChests.get(i);
+            if (entry.isLooted()) continue;
             long stored = entry.getAmount();
             if (stored > 0) {
                 long take = Math.min(stored, remaining);
@@ -731,6 +738,78 @@ public class CharacterWorldData extends SavedData {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    public Map<UUID, HeistSession> getHeistSessions() {
+        return Collections.unmodifiableMap(heistSessions);
+    }
+
+    public HeistSession getHeistSession(UUID uuid) {
+        return uuid != null ? heistSessions.get(uuid) : null;
+    }
+
+    public void putHeistSession(HeistSession session) {
+        if (session != null) {
+            heistSessions.put(session.getThiefUuid(), session);
+            setDirty();
+        }
+    }
+
+    public HeistSession removeHeistSession(UUID uuid) {
+        if (uuid == null) return null;
+        HeistSession s = heistSessions.remove(uuid);
+        if (s != null) {
+            setDirty();
+        }
+        return s;
+    }
+
+    public HeistSession getHeistSessionForChest(UUID chestId) {
+        if (chestId == null) return null;
+        for (HeistSession s : heistSessions.values()) {
+            if (s.getLootedChestIds().contains(chestId)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    public void applyTheftDiscovery(@Nullable MinecraftServer server, HeistSession session) {
+        if (session == null) return;
+        long totalDeducted = 0L;
+        for (UUID chestId : session.getLootedChestIds()) {
+            for (TreasuryChestEntry entry : treasuryChests) {
+                if (entry.getId().equals(chestId)) {
+                    long stolen = entry.getPendingStolen();
+                    entry.setPendingStolen(0L);
+                    entry.setAmount(Math.max(0L, entry.getAmount() - stolen));
+                    entry.setSealBroken(true);
+                    totalDeducted += stolen;
+                    syncLoadedChestBlockEntity(server, entry);
+                }
+            }
+        }
+        recalculateTreasuryFromChests();
+        writeChestsToFile();
+        if (totalDeducted > 0) {
+            String formatted = String.format("%,d", totalDeducted).replace(',', ' ');
+            logTransaction("Неизвестно", "—", "-" + formatted + " $PR (Неучтенный ущерб / Хищение)", this.treasury);
+        }
+        setDirty();
+    }
+
+    public static CompoundTag stripServerSecrets(CompoundTag tag) {
+        if (tag == null) return null;
+        CompoundTag copy = tag.copy();
+        copy.remove(KEY_HEIST_SESSIONS);
+        if (copy.contains(KEY_TREASURY_CHESTS, Tag.TAG_LIST)) {
+            ListTag list = copy.getList(KEY_TREASURY_CHESTS, Tag.TAG_COMPOUND);
+            for (int i = 0; i < list.size(); i++) {
+                CompoundTag chestTag = list.getCompound(i);
+                chestTag.remove("pendingStolen");
+            }
+        }
+        return copy;
     }
 
     private void writeChestsToFile() {
@@ -910,6 +989,12 @@ public class CharacterWorldData extends SavedData {
         }
         compoundTag.put(KEY_TREASURY_CHESTS, chestsList);
 
+        ListTag sessionsList = new ListTag();
+        for (HeistSession session : heistSessions.values()) {
+            sessionsList.add(session.toNBT());
+        }
+        compoundTag.put(KEY_HEIST_SESSIONS, sessionsList);
+
         return compoundTag;
     }
 
@@ -990,6 +1075,18 @@ public class CharacterWorldData extends SavedData {
                         sum += c.getAmount();
                     }
                     worldData.treasury = sum;
+                }
+            }
+
+            if (compoundTag.contains(KEY_HEIST_SESSIONS, Tag.TAG_LIST)) {
+                ListTag sessionsList = compoundTag.getList(KEY_HEIST_SESSIONS, Tag.TAG_COMPOUND);
+                for (int i = 0; i < sessionsList.size(); i++) {
+                    try {
+                        HeistSession s = HeistSession.fromNBT(sessionsList.getCompound(i));
+                        worldData.heistSessions.put(s.getThiefUuid(), s);
+                    } catch (Exception e) {
+                        OneManager.LOGGER.error("Failed to load heist session from tag", e);
+                    }
                 }
             }
 

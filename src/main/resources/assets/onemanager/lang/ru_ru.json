@@ -33,5 +33,9 @@
   "block.onemanager.small_treasury_chest": "Малый Сундук Казны",
   "block.onemanager.large_treasury_chest": "Большой Сундук Казны",
   "container.onemanager.small_treasury_chest": "Малый Сундук Казны",
-  "container.onemanager.large_treasury_chest": "Большой Сундук Казны"
+  "container.onemanager.large_treasury_chest": "Большой Сундук Казны",
+  "item.onemanager.lockpick": "Отмычка",
+  "tooltip.onemanager.lockpick": "Базовый инструмент для деликатного обхода замков казначейства",
+  "item.onemanager.lockpick_kit": "Набор для взлома",
+  "tooltip.onemanager.lockpick_kit": "Профессиональный комплект натяжителей и отмычек. Ускоряет взлом вдвое"
 }
