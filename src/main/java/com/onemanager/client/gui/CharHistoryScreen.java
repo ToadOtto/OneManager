@@ -1878,7 +1878,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         FlowLayout amountRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(bigHeight));
         amountRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        amountRow.gap(8);
+        amountRow.gap(6);
 
         ItemComponent bigIngot = Components.item(new ItemStack(com.oneshop.item.ModItems.SPROTA.get()));
         bigIngot.sizing(Sizing.fixed(20), Sizing.fixed(20));
@@ -1889,6 +1889,23 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
             ctx.drawText(amountComp, p.x(), p.y() + 1, bigScale, 0xFFFFAA00);
         });
         amountRow.child(textBox);
+
+        double fillPct = capacity > 0 ? ((double) treasury / (double) capacity) * 100.0 : 0.0;
+        String pctStr;
+        if (capacity <= 0) {
+            pctStr = "(0%)";
+        } else if (treasury > 0 && fillPct < 0.1) {
+            pctStr = "(<0.1%)";
+        } else if (Math.abs(fillPct - Math.round(fillPct)) < 0.05) {
+            pctStr = String.format(java.util.Locale.ROOT, "(%d%%)", Math.round(fillPct));
+        } else {
+            pctStr = String.format(java.util.Locale.ROOT, "(%.1f%%)", fillPct);
+        }
+
+        LabelComponent pctLabel = Components.label(Component.literal(pctStr).withStyle(ChatFormatting.GRAY));
+        pctLabel.shadow(true);
+        pctLabel.margins(Insets.top(3));
+        amountRow.child(pctLabel);
 
         treasuryCard.child(amountRow);
         treasuryFlow.child(treasuryCard);
