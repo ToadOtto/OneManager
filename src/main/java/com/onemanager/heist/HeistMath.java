@@ -22,14 +22,14 @@ public final class HeistMath {
     }
 
     public static RiskInfo getRiskInfo(double noisePercent) {
-        if (noisePercent < 15.0) {
-            return new RiskInfo("Тихо", ChatFormatting.GREEN, noisePercent);
-        } else if (noisePercent < 40.0) {
+        if (noisePercent < 10.0) {
+            return new RiskInfo("Безопасно", ChatFormatting.GREEN, noisePercent);
+        } else if (noisePercent < 18.0) {
             return new RiskInfo("Шорох", ChatFormatting.YELLOW, noisePercent);
-        } else if (noisePercent < 70.0) {
-            return new RiskInfo("Грохот", ChatFormatting.GOLD, noisePercent);
+        } else if (noisePercent < 25.0) {
+            return new RiskInfo("Шумно", ChatFormatting.GOLD, noisePercent);
         } else {
-            return new RiskInfo("Тревога близко", ChatFormatting.DARK_RED, noisePercent);
+            return new RiskInfo("Тревога", ChatFormatting.DARK_RED, noisePercent);
         }
     }
 

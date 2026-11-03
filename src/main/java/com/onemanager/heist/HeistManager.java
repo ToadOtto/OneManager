@@ -178,14 +178,11 @@ public final class HeistManager {
                 ServerPlayer thief = server.getPlayerList().getPlayer(heist.getThiefUuid());
                 boolean expired = heist.decrementTicks();
 
-                // Send real-time Actionbar status to the thief
+                // Send real-time Actionbar status to the thief (only simple centered status label)
                 if (thief != null && thief.isAlive()) {
                     double noise = HeistMath.calculateNoise(heist.getStolenAccumulated(), worldData.getTreasury());
                     HeistMath.RiskInfo risk = HeistMath.getRiskInfo(noise);
-                    String timer = HeistMath.formatTimer(heist.getTicksRemaining());
-                    MutableComponent bar = Component.literal(String.format("[Шум: %.1f%%] СТАТУС: %s | Отход: %s",
-                            noise, risk.name(), timer)).withStyle(risk.color());
-                    thief.sendSystemMessage(bar, true);
+                    thief.sendSystemMessage(Component.literal(risk.name()).withStyle(risk.color(), ChatFormatting.BOLD), true);
                 }
 
                 if (expired) {
@@ -326,11 +323,10 @@ public final class HeistManager {
 
         double noise = HeistMath.calculateNoise(heist.getStolenAccumulated(), worldData.getTreasury());
         if (noise >= 25.0) {
-            player.sendSystemMessage(Component.literal(String.format("§4[Шум: %.1f%%] КРИТИЧЕСКИЙ УЩЕРБ! СИСТЕМА СОРВАНА!", noise)), false);
-            triggerAlarm(server, heist, "Критический ущерб казне (" + String.format("%.1f%%", noise) + ")! Сигнализация сработала мгновенно.");
+            triggerAlarm(server, heist, "Критический ущерб казне! Сигнализация сработала мгновенно.");
             worldData.removeHeistSession(player.getUUID());
         } else {
-            player.sendSystemMessage(Component.literal(String.format("§e[Шум: %.1f%%] Запущен 3-минутный буфер отхода. Покиньте хранилище незамеченным!", noise)), false);
+            player.sendSystemMessage(Component.literal("§eЗапущен 3-минутный буфер отхода. Покиньте хранилище незамеченным!"), false);
         }
     }
 
@@ -356,10 +352,11 @@ public final class HeistManager {
             OneManager.LOGGER.error("Failed to execute alarm title commands", ex);
         }
 
-        // Anonymous public chat announcement
-        Component chatNotice = Component.literal("[Казна] Зафиксирован факт взлома хранилища. Злоумышленник скрылся.")
-                .withStyle(ChatFormatting.RED);
-        server.getPlayerList().broadcastSystemMessage(chatNotice, false);
+        // Global chat announcement for all players
+        server.getPlayerList().broadcastSystemMessage(
+                Component.literal("ТРЕВОГА! ХРАНИЛИЩЕ КАЗНЫ БЫЛО РАЗГРАБЛЕНО!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD),
+                false
+        );
 
         OneManager.LOGGER.warn("TREASURY HEIST ALARM: " + reason + " | Total stolen: " + heist.getStolenAccumulated());
     }

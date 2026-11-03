@@ -24,16 +24,16 @@ public class HeistMathTest {
 
     @Test
     public void testRiskLevels() {
-        assertEquals("Тихо", HeistMath.getRiskInfo(0.0).name());
-        assertEquals(ChatFormatting.GREEN, HeistMath.getRiskInfo(14.9).color());
+        assertEquals("Безопасно", HeistMath.getRiskInfo(0.0).name());
+        assertEquals(ChatFormatting.GREEN, HeistMath.getRiskInfo(9.9).color());
 
-        assertEquals("Шорох", HeistMath.getRiskInfo(15.0).name());
-        assertEquals(ChatFormatting.YELLOW, HeistMath.getRiskInfo(39.9).color());
+        assertEquals("Шорох", HeistMath.getRiskInfo(10.0).name());
+        assertEquals(ChatFormatting.YELLOW, HeistMath.getRiskInfo(17.9).color());
 
-        assertEquals("Грохот", HeistMath.getRiskInfo(40.0).name());
-        assertEquals(ChatFormatting.GOLD, HeistMath.getRiskInfo(69.9).color());
+        assertEquals("Шумно", HeistMath.getRiskInfo(18.0).name());
+        assertEquals(ChatFormatting.GOLD, HeistMath.getRiskInfo(24.9).color());
 
-        assertEquals("Тревога близко", HeistMath.getRiskInfo(70.0).name());
+        assertEquals("Тревога", HeistMath.getRiskInfo(25.0).name());
         assertEquals(ChatFormatting.DARK_RED, HeistMath.getRiskInfo(100.0).color());
     }
 
