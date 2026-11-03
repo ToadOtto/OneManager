@@ -1447,9 +1447,6 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         card.padding(Insets.of(6, 6, 6, 6));
         card.horizontalAlignment(HorizontalAlignment.CENTER);
         card.cursorStyle(CursorStyle.HAND);
-        card.tooltip(Component.literal(prof.getTitle())
-                .append(Component.literal("\nКатегория: " + cat.getDisplayName()).withStyle(style -> style.withColor(catColor)))
-                .append(Component.literal("\nНажмите, чтобы открыть подробности").withStyle(ChatFormatting.DARK_GRAY)));
 
         // Smooth fade hover animation state
         float[] hoverProgress = new float[]{0.0f};
@@ -1564,7 +1561,6 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         // Achievements completed label (gray, below progress bar)
         LabelComponent achLabel = Components.label(Component.literal("13/32").withStyle(ChatFormatting.GRAY));
-        achLabel.tooltip(Component.literal("Выполнено достижений: 13 из 32").withStyle(ChatFormatting.GRAY));
         achLabel.margins(Insets.top(3));
         card.child(achLabel);
 
@@ -1572,7 +1568,6 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         String startDate = pd != null ? pd.getProfessionStartDate(prof.getTitle()) : "01.04.00";
         LabelComponent dateLabel = Components.label(Component.literal("С " + startDate));
         dateLabel.color(Color.ofRgb(0xFFB0B7C3));
-        dateLabel.tooltip(Component.literal("Занимает профессию с: " + startDate + " (день.неделя.месяц)").withStyle(ChatFormatting.GRAY));
         dateLabel.margins(Insets.top(3));
         card.child(dateLabel);
 
