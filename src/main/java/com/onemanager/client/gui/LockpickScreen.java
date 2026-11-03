@@ -4,7 +4,6 @@ import com.onemanager.OneManager;
 import com.onemanager.network.LockpickCancelC2SPacket;
 import com.onemanager.network.LockpickQteAnswerC2SPacket;
 import com.onemanager.network.NetworkHandler;
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.BoxComponent;
 import io.wispforest.owo.ui.component.Components;
@@ -23,7 +22,9 @@ import io.wispforest.owo.ui.core.VerticalAlignment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -31,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LockpickScreen extends BaseOwoScreen<StackLayout> {
-    private final int totalTicks;
+    private int totalTicks;
     private final String toolName;
 
     private int elapsedTicks = 0;
@@ -40,8 +41,9 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
     private int qteTimeoutTicks = 0;
     private int qteElapsed = 0;
 
-    // Green flash state on successful input
+    // Flash feedback state
     private int flashDigit = 0;
+    private int flashWrongDigit = 0;
     private int flashTicks = 0;
     private boolean completed = false;
 
@@ -69,6 +71,22 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
             float scale = CharHistoryScreen.getUiScale();
             this.uiAdapter.moveAndResize(0, 0, (int) (this.width / scale), (int) (this.height / scale));
         }
+        // Play lockpick start audio feedback
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getSoundManager() != null) {
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.CHEST_LOCKED, 1.2F));
+        }
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        // Must NEVER pause the game: the server must continue ticking during lockpicking!
+        return false;
+    }
+
+    @Override
+    public boolean shouldCloseOnEsc() {
+        return true;
     }
 
     @Override
@@ -164,6 +182,7 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
 
         rootComponent.child(modal);
         updateButtonVisuals();
+        updateProgress();
     }
 
     private void rebuildUI() {
@@ -173,39 +192,72 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
         }
     }
 
+    public void syncProgress(int serverElapsed, int serverTotal) {
+        this.elapsedTicks = serverElapsed;
+        this.totalTicks = Math.max(1, serverTotal);
+        updateProgress();
+    }
+
     public void startQte(int qteId, int targetDigit, int timeoutTicks) {
         this.activeQteId = qteId;
         this.activeTargetDigit = targetDigit;
         this.qteTimeoutTicks = timeoutTicks;
         this.qteElapsed = 0;
         this.flashDigit = 0;
+        this.flashWrongDigit = 0;
         this.flashTicks = 0;
         updateCue();
         updateButtonVisuals();
+
+        // Audio cue: mechanical pin engages / bell chime
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getSoundManager() != null) {
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.CHEST_LOCKED, 1.6F));
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_BELL.value(), 1.2F));
+        }
     }
 
     public void finish(boolean success, String message) {
         this.completed = true;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getSoundManager() != null) {
+            if (success) {
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.PLAYER_LEVELUP, 1.2F));
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.CHEST_OPEN, 0.8F));
+            } else {
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.ITEM_BREAK, 0.9F));
+            }
+        }
         this.onClose();
     }
 
     private void pressDigit(int digit) {
         if (activeQteId <= 0) {
-            // No active QTE, ignore click or send cancel if desired
             return;
         }
 
+        Minecraft mc = Minecraft.getInstance();
         if (digit == activeTargetDigit) {
-            // Correct digit pressed! Turn green flash
+            // Correct digit pressed! Turn green flash & click sound
             this.flashDigit = digit;
-            this.flashTicks = 6; // flash green for ~6 frames/ticks
+            this.flashWrongDigit = 0;
+            this.flashTicks = 10; // ~500ms
+            if (mc.getSoundManager() != null) {
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.TRIPWIRE_CLICK_ON, 1.4F));
+            }
             NetworkHandler.sendToServer(new LockpickQteAnswerC2SPacket(activeQteId, digit));
             this.activeQteId = 0;
             this.activeTargetDigit = 0;
             updateCue();
             updateButtonVisuals();
         } else {
-            // Wrong digit pressed!
+            // Wrong digit pressed! Turn red flash & break sound
+            this.flashWrongDigit = digit;
+            this.flashDigit = 0;
+            this.flashTicks = 10;
+            if (mc.getSoundManager() != null) {
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.ITEM_BREAK, 0.9F));
+            }
             NetworkHandler.sendToServer(new LockpickQteAnswerC2SPacket(activeQteId, digit));
             this.activeQteId = 0;
             this.activeTargetDigit = 0;
@@ -216,10 +268,14 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
 
     private void updateCue() {
         if (cueLabel == null) return;
-        if (activeTargetDigit > 0) {
+        if (flashTicks > 0) {
+            if (flashDigit > 0) {
+                cueLabel.text(Component.literal("Штифт зафиксирован!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+            } else if (flashWrongDigit > 0) {
+                cueLabel.text(Component.literal("Штифт сорван!").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
+            }
+        } else if (activeTargetDigit > 0) {
             cueLabel.text(Component.literal("НАЖМИТЕ: " + activeTargetDigit).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
-        } else if (flashTicks > 0) {
-            cueLabel.text(Component.literal("Штифт зафиксирован!").withStyle(ChatFormatting.GREEN));
         } else {
             cueLabel.text(Component.literal("Подбор штифтов...").withStyle(ChatFormatting.GRAY));
         }
@@ -235,6 +291,10 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
                 // Flashing green
                 btn.surface(Surface.flat(0xFF2E7D32).and(Surface.outline(0xFF81C784)));
                 lbl.text(Component.literal(String.valueOf(d)).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD));
+            } else if (d == flashWrongDigit && flashTicks > 0) {
+                // Flashing red
+                btn.surface(Surface.flat(0xFF8B0000).and(Surface.outline(0xFFFF5252)));
+                lbl.text(Component.literal(String.valueOf(d)).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD));
             } else if (d == activeTargetDigit) {
                 // Highlighted yellow
                 btn.surface(Surface.flat(0xFFF59E0B).and(Surface.outline(0xFFFFD54F)));
@@ -243,6 +303,25 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
                 // Default gray
                 btn.surface(Surface.flat(0xFF232730).and(Surface.outline(0xFF3B404F)));
                 lbl.text(Component.literal(String.valueOf(d)).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD));
+            }
+        }
+    }
+
+    private void updateProgress() {
+        if (progressBarFill != null && progressLabel != null) {
+            float progress = Math.min(1.0F, (float) elapsedTicks / (float) totalTicks);
+            int fillWidth = (int) (progress * 204.0F); // inner width of 206px container minus padding
+            progressBarFill.sizing(Sizing.fixed(fillWidth), Sizing.fill(100));
+
+            int pct = (int) (progress * 100);
+            int secRemaining = Math.max(0, (totalTicks - elapsedTicks) / 20);
+            if (pct >= 100) {
+                progressLabel.text(Component.literal("Взлом завершен...").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+                if (cueLabel != null && flashTicks <= 0 && activeTargetDigit <= 0) {
+                    cueLabel.text(Component.literal("Замок открывается!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+                }
+            } else {
+                progressLabel.text(Component.literal(pct + "% (" + secRemaining + " сек.)").withStyle(ChatFormatting.GRAY));
             }
         }
     }
@@ -256,6 +335,7 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
             flashTicks--;
             if (flashTicks == 0) {
                 flashDigit = 0;
+                flashWrongDigit = 0;
                 updateCue();
                 updateButtonVisuals();
             }
@@ -265,6 +345,12 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
             qteElapsed++;
             if (qteTimeoutTicks > 0 && qteElapsed >= qteTimeoutTicks) {
                 // Timed out locally
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.getSoundManager() != null) {
+                    mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.ITEM_BREAK, 0.9F));
+                }
+                flashWrongDigit = activeTargetDigit;
+                flashTicks = 10;
                 activeQteId = 0;
                 activeTargetDigit = 0;
                 updateCue();
@@ -272,16 +358,7 @@ public class LockpickScreen extends BaseOwoScreen<StackLayout> {
             }
         }
 
-        // Update progress bar
-        if (progressBarFill != null && progressLabel != null) {
-            float progress = Math.min(1.0F, (float) elapsedTicks / (float) totalTicks);
-            int fillWidth = (int) (progress * 204.0F); // inner width of 206px container minus padding
-            progressBarFill.sizing(Sizing.fixed(fillWidth), Sizing.fill(100));
-
-            int pct = (int) (progress * 100);
-            int secRemaining = Math.max(0, (totalTicks - elapsedTicks) / 20);
-            progressLabel.text(Component.literal(pct + "% (" + secRemaining + " сек.)").withStyle(ChatFormatting.GRAY));
-        }
+        updateProgress();
     }
 
     @Override

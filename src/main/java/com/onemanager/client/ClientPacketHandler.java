@@ -60,4 +60,11 @@ public class ClientPacketHandler {
             mc.setScreen(null);
         }
     }
+
+    public static void syncLockpick(int elapsedTicks, int totalTicks) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen instanceof com.onemanager.client.gui.LockpickScreen screen) {
+            screen.syncProgress(elapsedTicks, totalTicks);
+        }
+    }
 }

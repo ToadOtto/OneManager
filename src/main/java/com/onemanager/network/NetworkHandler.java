@@ -175,6 +175,12 @@ public class NetworkHandler {
                 LockpickEndS2CPacket::handle
         );
 
+        registrar.playToClient(
+                LockpickSyncS2CPacket.TYPE,
+                LockpickSyncS2CPacket.STREAM_CODEC,
+                LockpickSyncS2CPacket::handle
+        );
+
         OneManager.LOGGER.info("Registered network payloads for OneManager.");
     }
 

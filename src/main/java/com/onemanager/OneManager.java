@@ -52,6 +52,7 @@ public class OneManager {
         NeoForge.EVENT_BUS.register(com.onemanager.event.BurdenEventHandler.class);
         NeoForge.EVENT_BUS.register(com.onemanager.event.CrownEvents.class);
         NeoForge.EVENT_BUS.register(com.onemanager.event.WorldProgressionEvents.class);
+        NeoForge.EVENT_BUS.register(com.onemanager.heist.HeistEvents.class);
 
         if (dist.isClient()) {
             com.onemanager.client.KeyBindings.register(modEventBus);

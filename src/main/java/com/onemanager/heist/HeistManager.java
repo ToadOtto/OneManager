@@ -7,6 +7,7 @@ import com.onemanager.data.TreasuryChestEntry;
 import com.onemanager.item.LockpickItem;
 import com.onemanager.network.LockpickEndS2CPacket;
 import com.onemanager.network.LockpickQteS2CPacket;
+import com.onemanager.network.LockpickSyncS2CPacket;
 import com.onemanager.network.NetworkHandler;
 import com.onemanager.network.OpenLockpickScreenS2CPacket;
 import com.onemanager.network.SyncAllCharactersPacket;
@@ -157,6 +158,11 @@ public final class HeistManager {
                 ));
             }
 
+            // Periodically sync progress to client
+            if (session.getElapsedTicks() % 10 == 0) {
+                NetworkHandler.sendToPlayer(player, new LockpickSyncS2CPacket(session.getElapsedTicks(), session.getTotalTicks()));
+            }
+
             // Check completion
             if (session.isComplete()) {
                 completeLockpick(server, player, session);
@@ -220,7 +226,7 @@ public final class HeistManager {
         if (player == null) return;
         LockpickSession session = activeLockpicks.remove(player.getUUID());
         if (session != null) {
-            NetworkHandler.sendToPlayer(player, new LockpickEndS2CPacket(false, "Взлом отменен."));
+            failLockpick(player.getServer(), player, session, "Взлом отменен игроком!");
         }
     }
 
@@ -263,6 +269,7 @@ public final class HeistManager {
         } else {
             session.addPenaltyTicks(100); // +5 seconds penalty
             session.clearQte(player.level().getRandom());
+            NetworkHandler.sendToPlayer(player, new LockpickSyncS2CPacket(session.getElapsedTicks(), session.getTotalTicks()));
             player.sendSystemMessage(Component.literal("⚠️ " + reason + " +5 сек. штрафа к взлому!").withStyle(ChatFormatting.GOLD), true);
         }
     }
@@ -271,6 +278,16 @@ public final class HeistManager {
         ItemStack held = player.getItemInHand(session.getHand());
         if (!held.isEmpty() && held.getItem() instanceof LockpickItem) {
             held.shrink(1);
+            return;
+        }
+        ItemStack main = player.getMainHandItem();
+        if (!main.isEmpty() && main.getItem() instanceof LockpickItem) {
+            main.shrink(1);
+            return;
+        }
+        ItemStack off = player.getOffhandItem();
+        if (!off.isEmpty() && off.getItem() instanceof LockpickItem) {
+            off.shrink(1);
         }
     }
 
@@ -291,8 +308,12 @@ public final class HeistManager {
         // Give physical Sprota coins to player
         giveSprota(player, (int) stolen);
 
-        // Sound at chest
+        // Sound at chest and direct to player
         playSoundInRadius(server, session.getDimensionKey(), session.getChestPos(), SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 1.0F, 0.8F, 10.0);
+        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.9F, 1.2F);
+
+        // Success message in chat (permanent, won't get wiped by actionbar escape timer)
+        player.sendSystemMessage(Component.literal(String.format("§a✔ Хранилище успешно взломано! Похищено: %d $PR.", stolen)), false);
 
         // Update or create HeistSession
         HeistSession heist = worldData.getHeistSession(player.getUUID());
@@ -305,11 +326,11 @@ public final class HeistManager {
 
         double noise = HeistMath.calculateNoise(heist.getStolenAccumulated(), worldData.getTreasury());
         if (noise >= 25.0) {
-            player.sendSystemMessage(Component.literal(String.format("§4[Шум: %.1f%%] КРИТИЧЕСКИЙ УЩЕРБ! СИСТЕМА СОРВАНА!", noise)), true);
+            player.sendSystemMessage(Component.literal(String.format("§4[Шум: %.1f%%] КРИТИЧЕСКИЙ УЩЕРБ! СИСТЕМА СОРВАНА!", noise)), false);
             triggerAlarm(server, heist, "Критический ущерб казне (" + String.format("%.1f%%", noise) + ")! Сигнализация сработала мгновенно.");
             worldData.removeHeistSession(player.getUUID());
         } else {
-            player.sendSystemMessage(Component.literal(String.format("§a[Шум: %.1f%%] Взлом успешен! Похищено: %d $PR. Таймер отхода: 03:00", noise, stolen)), true);
+            player.sendSystemMessage(Component.literal(String.format("§e[Шум: %.1f%%] Запущен 3-минутный буфер отхода. Покиньте хранилище незамеченным!", noise)), false);
         }
     }
 

@@ -41,7 +41,10 @@ public class LockpickSession {
         this.totalTicks = lockpickItem.getDurationTicks();
         this.elapsedTicks = 0;
         this.mistakes = 0;
-        this.nextQteTick = HeistMath.nextQteDelay(random, lockpickItem.getQteIntervalMin(), lockpickItem.getQteIntervalMax());
+        // First QTE triggers quickly (2-4 seconds) to engage the player immediately
+        int initialMin = Math.max(40, lockpickItem.getQteIntervalMin() / 2);
+        int initialMax = Math.max(initialMin + 20, lockpickItem.getQteIntervalMax() / 2);
+        this.nextQteTick = HeistMath.nextQteDelay(random, initialMin, initialMax);
     }
 
     public UUID getPlayerUuid() {
