@@ -59,8 +59,8 @@ public record LeaveProfessionPacket(int professionId) implements CustomPacketPay
                 return;
             }
 
-            // Trigger long cycle check with weekly grants
-            pd.triggerBrandCycleReset(System.currentTimeMillis(), true);
+            // Trigger long cycle check
+            pd.triggerBrandCycleReset(System.currentTimeMillis(), false);
 
             // Category and cycle checks
             ProfessionCategory cat = prof.getType();

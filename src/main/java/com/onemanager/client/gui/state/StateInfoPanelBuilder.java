@@ -183,10 +183,6 @@ public final class StateInfoPanelBuilder {
         LabelComponent val = Components.label(Component.literal(value).withStyle(valueColor, ChatFormatting.BOLD));
         row.child(val);
 
-        if (description != null && !description.isEmpty()) {
-            row.tooltip(Component.literal("§f" + label + "§r\n§7" + description + "§r\n\n§eЗначение: §f" + value));
-        }
-
         row.mouseEnter().subscribe(() -> row.surface(Surface.flat(0xFF1A1E26)));
         row.mouseLeave().subscribe(() -> row.surface(Surface.BLANK));
 

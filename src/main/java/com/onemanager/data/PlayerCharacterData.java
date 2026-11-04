@@ -495,14 +495,6 @@ public class PlayerCharacterData {
             weeklyDeposit = 0L;
             leftMainThisCycle = false;
             leftSecondaryThisCycle = false;
-
-            if (grantMarks) {
-                int marks = this.professions.size() * (int) cyclesPassed;
-                if (marks > 0) {
-                    this.addStateBrands(marks);
-                    return marks;
-                }
-            }
         }
         return 0;
     }
@@ -599,7 +591,7 @@ public class PlayerCharacterData {
     }
 
     public int applyBrandDeposit(long amount) {
-        triggerBrandCycleReset(System.currentTimeMillis(), true);
+        triggerBrandCycleReset(System.currentTimeMillis(), false);
         this.weeklyDeposit += amount;
         int marksEarned = 0;
         long remaining = amount;

@@ -1726,7 +1726,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         String pScoreboard = mc.player != null ? mc.player.getScoreboardName() : "";
         String pName = mc.player != null ? mc.player.getName().getString() : "";
         boolean isDev = "Dev".equalsIgnoreCase(pScoreboard) || "Dev".equalsIgnoreCase(pName);
-        boolean amIKnyaz = myUuid != null && worldData != null && (worldData.isKnyaz(myUuid) || isDev);
+        boolean amIKnyaz = myUuid != null && worldData != null && worldData.isKnyaz(myUuid);
 
         if (this.currentStateSubCategory == null) {
             this.currentStateSubCategory = amIKnyaz ? StateSubCategory.KNYAZ : StateSubCategory.REPUTATION;

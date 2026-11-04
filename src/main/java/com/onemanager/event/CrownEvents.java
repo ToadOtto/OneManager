@@ -125,6 +125,11 @@ public class CrownEvents {
             return;
         }
 
+        // Only process world cycles, taxes, and brand accumulation if at least one player is on the server
+        if (server.getPlayerList().getPlayerCount() == 0) {
+            return;
+        }
+
         // 0. Regular 20-minute Tax / Day Cycle
         com.onemanager.data.CharacterWorldData worldData = com.onemanager.data.CharacterWorldData.get(server);
         if (worldData != null) {

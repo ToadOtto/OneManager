@@ -501,19 +501,17 @@ public class CharacterDataTest {
         assertEquals(0, grantedBefore);
         assertEquals(0, data.getStateBrands());
 
-        // Exactly 1 cycle elapsed (140 mins)
+        // Offline time elapsed: cycle reset occurs, but NO marks granted offline
         long oneCycleLater = startTime + PlayerCharacterData.BRAND_RESET_INTERVAL_MS;
         int grantedOne = data.triggerBrandCycleReset(oneCycleLater, true);
-        assertEquals(2, grantedOne); // 2 professions * 1 cycle
-        assertEquals(2, data.getStateBrands());
+        assertEquals(0, grantedOne); // Offline accumulation disabled
+        assertEquals(0, data.getStateBrands());
         assertEquals(oneCycleLater, data.getLastBrandResetTime());
 
-        // 2 cycles elapsed later
-        long twoCyclesLater = oneCycleLater + (2 * PlayerCharacterData.BRAND_RESET_INTERVAL_MS);
-        int grantedTwo = data.triggerBrandCycleReset(twoCyclesLater, true);
-        assertEquals(4, grantedTwo); // 2 professions * 2 cycles
-        assertEquals(6, data.getStateBrands());
-        assertEquals(twoCyclesLater, data.getLastBrandResetTime());
+        // Active online play: grants State Brands when BRAND_CYCLE_TICKS completes
+        int onlineGranted = data.tickOnlineBrand(PlayerCharacterData.BRAND_CYCLE_TICKS);
+        assertEquals(2, onlineGranted); // 2 professions * 1 cycle
+        assertEquals(2, data.getStateBrands());
     }
 
     @Test
