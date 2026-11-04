@@ -41,18 +41,19 @@ public class ReputationScaleComponent extends BaseComponent {
         int x0 = this.x;
         int y0 = this.y;
 
-        int labelMargin = 28; // width reserved on left/right for "-100" and "+100"
+        int labelMargin = 32; // width reserved on left/right for "-100" and "+100"
         int barLeft = x0 + labelMargin;
         int barRight = x0 + widthPx - labelMargin;
         int barWidth = barRight - barLeft;
-        int barY = y0 + 10;
-        int barH = 5;
+        int barH = Math.max(5, heightPx / 4);
+        int barY = y0 + (heightPx - barH) / 2;
 
         // 1. Text labels "-100" and "+100"
         if (font != null) {
-            context.drawString(font, "-100", x0, barY - 2, 0xFF8A93A6, false);
+            int textY = barY + (barH - font.lineHeight) / 2;
+            context.drawString(font, "-100", x0, textY, 0xFF8A93A6, false);
             int plusW = font.width("+100");
-            context.drawString(font, "+100", x0 + widthPx - plusW, barY - 2, 0xFF8A93A6, false);
+            context.drawString(font, "+100", x0 + widthPx - plusW, textY, 0xFF8A93A6, false);
         }
 
         // 2. Base track background
@@ -78,7 +79,7 @@ public class ReputationScaleComponent extends BaseComponent {
             int tx = barLeft + (int) (((t + 100) / 200.0f) * barWidth);
             boolean isCenter = (t == 0);
             int tickColor = isCenter ? 0xFFB0B7C6 : 0xFF3D4658;
-            int tickH = isCenter ? 7 : 5;
+            int tickH = isCenter ? barH + 4 : barH + 1;
             int ty1 = barY + (barH - tickH) / 2;
             int ty2 = ty1 + tickH;
             context.fill(tx, ty1, tx + 1, ty2, tickColor);
@@ -87,9 +88,10 @@ public class ReputationScaleComponent extends BaseComponent {
         // 6. Indicator arrow pointer above the bar
         int pointerColor = repClamped < 0 ? 0xFFFF5252 : (repClamped > 0 ? 0xFF69F0AE : 0xFFFFFFFF);
         int px = targetX;
-        int py = barY - 4;
+        int py = barY - 5;
 
-        // Downward pointing triangle (3 rows: 5px, 3px, 1px)
+        // Downward pointing triangle (4 rows: 7px, 5px, 3px, 1px)
+        context.fill(px - 3, py - 3, px + 4, py - 2, pointerColor);
         context.fill(px - 2, py - 2, px + 3, py - 1, pointerColor);
         context.fill(px - 1, py - 1, px + 2, py, pointerColor);
         context.fill(px, py, px + 1, py + 1, pointerColor);

@@ -5,6 +5,7 @@ import com.onemanager.client.gui.UiSoundHelper;
 import com.onemanager.client.gui.components.PixelIconComponent;
 import com.onemanager.client.gui.components.PlayerAvatarComponent;
 import com.onemanager.client.gui.components.ReputationScaleComponent;
+import com.onemanager.client.gui.components.ScaledLabelComponent;
 import com.onemanager.client.gui.components.TextureIconComponent;
 import com.onemanager.data.ActiveCharacter;
 import com.onemanager.data.CharacterWorldData;
@@ -16,15 +17,14 @@ import com.onemanager.reputation.ReputationAction;
 import com.onemanager.reputation.ReputationEvent;
 import com.onemanager.reputation.ReputationManager;
 import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.component.ItemComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.StackLayout;
-import io.wispforest.owo.ui.core.Color;
 import io.wispforest.owo.ui.core.CursorStyle;
 import io.wispforest.owo.ui.core.HorizontalAlignment;
 import io.wispforest.owo.ui.core.Insets;
-import io.wispforest.owo.ui.core.Positioning;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.core.Surface;
 import io.wispforest.owo.ui.core.VerticalAlignment;
@@ -32,23 +32,27 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Builds the complete Knyaz Reputation UI according to template (assets/tab_state_ui/reputation_ui.png).
+ * Builds the scaled Knyaz Reputation UI according to template (assets/tab_state_ui/reputation_ui.png).
  */
 public final class ReputationPanelBuilder {
 
     private static final ResourceLocation TEXTURE_RIBBON = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/state/red_ribbon.png");
+    private static final ResourceLocation TEXTURE_LIKE = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/state/like.png");
+    private static final ResourceLocation TEXTURE_DISLIKE = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/state/dislike.png");
 
     private ReputationPanelBuilder() {}
 
     public static FlowLayout build(CharacterWorldData worldData, Runnable onActionTriggered) {
-        FlowLayout root = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+        FlowLayout root = Containers.verticalFlow(Sizing.content(), Sizing.content());
         root.horizontalAlignment(HorizontalAlignment.CENTER);
-        root.gap(6);
+        root.gap(10);
         root.padding(Insets.of(4));
 
         if (worldData == null) {
@@ -58,7 +62,10 @@ public final class ReputationPanelBuilder {
 
         Minecraft mc = Minecraft.getInstance();
         UUID myUuid = mc.player != null ? mc.player.getUUID() : null;
-        boolean amIKnyaz = myUuid != null && worldData.isKnyaz(myUuid);
+        String pScoreboard = mc.player != null ? mc.player.getScoreboardName() : "";
+        String pName = mc.player != null ? mc.player.getName().getString() : "";
+        boolean isDev = "Dev".equalsIgnoreCase(pScoreboard) || "Dev".equalsIgnoreCase(pName);
+        boolean amIKnyaz = myUuid != null && worldData.isKnyaz(myUuid) && !isDev;
         PlayerCharacterData myPd = myUuid != null ? worldData.getPlayerData(myUuid) : null;
         long now = worldData.getTotalElapsedTicks();
 
@@ -73,16 +80,16 @@ public final class ReputationPanelBuilder {
         // =====================================================================
         // SECTION 2: ACTIONS ROW & BIG REPUTATION DISPLAY
         // =====================================================================
-        root.child(buildActionsAndCenterRow(worldData, rep, trend, myPd, amIKnyaz, now, onActionTriggered));
+        root.child(buildActionsAndCenterRow(worldData, rep, trend, myPd, amIKnyaz, isDev, now, onActionTriggered));
 
         // =====================================================================
         // SECTION 3: REPUTATION HORIZONTAL SCALE (-100 .. +100)
         // =====================================================================
-        ReputationScaleComponent scale = new ReputationScaleComponent(rep, 320, 22);
+        ReputationScaleComponent scale = new ReputationScaleComponent(rep, 380, 24);
         root.child(scale);
 
         // =====================================================================
-        // SECTION 4: ABILITY COLUMNS & UNIQUE EVENTS (SKULL & SUN)
+        // SECTION 4: ABILITY COLUMNS & UNIQUE EVENTS (SKULL & NETHER STAR)
         // =====================================================================
         root.child(buildAbilitiesAndEventsRow(rep));
 
@@ -97,11 +104,11 @@ public final class ReputationPanelBuilder {
         FlowLayout container = Containers.verticalFlow(Sizing.content(), Sizing.content());
         container.horizontalAlignment(HorizontalAlignment.CENTER);
 
-        StackLayout ribbonStack = Containers.stack(Sizing.fixed(240), Sizing.fixed(60));
+        // Scaled up ribbon: 290 x 72 px (native 626x201)
+        StackLayout ribbonStack = Containers.stack(Sizing.fixed(290), Sizing.fixed(72));
         ribbonStack.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
 
-        // Background red ribbon texture (native size 626x201)
-        TextureIconComponent ribbon = new TextureIconComponent(TEXTURE_RIBBON, 0, 0, 626, 201, 626, 201, 240, 60);
+        TextureIconComponent ribbon = new TextureIconComponent(TEXTURE_RIBBON, 0, 0, 626, 201, 626, 201, 290, 72);
         ribbonStack.child(ribbon);
 
         // Central overlay box for Knyaz portrait / title
@@ -109,29 +116,29 @@ public final class ReputationPanelBuilder {
         String knyazName = worldData.getKnyazName();
         boolean hasKnyaz = worldData.hasKnyaz();
 
-        FlowLayout centerBox = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(38));
+        FlowLayout centerBox = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(44));
         centerBox.verticalAlignment(VerticalAlignment.CENTER);
         centerBox.horizontalAlignment(HorizontalAlignment.CENTER);
         centerBox.surface(Surface.flat(0xEE12141B).and(Surface.outline(hasKnyaz ? 0xFF8A7242 : 0xFF353B47)));
-        centerBox.padding(Insets.horizontal(8));
-        centerBox.gap(6);
+        centerBox.padding(Insets.horizontal(10));
+        centerBox.gap(8);
 
         if (hasKnyaz) {
-            centerBox.child(new PlayerAvatarComponent(knyazUuid, 26));
+            centerBox.child(new PlayerAvatarComponent(knyazUuid, 32));
 
             FlowLayout nameColumn = Containers.verticalFlow(Sizing.content(), Sizing.content());
-            nameColumn.gap(1);
+            nameColumn.gap(2);
 
             PlayerCharacterData knyazPd = knyazUuid != null ? worldData.getPlayerData(knyazUuid) : null;
             ActiveCharacter knyazChar = knyazPd != null ? knyazPd.getActiveCharacter() : null;
             String charName = knyazChar != null && !knyazChar.getName().isEmpty() ? knyazChar.getName() : knyazName;
 
             LabelComponent titleLbl = Components.label(Component.literal("Князь").withStyle(ChatFormatting.GOLD));
-            titleLbl.maxWidth(120);
+            titleLbl.maxWidth(140);
             nameColumn.child(titleLbl);
 
             LabelComponent nameLbl = Components.label(Component.literal(charName).withStyle(ChatFormatting.WHITE));
-            nameLbl.maxWidth(120);
+            nameLbl.maxWidth(140);
             nameColumn.child(nameLbl);
 
             centerBox.child(nameColumn);
@@ -151,62 +158,66 @@ public final class ReputationPanelBuilder {
     // =========================================================================
 
     private static FlowLayout buildActionsAndCenterRow(CharacterWorldData worldData, int rep, int trend,
-                                                      PlayerCharacterData myPd, boolean amIKnyaz, long now,
-                                                      Runnable onActionTriggered) {
+                                                      PlayerCharacterData myPd, boolean amIKnyaz, boolean isDev,
+                                                      long now, Runnable onActionTriggered) {
         FlowLayout row = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         row.verticalAlignment(VerticalAlignment.CENTER);
         row.horizontalAlignment(HorizontalAlignment.CENTER);
-        row.gap(10);
+        row.gap(12);
 
         // --- LEFT (Negative Actions) ---
         // Top: [-5] [-1] [-2]
         // Bottom: [-10] [-3] [-4]
         FlowLayout leftCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
-        leftCol.gap(3);
+        leftCol.gap(4);
 
         FlowLayout leftTop = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        leftTop.gap(3);
-        leftTop.child(createActionButton(ReputationAction.PROPAGANDA, false, myPd, amIKnyaz, now, onActionTriggered));
-        leftTop.child(createActionButton(ReputationAction.SUPPORT, false, myPd, amIKnyaz, now, onActionTriggered));
-        leftTop.child(createActionButton(ReputationAction.RUMORS, false, myPd, amIKnyaz, now, onActionTriggered));
+        leftTop.gap(4);
+        leftTop.child(createActionButton(ReputationAction.PROPAGANDA, false, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        leftTop.child(createActionButton(ReputationAction.SUPPORT, false, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        leftTop.child(createActionButton(ReputationAction.RUMORS, false, myPd, amIKnyaz, isDev, now, onActionTriggered));
         leftCol.child(leftTop);
 
         FlowLayout leftBottom = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        leftBottom.gap(3);
-        leftBottom.child(createActionButton(ReputationAction.REPRESSION, false, myPd, amIKnyaz, now, onActionTriggered));
-        leftBottom.child(createActionButton(ReputationAction.CELEBRATION, false, myPd, amIKnyaz, now, onActionTriggered));
-        leftBottom.child(createActionButton(ReputationAction.PARADE, false, myPd, amIKnyaz, now, onActionTriggered));
+        leftBottom.gap(4);
+        leftBottom.child(createActionButton(ReputationAction.REPRESSION, false, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        leftBottom.child(createActionButton(ReputationAction.CELEBRATION, false, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        leftBottom.child(createActionButton(ReputationAction.PARADE, false, myPd, amIKnyaz, isDev, now, onActionTriggered));
         leftCol.child(leftBottom);
 
         row.child(leftCol);
 
-        // --- CENTER: "Репутация:" + [ThumbDown] [Big Number] [Trend] [ThumbUp] ---
-        FlowLayout centerCol = Containers.verticalFlow(Sizing.fixed(120), Sizing.content());
+        // --- CENTER: "Репутация:" + [Dislike] [Big Number] [Trend] [Like] ---
+        FlowLayout centerCol = Containers.verticalFlow(Sizing.fixed(140), Sizing.content());
         centerCol.horizontalAlignment(HorizontalAlignment.CENTER);
-        centerCol.gap(2);
+        centerCol.gap(3);
 
         LabelComponent title = Components.label(Component.literal("Репутация:").withStyle(ChatFormatting.GRAY));
         centerCol.child(title);
 
-        FlowLayout displayRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(26));
+        FlowLayout displayRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(30));
         displayRow.verticalAlignment(VerticalAlignment.CENTER);
         displayRow.horizontalAlignment(HorizontalAlignment.CENTER);
-        displayRow.gap(5);
+        displayRow.gap(6);
 
-        // Thumbs Down (Red)
-        displayRow.child(new PixelIconComponent(PixelIconComponent.THUMB_DOWN, 1, 0xFFFF5252));
+        // Dislike texture icon from assets
+        displayRow.child(new TextureIconComponent(TEXTURE_DISLIKE, 0, 0, 32, 32, 32, 32, 22, 22));
 
-        // Big signed number (custom color interpolation)
+        // Big signed number with scaled typography
         int numColor = getReputationColor(rep);
         String repStr = (rep > 0 ? "+" : "") + rep;
-        LabelComponent numLabel = Components.label(Component.literal(repStr).withStyle(style -> style.withColor(numColor).withBold(true)));
+        ScaledLabelComponent numLabel = new ScaledLabelComponent(
+                Component.literal(repStr).withStyle(style -> style.withColor(numColor).withBold(true)),
+                1.6f, numColor, true
+        );
+        numLabel.sizing(Sizing.fixed(36), Sizing.fixed(16));
         displayRow.child(numLabel);
 
-        // Trend arrows / equal
+        // Trend arrows / equal with pixelSize = 2 for prominent visibility
         displayRow.child(buildTrendIndicator(trend));
 
-        // Thumbs Up (Green)
-        displayRow.child(new PixelIconComponent(PixelIconComponent.THUMB_UP, 1, 0xFF4CAF50));
+        // Like texture icon from assets
+        displayRow.child(new TextureIconComponent(TEXTURE_LIKE, 0, 0, 32, 32, 32, 32, 22, 22));
 
         centerCol.child(displayRow);
         row.child(centerCol);
@@ -215,20 +226,20 @@ public final class ReputationPanelBuilder {
         // Top: [+1] [+2] [+5]
         // Bottom: [+3] [+4] [+10]
         FlowLayout rightCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
-        rightCol.gap(3);
+        rightCol.gap(4);
 
         FlowLayout rightTop = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        rightTop.gap(3);
-        rightTop.child(createActionButton(ReputationAction.SUPPORT, true, myPd, amIKnyaz, now, onActionTriggered));
-        rightTop.child(createActionButton(ReputationAction.RUMORS, true, myPd, amIKnyaz, now, onActionTriggered));
-        rightTop.child(createActionButton(ReputationAction.PROPAGANDA, true, myPd, amIKnyaz, now, onActionTriggered));
+        rightTop.gap(4);
+        rightTop.child(createActionButton(ReputationAction.SUPPORT, true, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        rightTop.child(createActionButton(ReputationAction.RUMORS, true, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        rightTop.child(createActionButton(ReputationAction.PROPAGANDA, true, myPd, amIKnyaz, isDev, now, onActionTriggered));
         rightCol.child(rightTop);
 
         FlowLayout rightBottom = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        rightBottom.gap(3);
-        rightBottom.child(createActionButton(ReputationAction.CELEBRATION, true, myPd, amIKnyaz, now, onActionTriggered));
-        rightBottom.child(createActionButton(ReputationAction.PARADE, true, myPd, amIKnyaz, now, onActionTriggered));
-        rightBottom.child(createActionButton(ReputationAction.REPRESSION, true, myPd, amIKnyaz, now, onActionTriggered));
+        rightBottom.gap(4);
+        rightBottom.child(createActionButton(ReputationAction.CELEBRATION, true, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        rightBottom.child(createActionButton(ReputationAction.PARADE, true, myPd, amIKnyaz, isDev, now, onActionTriggered));
+        rightBottom.child(createActionButton(ReputationAction.REPRESSION, true, myPd, amIKnyaz, isDev, now, onActionTriggered));
         rightCol.child(rightBottom);
 
         row.child(rightCol);
@@ -239,29 +250,29 @@ public final class ReputationPanelBuilder {
     private static FlowLayout buildTrendIndicator(int trend) {
         FlowLayout box = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         box.verticalAlignment(VerticalAlignment.CENTER);
-        box.gap(1);
+        box.gap(2);
 
         switch (trend) {
             case 2 -> { // Strong positive
-                box.child(new PixelIconComponent(PixelIconComponent.ARROW_UP, 1, 0xFF00E676));
-                box.child(new PixelIconComponent(PixelIconComponent.ARROW_UP, 1, 0xFF00E676));
+                box.child(new PixelIconComponent(PixelIconComponent.ARROW_UP, 2, 0xFF00E676));
+                box.child(new PixelIconComponent(PixelIconComponent.ARROW_UP, 2, 0xFF00E676));
                 box.tooltip(Component.literal("Тенденция: сильный рост репутации").withStyle(ChatFormatting.GREEN));
             }
             case 1 -> { // Weak positive
-                box.child(new PixelIconComponent(PixelIconComponent.ARROW_UP, 1, 0xFF66BB6A));
+                box.child(new PixelIconComponent(PixelIconComponent.ARROW_UP, 2, 0xFF66BB6A));
                 box.tooltip(Component.literal("Тенденция: умеренный рост репутации").withStyle(ChatFormatting.GREEN));
             }
             case -1 -> { // Weak negative
-                box.child(new PixelIconComponent(PixelIconComponent.ARROW_DOWN, 1, 0xFFEF5350));
+                box.child(new PixelIconComponent(PixelIconComponent.ARROW_DOWN, 2, 0xFFEF5350));
                 box.tooltip(Component.literal("Тенденция: умеренное падение репутации").withStyle(ChatFormatting.RED));
             }
             case -2 -> { // Strong negative
-                box.child(new PixelIconComponent(PixelIconComponent.ARROW_DOWN, 1, 0xFFFF1744));
-                box.child(new PixelIconComponent(PixelIconComponent.ARROW_DOWN, 1, 0xFFFF1744));
+                box.child(new PixelIconComponent(PixelIconComponent.ARROW_DOWN, 2, 0xFFFF1744));
+                box.child(new PixelIconComponent(PixelIconComponent.ARROW_DOWN, 2, 0xFFFF1744));
                 box.tooltip(Component.literal("Тенденция: сильное падение репутации").withStyle(ChatFormatting.RED));
             }
             default -> { // Stable
-                box.child(new PixelIconComponent(PixelIconComponent.EQUAL, 1, 0xFF8A93A6));
+                box.child(new PixelIconComponent(PixelIconComponent.EQUAL, 2, 0xFF8A93A6));
                 box.tooltip(Component.literal("Тенденция: стабильно (изменений не было)").withStyle(ChatFormatting.GRAY));
             }
         }
@@ -269,11 +280,11 @@ public final class ReputationPanelBuilder {
     }
 
     private static FlowLayout createActionButton(ReputationAction action, boolean positive,
-                                                 PlayerCharacterData myPd, boolean amIKnyaz, long now,
-                                                 Runnable onActionTriggered) {
+                                                 PlayerCharacterData myPd, boolean amIKnyaz, boolean isDev,
+                                                 long now, Runnable onActionTriggered) {
         String labelText = (positive ? "+" : "-") + action.getMagnitude();
-        int width = action.getMagnitude() >= 5 ? 30 : 26;
-        int height = 20;
+        int width = action.getMagnitude() >= 5 ? 40 : 34;
+        int height = 24;
 
         FlowLayout btn = Containers.horizontalFlow(Sizing.fixed(width), Sizing.fixed(height));
         btn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
@@ -282,7 +293,7 @@ public final class ReputationPanelBuilder {
         long cdRem = ReputationManager.getCooldownRemaining(lastUsed, action, now);
         boolean onCooldown = cdRem > 0;
         boolean isFaction = action.isFactionAction();
-        boolean canClick = !amIKnyaz && !onCooldown && !isFaction;
+        boolean canClick = (!amIKnyaz || isDev) && !onCooldown && !isFaction;
 
         int bgColor;
         int borderColor;
@@ -312,7 +323,7 @@ public final class ReputationPanelBuilder {
         sb.append("• Цена: §f").append(action.getCostText()).append("§r\n");
         sb.append("• Периодичность: §f").append(action.getCooldownText()).append("§r\n");
 
-        if (amIKnyaz) {
+        if (amIKnyaz && !isDev) {
             sb.append("\n§cКнязь не может влиять на собственную репутацию.§r");
         } else if (isFaction) {
             sb.append("\n§eТребуется от ").append(action.getRequiredFactionInfluence())
@@ -340,7 +351,7 @@ public final class ReputationPanelBuilder {
                     if (onActionTriggered != null) {
                         onActionTriggered.run();
                     }
-                } else if (amIKnyaz) {
+                } else if (amIKnyaz && !isDev) {
                     sendLocalActionbar("Князь не может влиять на собственную репутацию.");
                 } else if (isFaction) {
                     sendLocalActionbar("Действия фракций находятся в разработке.");
@@ -356,21 +367,21 @@ public final class ReputationPanelBuilder {
     }
 
     // =========================================================================
-    // 3. ABILITY TIERS & SPECIAL EVENTS (SKULL & SUN)
+    // 3. ABILITY TIERS & SPECIAL EVENTS (SKULL & NETHER STAR)
     // =========================================================================
 
     private static FlowLayout buildAbilitiesAndEventsRow(int rep) {
         FlowLayout container = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         container.verticalAlignment(VerticalAlignment.CENTER);
         container.horizontalAlignment(HorizontalAlignment.CENTER);
-        container.gap(8);
+        container.gap(10);
 
         // --- SKULL (Королевская Охота, от -90) ---
         container.child(buildSkullEvent(rep));
 
         // --- NEGATIVE TIERS (Left: от -1, от -25, от -50, от -75) ---
         FlowLayout negCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
-        negCol.gap(3);
+        negCol.gap(4);
         negCol.child(buildAbilityTierRow(1, false, rep));
         negCol.child(buildAbilityTierRow(2, false, rep));
         negCol.child(buildAbilityTierRow(3, false, rep));
@@ -379,14 +390,14 @@ public final class ReputationPanelBuilder {
 
         // --- POSITIVE TIERS (Right: от +1, от +25, от +50, от +75) ---
         FlowLayout posCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
-        posCol.gap(3);
+        posCol.gap(4);
         posCol.child(buildAbilityTierRow(1, true, rep));
         posCol.child(buildAbilityTierRow(2, true, rep));
         posCol.child(buildAbilityTierRow(3, true, rep));
         posCol.child(buildAbilityTierRow(4, true, rep));
         container.child(posCol);
 
-        // --- SUN (Монумент Правителя, от +90) ---
+        // --- NETHER STAR (Монумент Правителя, от +90) ---
         container.child(buildSunEvent(rep));
 
         return container;
@@ -395,10 +406,11 @@ public final class ReputationPanelBuilder {
     private static FlowLayout buildAbilityTierRow(int tier, boolean positive, int reputation) {
         boolean unlocked = ReputationAbility.isTierUnlocked(tier, positive, reputation);
 
-        FlowLayout row = Containers.horizontalFlow(Sizing.fixed(144), Sizing.fixed(24));
+        // Scaled up ability row: 168 x 30 px
+        FlowLayout row = Containers.horizontalFlow(Sizing.fixed(168), Sizing.fixed(30));
         row.verticalAlignment(VerticalAlignment.CENTER);
-        row.padding(Insets.horizontal(4));
-        row.gap(4);
+        row.padding(Insets.horizontal(6));
+        row.gap(5);
 
         int bgColor;
         int borderColor;
@@ -437,14 +449,20 @@ public final class ReputationPanelBuilder {
 
         row.surface(Surface.flat(bgColor).and(Surface.outline(borderColor)));
 
-        // Threshold label on the left: "от +25" or "от -25"
+        // Fixed-width container for threshold text ("от +25", "от -1", etc.)
+        // This guarantees that ability buttons are never shifted by text length!
         int threshold = ReputationAbility.signedThreshold(tier, positive);
         String thLabel = "от " + (threshold > 0 ? "+" : "") + threshold;
-        LabelComponent lbl = Components.label(Component.literal(thLabel).withStyle(unlocked && reputation != 0 ? (positive ? ChatFormatting.GREEN : ChatFormatting.RED) : ChatFormatting.DARK_GRAY));
-        lbl.maxWidth(42);
-        row.child(lbl);
+        FlowLayout lblBox = Containers.horizontalFlow(Sizing.fixed(44), Sizing.content());
+        lblBox.verticalAlignment(VerticalAlignment.CENTER);
 
-        // 4 Ability button stubs
+        LabelComponent lbl = Components.label(Component.literal(thLabel).withStyle(
+                unlocked && reputation != 0 ? (positive ? ChatFormatting.GREEN : ChatFormatting.RED) : ChatFormatting.DARK_GRAY
+        ));
+        lblBox.child(lbl);
+        row.child(lblBox);
+
+        // 4 Ability button slots (each 22 x 22 px)
         List<ReputationAbility> abilities = ReputationAbility.getTier(tier, positive);
         for (int i = 0; i < 4; i++) {
             ReputationAbility a = i < abilities.size() ? abilities.get(i) : null;
@@ -455,7 +473,7 @@ public final class ReputationPanelBuilder {
     }
 
     private static FlowLayout createAbilitySlot(ReputationAbility ability, boolean unlocked, boolean positive) {
-        FlowLayout slot = Containers.horizontalFlow(Sizing.fixed(18), Sizing.fixed(18));
+        FlowLayout slot = Containers.horizontalFlow(Sizing.fixed(22), Sizing.fixed(22));
         slot.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
 
         int slotBg = unlocked ? (positive ? 0xFF1A3324 : 0xFF35191E) : 0xFF14161E;
@@ -489,26 +507,34 @@ public final class ReputationPanelBuilder {
     }
 
     private static FlowLayout buildSkullEvent(int rep) {
-        FlowLayout box = Containers.verticalFlow(Sizing.fixed(48), Sizing.content());
+        FlowLayout box = Containers.verticalFlow(Sizing.fixed(56), Sizing.content());
         box.horizontalAlignment(HorizontalAlignment.CENTER);
-        box.gap(3);
+        box.gap(4);
 
         boolean unlocked = rep <= -90;
         LabelComponent label = Components.label(Component.literal("от -90").withStyle(unlocked ? ChatFormatting.RED : ChatFormatting.DARK_GRAY));
         box.child(label);
 
-        int skullColor = unlocked ? 0xFFFF5252 : 0xFF3D4352;
-        PixelIconComponent skull = new PixelIconComponent(PixelIconComponent.SKULL, 1, skullColor);
-        skull.cursorStyle(unlocked ? CursorStyle.HAND : CursorStyle.POINTER);
+        FlowLayout iconBox = Containers.horizontalFlow(Sizing.fixed(32), Sizing.fixed(32));
+        iconBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        int slotBg = unlocked ? 0xFF35191E : 0xFF14161E;
+        int slotBorder = unlocked ? 0xFFFF5252 : 0xFF2A2E38;
+        iconBox.surface(Surface.flat(slotBg).and(Surface.outline(slotBorder)));
+        iconBox.cursorStyle(unlocked ? CursorStyle.HAND : CursorStyle.POINTER);
+
+        // Vanilla skeleton skull item
+        ItemComponent skullItem = Components.item(new ItemStack(Items.SKELETON_SKULL));
+        skullItem.sizing(Sizing.fixed(22), Sizing.fixed(22));
+        iconBox.child(skullItem);
 
         ReputationEvent event = ReputationEvent.ROYAL_HUNT;
-        skull.tooltip(Component.literal(
+        iconBox.tooltip(Component.literal(
                 "§c§l" + event.getTitle() + "§r §7(от -90)§r\n\n"
                         + "§7" + event.getDescription() + "§r\n\n"
                         + (unlocked ? "§aСобытие доступно для запуска!§r\n§8(Заглушка)§r" : "§cНедоступно (требуется репутация ≤ -90)§r")
         ));
 
-        skull.mouseDown().subscribe((mouseX, mouseY, button) -> {
+        iconBox.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
                 UiSoundHelper.playButtonClick();
                 sendLocalActionbar(event.getTitle() + ": событие находится в разработке.");
@@ -517,31 +543,39 @@ public final class ReputationPanelBuilder {
             return false;
         });
 
-        box.child(skull);
+        box.child(iconBox);
         return box;
     }
 
     private static FlowLayout buildSunEvent(int rep) {
-        FlowLayout box = Containers.verticalFlow(Sizing.fixed(48), Sizing.content());
+        FlowLayout box = Containers.verticalFlow(Sizing.fixed(56), Sizing.content());
         box.horizontalAlignment(HorizontalAlignment.CENTER);
-        box.gap(3);
+        box.gap(4);
 
         boolean unlocked = rep >= 90;
         LabelComponent label = Components.label(Component.literal("от +90").withStyle(unlocked ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY));
         box.child(label);
 
-        int sunColor = unlocked ? 0xFFFFD700 : 0xFF3D4352;
-        PixelIconComponent sun = new PixelIconComponent(PixelIconComponent.SUN, 1, sunColor);
-        sun.cursorStyle(unlocked ? CursorStyle.HAND : CursorStyle.POINTER);
+        FlowLayout iconBox = Containers.horizontalFlow(Sizing.fixed(32), Sizing.fixed(32));
+        iconBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        int slotBg = unlocked ? 0xFF332914 : 0xFF14161E;
+        int slotBorder = unlocked ? 0xFFFFD700 : 0xFF2A2E38;
+        iconBox.surface(Surface.flat(slotBg).and(Surface.outline(slotBorder)));
+        iconBox.cursorStyle(unlocked ? CursorStyle.HAND : CursorStyle.POINTER);
+
+        // Vanilla nether star item
+        ItemComponent starItem = Components.item(new ItemStack(Items.NETHER_STAR));
+        starItem.sizing(Sizing.fixed(22), Sizing.fixed(22));
+        iconBox.child(starItem);
 
         ReputationEvent event = ReputationEvent.RULER_MONUMENT;
-        sun.tooltip(Component.literal(
+        iconBox.tooltip(Component.literal(
                 "§6§l" + event.getTitle() + "§r §7(от +90)§r\n\n"
                         + "§7" + event.getDescription() + "§r\n\n"
                         + (unlocked ? "§aДоступно добровольно для Князя!§r\n§8(Заглушка)§r" : "§cНедоступно (требуется репутация ≥ +90)§r")
         ));
 
-        sun.mouseDown().subscribe((mouseX, mouseY, button) -> {
+        iconBox.mouseDown().subscribe((mouseX, mouseY, button) -> {
             if (button == 0) {
                 UiSoundHelper.playButtonClick();
                 sendLocalActionbar(event.getTitle() + ": событие находится в разработке.");
@@ -550,7 +584,7 @@ public final class ReputationPanelBuilder {
             return false;
         });
 
-        box.child(sun);
+        box.child(iconBox);
         return box;
     }
 

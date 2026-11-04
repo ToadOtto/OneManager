@@ -1704,27 +1704,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     // =========================================================================
     private void buildStateTab(FlowLayout parent) {
         FlowLayout mainLayout = Containers.verticalFlow(Sizing.fill(100), Sizing.fill(100));
-        mainLayout.gap(6);
+        mainLayout.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        mainLayout.padding(Insets.of(4));
 
-        // Subheader bar
-        FlowLayout subHeader = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(26));
-        subHeader.verticalAlignment(VerticalAlignment.CENTER);
-        subHeader.surface(Surface.flat(0xFF161920).and(Surface.outline(0xFF262C36)));
-        subHeader.padding(Insets.horizontal(8));
-        subHeader.child(Components.label(Component.literal("Государство OneHouse3 — Репутация Князя").withStyle(ChatFormatting.WHITE)));
-        mainLayout.child(subHeader);
-
-        // Scrollable content area containing the new reputation panel
-        FlowLayout content = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
-        content.gap(6);
-        content.padding(Insets.of(4));
-
-        content.child(ReputationPanelBuilder.build(this.worldData, this::rebuildUI));
-
-        ScrollContainer<FlowLayout> scroll = Containers.verticalScroll(Sizing.fill(100), Sizing.expand(), content);
-        scroll.scrollbar(DARK_SCROLLBAR);
-        scroll.scrollbarThiccness(4);
-        mainLayout.child(scroll);
+        mainLayout.child(ReputationPanelBuilder.build(this.worldData, this::rebuildUI));
 
         parent.child(mainLayout);
     }

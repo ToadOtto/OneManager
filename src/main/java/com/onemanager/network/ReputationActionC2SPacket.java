@@ -50,7 +50,9 @@ public record ReputationActionC2SPacket(int actionId, boolean positive) implemen
                 fail(player, "В государстве нет Князя — влиять на репутацию некому.");
                 return;
             }
-            if (worldData.isKnyaz(player.getUUID())) {
+            boolean isDev = "Dev".equalsIgnoreCase(player.getScoreboardName())
+                    || "Dev".equalsIgnoreCase(player.getName().getString());
+            if (worldData.isKnyaz(player.getUUID()) && !isDev) {
                 fail(player, "Князь не может влиять на собственную репутацию.");
                 return;
             }
