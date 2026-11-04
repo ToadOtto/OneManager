@@ -65,6 +65,9 @@ public class CharacterWorldData extends SavedData {
     public static final String KEY_HEIST_SESSIONS = "heist_sessions";
     public static final String KEY_KNYAZ_REPUTATION = "knyaz_reputation";
     public static final String KEY_REPUTATION_HISTORY = "reputation_history";
+    public static final String KEY_KNYAZ_COUNT = "knyaz_count";
+    public static final String KEY_TOTAL_DEPOSITED = "total_treasury_deposited";
+    public static final String KEY_FOUNDATION_DATE = "foundation_date";
 
     public static final int DEFAULT_TAX_RATE = 10;
     public static final int TAX_CYCLE_TICKS = 24000; // 20 minutes (20 * 60 * 20) = 1 in-game day
@@ -94,6 +97,9 @@ public class CharacterWorldData extends SavedData {
     private final Map<UUID, HeistSession> heistSessions = new ConcurrentHashMap<>();
     private int knyazReputation = 0;
     private final List<ReputationChange> reputationHistory = new CopyOnWriteArrayList<>();
+    private int knyazCount = 0;
+    private long totalTreasuryDeposited = 0L;
+    private String foundationDate = "";
 
     public static final SavedData.Factory<CharacterWorldData> FACTORY = new SavedData.Factory<>(
             CharacterWorldData::new,
@@ -389,6 +395,9 @@ public class CharacterWorldData extends SavedData {
         if (!Objects.equals(previous, uuid)) {
             // A new Knyaz always starts with neutral reputation
             resetReputation();
+            if (uuid != null) {
+                this.knyazCount++;
+            }
         }
         setDirty();
     }
@@ -405,6 +414,56 @@ public class CharacterWorldData extends SavedData {
 
     public int getKnyazReputation() {
         return knyazReputation;
+    }
+
+    public int getKnyazCount() {
+        if (knyazCount <= 0 && hasKnyaz()) {
+            return 1;
+        }
+        return Math.max(knyazCount, hasKnyaz() ? 1 : 0);
+    }
+
+    public void incrementKnyazCount() {
+        this.knyazCount++;
+        setDirty();
+    }
+
+    public long getTotalTreasuryDeposited() {
+        if (totalTreasuryDeposited <= 0) {
+            long sum = this.treasury;
+            for (TreasuryLogEntry entry : treasuryLog) {
+                if (entry.action() != null && entry.action().startsWith("+")) {
+                    try {
+                        String s = entry.action().substring(1).split(" ")[0].replace(" ", "").replace("\u00a0", "").replace(",", "");
+                        sum += Long.parseLong(s);
+                    } catch (Exception ignored) {}
+                }
+            }
+            return Math.max(this.treasury, sum);
+        }
+        return totalTreasuryDeposited;
+    }
+
+    public void addTotalTreasuryDeposited(long amount) {
+        if (amount > 0) {
+            this.totalTreasuryDeposited += amount;
+            setDirty();
+        }
+    }
+
+    public String getFoundationDate() {
+        if (foundationDate == null || foundationDate.isEmpty()) {
+            if (!treasuryLog.isEmpty()) {
+                TreasuryLogEntry oldest = treasuryLog.get(treasuryLog.size() - 1);
+                if (oldest.timestamp() != null && !oldest.timestamp().isEmpty()) {
+                    foundationDate = oldest.timestamp().split(" ")[0];
+                }
+            }
+            if (foundationDate == null || foundationDate.isEmpty()) {
+                foundationDate = "01.04.2024";
+            }
+        }
+        return foundationDate;
     }
 
     public List<ReputationChange> getReputationHistory() {
@@ -1073,6 +1132,12 @@ public class CharacterWorldData extends SavedData {
         }
         compoundTag.put(KEY_REPUTATION_HISTORY, repList);
 
+        compoundTag.putInt(KEY_KNYAZ_COUNT, knyazCount);
+        compoundTag.putLong(KEY_TOTAL_DEPOSITED, totalTreasuryDeposited);
+        if (foundationDate != null && !foundationDate.isEmpty()) {
+            compoundTag.putString(KEY_FOUNDATION_DATE, foundationDate);
+        }
+
         return compoundTag;
     }
 
@@ -1180,6 +1245,15 @@ public class CharacterWorldData extends SavedData {
                         OneManager.LOGGER.error("Failed to load reputation change from tag", e);
                     }
                 }
+            }
+            if (compoundTag.contains(KEY_KNYAZ_COUNT, Tag.TAG_ANY_NUMERIC)) {
+                worldData.knyazCount = compoundTag.getInt(KEY_KNYAZ_COUNT);
+            }
+            if (compoundTag.contains(KEY_TOTAL_DEPOSITED, Tag.TAG_ANY_NUMERIC)) {
+                worldData.totalTreasuryDeposited = compoundTag.getLong(KEY_TOTAL_DEPOSITED);
+            }
+            if (compoundTag.contains(KEY_FOUNDATION_DATE, Tag.TAG_STRING)) {
+                worldData.foundationDate = compoundTag.getString(KEY_FOUNDATION_DATE);
             }
 
             if (compoundTag.contains(KEY_PLAYERS, Tag.TAG_LIST)) {

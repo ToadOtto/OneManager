@@ -21,7 +21,9 @@ import com.onemanager.data.TreasuryLogEntry;
 import com.onemanager.item.ModItems;
 import com.onemanager.client.gui.law.LawEditScreen;
 import com.onemanager.client.gui.note.NoteViewScreen;
+import com.onemanager.client.gui.state.KnyazPanelBuilder;
 import com.onemanager.client.gui.state.ReputationPanelBuilder;
+import com.onemanager.client.gui.state.StateInfoPanelBuilder;
 import com.onemanager.network.BuyTreasuryChestC2SPacket;
 import com.onemanager.network.ClaimLetterPacket;
 import com.onemanager.network.RepealLawPacket;
@@ -165,6 +167,19 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         public String getTitle() { return title; }
     }
 
+    public enum StateSubCategory {
+        KNYAZ("Князь"),
+        REPUTATION("Репутация"),
+        INFO("Информация");
+
+        private final String title;
+        StateSubCategory(String title) {
+            this.title = title;
+        }
+        public String getTitle() { return title; }
+    }
+
+    private StateSubCategory currentStateSubCategory = null;
     private ProfessionSubCategory currentProfessionSubCategory = ProfessionSubCategory.MY_PROFESSIONS;
 
     public static int interpolateColor(int color1, int color2, float factor) {
@@ -1704,12 +1719,96 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     // =========================================================================
     private void buildStateTab(FlowLayout parent) {
         FlowLayout mainLayout = Containers.verticalFlow(Sizing.fill(100), Sizing.fill(100));
-        mainLayout.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        mainLayout.padding(Insets.of(4));
+        mainLayout.gap(4);
 
-        mainLayout.child(ReputationPanelBuilder.build(this.worldData, this::rebuildUI));
+        Minecraft mc = Minecraft.getInstance();
+        UUID myUuid = mc.player != null ? mc.player.getUUID() : null;
+        String pScoreboard = mc.player != null ? mc.player.getScoreboardName() : "";
+        String pName = mc.player != null ? mc.player.getName().getString() : "";
+        boolean isDev = "Dev".equalsIgnoreCase(pScoreboard) || "Dev".equalsIgnoreCase(pName);
+        boolean amIKnyaz = myUuid != null && worldData != null && (worldData.isKnyaz(myUuid) || isDev);
 
+        if (this.currentStateSubCategory == null) {
+            this.currentStateSubCategory = amIKnyaz ? StateSubCategory.KNYAZ : StateSubCategory.REPUTATION;
+        } else if (this.currentStateSubCategory == StateSubCategory.KNYAZ && !amIKnyaz) {
+            this.currentStateSubCategory = StateSubCategory.REPUTATION;
+        }
+
+        // Top Sub-Tabs Navigation Bar
+        FlowLayout topNav = Containers.horizontalFlow(Sizing.fill(100), Sizing.fixed(24));
+        topNav.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        topNav.gap(8);
+        topNav.margins(Insets.bottom(2));
+
+        if (amIKnyaz) {
+            boolean isKnyazTab = this.currentStateSubCategory == StateSubCategory.KNYAZ;
+            topNav.child(createStateSubTabButton("Князь", isKnyazTab, () -> {
+                this.currentStateSubCategory = StateSubCategory.KNYAZ;
+                rebuildUI();
+            }));
+        }
+
+        boolean isRepTab = this.currentStateSubCategory == StateSubCategory.REPUTATION;
+        topNav.child(createStateSubTabButton("Репутация", isRepTab, () -> {
+            this.currentStateSubCategory = StateSubCategory.REPUTATION;
+            rebuildUI();
+        }));
+
+        boolean isInfoTab = this.currentStateSubCategory == StateSubCategory.INFO;
+        topNav.child(createStateSubTabButton("Информация", isInfoTab, () -> {
+            this.currentStateSubCategory = StateSubCategory.INFO;
+            rebuildUI();
+        }));
+
+        mainLayout.child(topNav);
+        mainLayout.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF1E222A)).margins(Insets.bottom(4)));
+
+        // Category Content Area
+        FlowLayout content = Containers.verticalFlow(Sizing.fill(100), Sizing.expand());
+        content.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+
+        switch (this.currentStateSubCategory) {
+            case KNYAZ -> content.child(KnyazPanelBuilder.build(this.worldData, this::rebuildUI));
+            case REPUTATION -> content.child(ReputationPanelBuilder.build(this.worldData, this::rebuildUI));
+            case INFO -> content.child(StateInfoPanelBuilder.build(this.worldData, DARK_SCROLLBAR));
+        }
+
+        mainLayout.child(content);
         parent.child(mainLayout);
+    }
+
+    private FlowLayout createStateSubTabButton(String title, boolean isActive, Runnable onClick) {
+        FlowLayout btn = Containers.horizontalFlow(Sizing.fixed(120), Sizing.fixed(22));
+        btn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        btn.cursorStyle(CursorStyle.HAND);
+
+        int bgColor = isActive ? 0xFF2A2F3A : 0xFF161820;
+        int hoverColor = isActive ? 0xFF303642 : 0xFF222630;
+        int borderColor = isActive ? 0xFF505A6D : 0xFF262A34;
+
+        btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor)));
+
+        Component textComp = isActive
+                ? Component.literal(title).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)
+                : Component.literal(title).withStyle(ChatFormatting.GRAY);
+        btn.child(Components.label(textComp));
+
+        btn.mouseEnter().subscribe(() -> {
+            if (!isActive) btn.surface(Surface.flat(hoverColor).and(Surface.outline(0xFF3D4658)));
+        });
+        btn.mouseLeave().subscribe(() -> {
+            if (!isActive) btn.surface(Surface.flat(bgColor).and(Surface.outline(borderColor)));
+        });
+        btn.mouseDown().subscribe((mouseX, mouseY, button) -> {
+            if (button == 0) {
+                UiSoundHelper.playButtonClick();
+                onClick.run();
+                return true;
+            }
+            return false;
+        });
+
+        return btn;
     }
 
     private void buildPlaceholderTab(FlowLayout parent, String tabName) {

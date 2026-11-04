@@ -32,12 +32,24 @@ public class KeyBindings {
             KEY_CATEGORY
     );
 
+    public static final KeyMapping[] KNYAZ_ABILITIES = new KeyMapping[] {
+            new KeyMapping("key.onemanager.knyaz_ability_1", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY),
+            new KeyMapping("key.onemanager.knyaz_ability_2", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY),
+            new KeyMapping("key.onemanager.knyaz_ability_3", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY),
+            new KeyMapping("key.onemanager.knyaz_ability_4", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY),
+            new KeyMapping("key.onemanager.knyaz_ability_5", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY),
+            new KeyMapping("key.onemanager.knyaz_ability_6", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY)
+    };
+
     public static void register(IEventBus modBus) {
         modBus.addListener(KeyBindings::onRegisterKeyMappings);
     }
 
     private static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(OPEN_CHAR_HISTORY);
+        for (KeyMapping mapping : KNYAZ_ABILITIES) {
+            event.register(mapping);
+        }
     }
 
     @SubscribeEvent
@@ -47,6 +59,32 @@ public class KeyBindings {
             while (OPEN_CHAR_HISTORY.consumeClick()) {
                 NetworkHandler.sendToServer(new RequestCharHistoryC2SPacket());
             }
+            for (int i = 0; i < KNYAZ_ABILITIES.length; i++) {
+                while (KNYAZ_ABILITIES[i].consumeClick()) {
+                    triggerKnyazAbility(i + 1);
+                }
+            }
+        }
+    }
+
+    public static void triggerKnyazAbility(int slot) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        com.onemanager.data.CharacterWorldData data = ClientPacketHandler.lastKnownWorldData;
+        boolean isKnyaz = data != null && data.isKnyaz(mc.player.getUUID());
+        boolean isDev = "Dev".equalsIgnoreCase(mc.player.getScoreboardName()) || "Dev".equalsIgnoreCase(mc.player.getName().getString());
+        if (isKnyaz || isDev) {
+            mc.player.displayClientMessage(
+                    net.minecraft.network.chat.Component.literal("👑 Сила Монарха " + slot + ": способность активирована (в разработке).")
+                            .withStyle(net.minecraft.ChatFormatting.GOLD),
+                    true
+            );
+        } else {
+            mc.player.displayClientMessage(
+                    net.minecraft.network.chat.Component.literal("❌ Только правящий Князь может использовать силы Монарха.")
+                            .withStyle(net.minecraft.ChatFormatting.RED),
+                    true
+            );
         }
     }
 }

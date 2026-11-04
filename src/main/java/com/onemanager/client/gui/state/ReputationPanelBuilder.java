@@ -247,7 +247,7 @@ public final class ReputationPanelBuilder {
         return row;
     }
 
-    private static FlowLayout buildTrendIndicator(int trend) {
+    public static FlowLayout buildTrendIndicator(int trend) {
         FlowLayout box = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         box.verticalAlignment(VerticalAlignment.CENTER);
         box.gap(2);
@@ -379,6 +379,21 @@ public final class ReputationPanelBuilder {
         // --- SKULL (Королевская Охота, от -90) ---
         container.child(buildSkullEvent(rep));
 
+        // --- Ability Columns ---
+        container.child(buildAbilityColumnsOnly(rep));
+
+        // --- NETHER STAR (Монумент Правителя, от +90) ---
+        container.child(buildSunEvent(rep));
+
+        return container;
+    }
+
+    public static FlowLayout buildAbilityColumnsOnly(int rep) {
+        FlowLayout container = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+        container.verticalAlignment(VerticalAlignment.CENTER);
+        container.horizontalAlignment(HorizontalAlignment.CENTER);
+        container.gap(8);
+
         // --- NEGATIVE TIERS (Left: от -1, от -25, от -50, от -75) ---
         FlowLayout negCol = Containers.verticalFlow(Sizing.content(), Sizing.content());
         negCol.gap(4);
@@ -396,9 +411,6 @@ public final class ReputationPanelBuilder {
         posCol.child(buildAbilityTierRow(3, true, rep));
         posCol.child(buildAbilityTierRow(4, true, rep));
         container.child(posCol);
-
-        // --- NETHER STAR (Монумент Правителя, от +90) ---
-        container.child(buildSunEvent(rep));
 
         return container;
     }
@@ -588,7 +600,7 @@ public final class ReputationPanelBuilder {
         return box;
     }
 
-    private static int getReputationColor(int rep) {
+    public static int getReputationColor(int rep) {
         if (rep == 0) return 0xFF8A93A6;
         if (rep > 0) {
             float factor = Math.min(1.0f, rep / 100.0f);
