@@ -125,6 +125,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
     public static final ResourceLocation ICON_REMAINS = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/item/remains.png");
     public static final ResourceLocation ICON_STATE_BRAND = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/item/state_brand.png");
     public static final ResourceLocation ICON_MONARCH_CROWN = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/item/monarch_crown.png");
+    public static final ResourceLocation ICON_LOGO = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/logo.png");
 
     private static final ScrollContainer.Scrollbar DARK_SCROLLBAR = (context, x, y, width, height, trackX, trackY, trackWidth, trackHeight, lastInteractTime, direction, isHovered) -> {
         context.fill(trackX, trackY, trackX + trackWidth, trackY + trackHeight, 0x33000000);
@@ -439,10 +440,10 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout headerBar = Containers.horizontalFlow(Sizing.fill(100), Sizing.fill(100));
         headerBar.verticalAlignment(VerticalAlignment.CENTER);
 
-        // Logo / Title - Standard White, no bold
-        LabelComponent titleLabel = Components.label(Component.literal("OneHouse3").withStyle(ChatFormatting.WHITE));
-        titleLabel.margins(Insets.right(12));
-        headerBar.child(titleLabel);
+        // Logo - OneHouse3 logo from assets/oh3logo/small.png
+        TextureIconComponent logo = new TextureIconComponent(ICON_LOGO, 0, 0, 1646, 1646, 1646, 1646, 22, 22);
+        logo.margins(Insets.right(12));
+        headerBar.child(logo);
 
         // Cycle Timers (Week & Day)
         cycleTimerLabel = Components.label(Component.literal(formatCycleTimers()).withColor(0xFFB0B7C3));
