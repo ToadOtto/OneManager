@@ -21,6 +21,7 @@ import com.onemanager.data.TreasuryLogEntry;
 import com.onemanager.item.ModItems;
 import com.onemanager.client.gui.law.LawEditScreen;
 import com.onemanager.client.gui.note.NoteViewScreen;
+import com.onemanager.client.gui.state.ReputationPanelBuilder;
 import com.onemanager.network.BuyTreasuryChestC2SPacket;
 import com.onemanager.network.ClaimLetterPacket;
 import com.onemanager.network.RepealLawPacket;
@@ -1710,100 +1711,15 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         subHeader.verticalAlignment(VerticalAlignment.CENTER);
         subHeader.surface(Surface.flat(0xFF161920).and(Surface.outline(0xFF262C36)));
         subHeader.padding(Insets.horizontal(8));
-        subHeader.child(Components.label(Component.literal("Государство OneHouse3").withStyle(ChatFormatting.WHITE)));
+        subHeader.child(Components.label(Component.literal("Государство OneHouse3 — Репутация Князя").withStyle(ChatFormatting.WHITE)));
         mainLayout.child(subHeader);
 
-        // Scrollable content area
+        // Scrollable content area containing the new reputation panel
         FlowLayout content = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
         content.gap(6);
         content.padding(Insets.of(4));
 
-        UUID knyazUuid = worldData != null ? worldData.getKnyazUuid() : null;
-        String knyazName = worldData != null ? worldData.getKnyazName() : "";
-        boolean hasKnyaz = worldData != null && worldData.hasKnyaz();
-        PlayerCharacterData knyazPd = (worldData != null && knyazUuid != null) ? worldData.getPlayerData(knyazUuid) : null;
-        ActiveCharacter knyazChar = knyazPd != null ? knyazPd.getActiveCharacter() : null;
-
-        // SECTION 1: Ruler Card (Правящий Князь) with LARGE PORTRAIT (64x64)
-        FlowLayout rulerCard = Containers.horizontalFlow(Sizing.fill(100), Sizing.content());
-        rulerCard.surface(Surface.flat(0xFF14171E).and(Surface.outline(0xFF383F4E)));
-        rulerCard.padding(Insets.of(10));
-        rulerCard.verticalAlignment(VerticalAlignment.CENTER);
-        rulerCard.gap(12);
-
-        // Large portrait (64x64)
-        FlowLayout avatarBox = Containers.horizontalFlow(Sizing.fixed(66), Sizing.fixed(66));
-        avatarBox.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        avatarBox.surface(Surface.flat(0xFF0F1115).and(Surface.outline(hasKnyaz ? 0xFF5C5236 : 0xFF2A2E38)));
-        avatarBox.child(new PlayerAvatarComponent(knyazUuid, 64));
-        rulerCard.child(avatarBox);
-
-        // Ruler details
-        FlowLayout rulerInfo = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
-        rulerInfo.gap(3);
-
-        FlowLayout titleRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        titleRow.verticalAlignment(VerticalAlignment.CENTER);
-        titleRow.gap(5);
-        titleRow.child(new TextureIconComponent(ICON_MONARCH_CROWN, 14));
-        titleRow.child(Components.label(Component.literal("Правящий Князь").withStyle(ChatFormatting.WHITE)));
-        rulerInfo.child(titleRow);
-
-        if (hasKnyaz) {
-            String charName = knyazChar != null && !knyazChar.getName().isEmpty() ? knyazChar.getName() : knyazName;
-            Component nameComp = Component.literal(charName).withStyle(ChatFormatting.WHITE)
-                    .append(Component.literal(" [" + knyazName + "]").withStyle(ChatFormatting.GRAY));
-            rulerInfo.child(Components.label(nameComp));
-
-            if (knyazChar != null) {
-                if (!knyazChar.getRace().isEmpty()) {
-                    rulerInfo.child(Components.label(Component.literal("Раса: ").withStyle(ChatFormatting.GRAY).append(Component.literal(knyazChar.getRace()).withStyle(ChatFormatting.WHITE))));
-                }
-                rulerInfo.child(Components.label(Component.literal("Возраст: ").withStyle(ChatFormatting.GRAY).append(Component.literal(knyazChar.getAge() + " лет").withStyle(ChatFormatting.WHITE))));
-            }
-            if (knyazPd != null && !knyazPd.getFaction().isEmpty()) {
-                rulerInfo.child(Components.label(Component.literal("Фракция: ").withStyle(ChatFormatting.GRAY).append(Component.literal(knyazPd.getFaction()).withStyle(ChatFormatting.WHITE))));
-            }
-        } else {
-            rulerInfo.child(Components.label(Component.literal("Титул Князя свободен").withStyle(ChatFormatting.GRAY)));
-            rulerInfo.child(Components.label(Component.literal("Корона еще не обрела своего правителя.").withStyle(ChatFormatting.DARK_GRAY)));
-        }
-
-        rulerCard.child(rulerInfo);
-        content.child(rulerCard);
-
-        // SECTION 2: Settlement Statistics
-        FlowLayout statsCard = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
-        statsCard.surface(Surface.flat(0xFF14171E).and(Surface.outline(0xFF262C38)));
-        statsCard.padding(Insets.of(10));
-        statsCard.gap(4);
-
-        statsCard.child(Components.label(Component.literal("Статистика поселения").withStyle(ChatFormatting.WHITE)));
-        statsCard.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF262C38)).margins(Insets.bottom(4)));
-
-        int citizens = 0;
-        int buried = 0;
-        int unburied = 0;
-        if (worldData != null) {
-            for (PlayerCharacterData pd : worldData.getAllPlayerData().values()) {
-                if (pd.hasActiveCharacter()) citizens++;
-                for (DeadCharacter dead : pd.getCharacterHistory()) {
-                    if (dead.isBuried()) buried++;
-                    else unburied++;
-                }
-            }
-        }
-
-        statsCard.child(Components.label(Component.literal("Жителей в мире: " + citizens).withStyle(ChatFormatting.GRAY).append(Component.literal(" чел.").withStyle(ChatFormatting.DARK_GRAY))));
-        statsCard.child(Components.label(Component.literal("Упокоенных предков: " + buried).withStyle(ChatFormatting.GRAY).append(Component.literal(" чел.").withStyle(ChatFormatting.DARK_GRAY))));
-        statsCard.child(Components.label(Component.literal("Неупокоенных душ: " + unburied).withStyle(ChatFormatting.GRAY).append(Component.literal(" чел.").withStyle(ChatFormatting.DARK_GRAY))));
-
-        PlayerCharacterData myData = getMyPlayerData();
-        String myFaction = myData != null && !myData.getFaction().isEmpty() ? myData.getFaction() : "Не состоит";
-        statsCard.child(Components.label(Component.literal("Ваша фракция: ").withStyle(ChatFormatting.GRAY).append(Component.literal(myFaction).withStyle(ChatFormatting.WHITE))));
-        statsCard.child(Components.label(Component.literal("Баланс Гос. Марок: ").withStyle(ChatFormatting.GRAY).append(Component.literal(getMyStateBrands() + " шт.").withStyle(ChatFormatting.WHITE))));
-
-        content.child(statsCard);
+        content.child(ReputationPanelBuilder.build(this.worldData, this::rebuildUI));
 
         ScrollContainer<FlowLayout> scroll = Containers.verticalScroll(Sizing.fill(100), Sizing.expand(), content);
         scroll.scrollbar(DARK_SCROLLBAR);

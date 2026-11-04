@@ -151,6 +151,8 @@ public class CrownEvents {
                         );
                     }
                 }
+                // Knyaz reputation slowly returns towards 0 every in-game day
+                worldData.applyDailyReputationDrift();
                 worldData.setDirty();
                 com.onemanager.network.NetworkHandler.broadcastToAll(new com.onemanager.network.SyncAllCharactersPacket(worldData.save(new net.minecraft.nbt.CompoundTag()), false));
             }

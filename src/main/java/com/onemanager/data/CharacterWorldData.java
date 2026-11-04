@@ -3,6 +3,8 @@ package com.onemanager.data;
 import com.onemanager.OneManager;
 import com.onemanager.block.entity.TreasuryChestBlockEntity;
 import com.onemanager.heist.HeistSession;
+import com.onemanager.reputation.ReputationChange;
+import com.onemanager.reputation.ReputationManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -61,6 +63,8 @@ public class CharacterWorldData extends SavedData {
     public static final String KEY_LAWS = "laws";
     public static final String KEY_TREASURY_CHESTS = "treasury_chests";
     public static final String KEY_HEIST_SESSIONS = "heist_sessions";
+    public static final String KEY_KNYAZ_REPUTATION = "knyaz_reputation";
+    public static final String KEY_REPUTATION_HISTORY = "reputation_history";
 
     public static final int DEFAULT_TAX_RATE = 10;
     public static final int TAX_CYCLE_TICKS = 24000; // 20 minutes (20 * 60 * 20) = 1 in-game day
@@ -88,6 +92,8 @@ public class CharacterWorldData extends SavedData {
     private final List<TreasuryChestEntry> treasuryChests = new CopyOnWriteArrayList<>();
     private final Map<UUID, PendingTreasuryReason> pendingReasons = new ConcurrentHashMap<>();
     private final Map<UUID, HeistSession> heistSessions = new ConcurrentHashMap<>();
+    private int knyazReputation = 0;
+    private final List<ReputationChange> reputationHistory = new CopyOnWriteArrayList<>();
 
     public static final SavedData.Factory<CharacterWorldData> FACTORY = new SavedData.Factory<>(
             CharacterWorldData::new,
@@ -377,8 +383,13 @@ public class CharacterWorldData extends SavedData {
     }
 
     public void setKnyaz(String name, UUID uuid) {
+        UUID previous = this.knyazUuid;
         this.knyazName = name != null ? name : "";
         this.knyazUuid = uuid;
+        if (!Objects.equals(previous, uuid)) {
+            // A new Knyaz always starts with neutral reputation
+            resetReputation();
+        }
         setDirty();
     }
 
@@ -388,6 +399,66 @@ public class CharacterWorldData extends SavedData {
 
     public boolean hasKnyaz() {
         return knyazName != null && !knyazName.isEmpty();
+    }
+
+    // --- Knyaz Reputation (Репутация Князя) ---
+
+    public int getKnyazReputation() {
+        return knyazReputation;
+    }
+
+    public List<ReputationChange> getReputationHistory() {
+        return Collections.unmodifiableList(reputationHistory);
+    }
+
+    /**
+     * Applies a signed reputation change (clamped to -100..100), records it for trend calculation.
+     *
+     * @return the delta actually applied after clamping
+     */
+    public int applyReputationChange(int delta, String source) {
+        int before = knyazReputation;
+        knyazReputation = ReputationManager.clamp(before + delta);
+        int applied = knyazReputation - before;
+        long now = getTotalElapsedTicks();
+        if (applied != 0) {
+            reputationHistory.add(new ReputationChange(now, applied, source));
+        }
+        pruneReputationHistory(now);
+        setDirty();
+        return applied;
+    }
+
+    /** Sets reputation to an exact value (admin). The difference is recorded as a change. */
+    public void setKnyazReputation(int value, String source) {
+        applyReputationChange(ReputationManager.clamp(value) - knyazReputation, source);
+    }
+
+    /** Daily drift: reputation slowly returns towards 0. */
+    public void applyDailyReputationDrift() {
+        if (knyazReputation == 0) {
+            pruneReputationHistory(getTotalElapsedTicks());
+            return;
+        }
+        int step = Math.min(ReputationManager.DRIFT_PER_DAY, Math.abs(knyazReputation));
+        applyReputationChange(knyazReputation > 0 ? -step : step, "drift");
+    }
+
+    public void resetReputation() {
+        knyazReputation = 0;
+        reputationHistory.clear();
+        setDirty();
+    }
+
+    public int getReputationTrend() {
+        return ReputationManager.computeTrendLevel(reputationHistory, getTotalElapsedTicks());
+    }
+
+    private void pruneReputationHistory(long now) {
+        reputationHistory.removeIf(c -> now >= c.tick() && now - c.tick() >= ReputationManager.TREND_WINDOW_TICKS);
+        while (reputationHistory.size() > 1000) {
+            reputationHistory.remove(0);
+        }
     }
 
     // --- Laws (Государственные законы) Operations ---
@@ -995,6 +1066,13 @@ public class CharacterWorldData extends SavedData {
         }
         compoundTag.put(KEY_HEIST_SESSIONS, sessionsList);
 
+        compoundTag.putInt(KEY_KNYAZ_REPUTATION, knyazReputation);
+        ListTag repList = new ListTag();
+        for (ReputationChange change : reputationHistory) {
+            repList.add(change.toNBT());
+        }
+        compoundTag.put(KEY_REPUTATION_HISTORY, repList);
+
         return compoundTag;
     }
 
@@ -1086,6 +1164,20 @@ public class CharacterWorldData extends SavedData {
                         worldData.heistSessions.put(s.getThiefUuid(), s);
                     } catch (Exception e) {
                         OneManager.LOGGER.error("Failed to load heist session from tag", e);
+                    }
+                }
+            }
+
+            if (compoundTag.contains(KEY_KNYAZ_REPUTATION, Tag.TAG_ANY_NUMERIC)) {
+                worldData.knyazReputation = ReputationManager.clamp(compoundTag.getInt(KEY_KNYAZ_REPUTATION));
+            }
+            if (compoundTag.contains(KEY_REPUTATION_HISTORY, Tag.TAG_LIST)) {
+                ListTag repList = compoundTag.getList(KEY_REPUTATION_HISTORY, Tag.TAG_COMPOUND);
+                for (int i = 0; i < repList.size(); i++) {
+                    try {
+                        worldData.reputationHistory.add(ReputationChange.fromNBT(repList.getCompound(i)));
+                    } catch (Exception e) {
+                        OneManager.LOGGER.error("Failed to load reputation change from tag", e);
                     }
                 }
             }

@@ -90,6 +90,69 @@ public class ModCommands {
 
         // 14. Knyaz Management: /oh:knyaz
         dispatcher.register(buildKnyazCommand("oh:knyaz"));
+
+        // 15. Knyaz Reputation: /oh:reputation
+        dispatcher.register(buildReputationCommand("oh:reputation"));
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> buildReputationCommand(String name) {
+        return Commands.literal(name)
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("get")
+                        .executes(ctx -> {
+                            CharacterWorldData wd = CharacterWorldData.get(ctx.getSource().getServer());
+                            int rep = wd.getKnyazReputation();
+                            int trend = wd.getReputationTrend();
+                            ctx.getSource().sendSuccess(() -> Component.literal("Репутация Князя: ").withStyle(ChatFormatting.GOLD)
+                                    .append(Component.literal(String.valueOf(rep)).withStyle(rep >= 0 ? ChatFormatting.GREEN : ChatFormatting.RED, ChatFormatting.BOLD))
+                                    .append(Component.literal(" (тренд: " + trend + ")").withStyle(ChatFormatting.GRAY)), false);
+                            return rep;
+                        }))
+                .then(Commands.literal("set")
+                        .then(Commands.argument("value", IntegerArgumentType.integer(-100, 100))
+                                .executes(ctx -> {
+                                    int value = IntegerArgumentType.getInteger(ctx, "value");
+                                    CharacterWorldData wd = CharacterWorldData.get(ctx.getSource().getServer());
+                                    wd.setKnyazReputation(value, "admin");
+                                    syncReputation(wd);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("Репутация Князя установлена: " + wd.getKnyazReputation()).withStyle(ChatFormatting.GOLD), true);
+                                    return wd.getKnyazReputation();
+                                })))
+                .then(Commands.literal("add")
+                        .then(Commands.argument("delta", IntegerArgumentType.integer(-200, 200))
+                                .executes(ctx -> {
+                                    int delta = IntegerArgumentType.getInteger(ctx, "delta");
+                                    CharacterWorldData wd = CharacterWorldData.get(ctx.getSource().getServer());
+                                    wd.applyReputationChange(delta, "admin");
+                                    syncReputation(wd);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("Репутация Князя изменена на " + delta + ": " + wd.getKnyazReputation()).withStyle(ChatFormatting.GOLD), true);
+                                    return wd.getKnyazReputation();
+                                })))
+                .then(Commands.literal("reset")
+                        .executes(ctx -> {
+                            CharacterWorldData wd = CharacterWorldData.get(ctx.getSource().getServer());
+                            wd.resetReputation();
+                            syncReputation(wd);
+                            ctx.getSource().sendSuccess(() -> Component.literal("Репутация Князя и история тренда сброшены.").withStyle(ChatFormatting.GOLD), true);
+                            return 1;
+                        }))
+                .then(Commands.literal("resetcooldowns")
+                        .then(Commands.argument("targets", EntityArgument.players())
+                                .executes(ctx -> {
+                                    Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
+                                    CharacterWorldData wd = CharacterWorldData.get(ctx.getSource().getServer());
+                                    for (ServerPlayer target : targets) {
+                                        wd.getOrCreatePlayerData(target.getUUID()).clearReputationCooldowns();
+                                    }
+                                    syncReputation(wd);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("Кулдауны действий репутации сброшены для " + targets.size() + " игрок(ов).").withStyle(ChatFormatting.GOLD), true);
+                                    return targets.size();
+                                })));
+    }
+
+    private static void syncReputation(CharacterWorldData wd) {
+        wd.setDirty();
+        NetworkHandler.broadcastToAll(new SyncAllCharactersPacket(wd.save(new CompoundTag()), false));
     }
 
     private static int openCharHistory(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

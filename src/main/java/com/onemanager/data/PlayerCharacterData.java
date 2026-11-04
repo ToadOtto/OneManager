@@ -44,6 +44,7 @@ public class PlayerCharacterData {
     public static final String KEY_PROFESSION_START_DATES = "professionStartDates";
     public static final String KEY_ONLINE_BRAND_TICKS = "onlineBrandTicks";
     public static final String KEY_WEEKLY_DEPOSIT = "weeklyDeposit";
+    public static final String KEY_REPUTATION_COOLDOWNS = "reputationCooldowns";
 
     public static final int[] BRAND_PROGRESSION = {250, 500, 1000, 2000, 4000, 8000, 16000};
     public static final int BRAND_CYCLE_TICKS = 168_000; // 140 minutes in ticks (7 minecraft days)
@@ -72,6 +73,8 @@ public class PlayerCharacterData {
     private boolean leftMainThisCycle = false;
     private boolean leftSecondaryThisCycle = false;
     private long weeklyDeposit = 0L;
+    /** Reputation action ID -> world calendar tick of last use (shared for +N / -N pair). */
+    private final Map<Integer, Long> reputationCooldowns = new LinkedHashMap<>();
 
     public PlayerCharacterData(UUID playerUuid) {
         this.playerUuid = Objects.requireNonNull(playerUuid, "Player UUID cannot be null");
@@ -617,6 +620,22 @@ public class PlayerCharacterData {
         return marksEarned;
     }
 
+    // --- Knyaz Reputation Cooldowns ---
+
+    /** World calendar tick when the action was last used, or -1 if never. */
+    public long getReputationActionLastUsed(int actionId) {
+        Long tick = reputationCooldowns.get(actionId);
+        return tick != null ? tick : -1L;
+    }
+
+    public void markReputationActionUsed(int actionId, long tick) {
+        reputationCooldowns.put(actionId, tick);
+    }
+
+    public void clearReputationCooldowns() {
+        reputationCooldowns.clear();
+    }
+
     // --- Serialization ---
 
     public CompoundTag toNBT() {
@@ -684,6 +703,12 @@ public class PlayerCharacterData {
             startDatesTag.putString(entry.getKey(), entry.getValue());
         }
         tag.put(KEY_PROFESSION_START_DATES, startDatesTag);
+
+        CompoundTag repCdTag = new CompoundTag();
+        for (Map.Entry<Integer, Long> entry : reputationCooldowns.entrySet()) {
+            repCdTag.putLong(String.valueOf(entry.getKey()), entry.getValue());
+        }
+        tag.put(KEY_REPUTATION_COOLDOWNS, repCdTag);
 
         return tag;
     }
@@ -803,6 +828,15 @@ public class PlayerCharacterData {
             CompoundTag startDatesTag = tag.getCompound(KEY_PROFESSION_START_DATES);
             for (String key : startDatesTag.getAllKeys()) {
                 data.setProfessionStartDate(key, startDatesTag.getString(key));
+            }
+        }
+        if (tag.contains(KEY_REPUTATION_COOLDOWNS, Tag.TAG_COMPOUND)) {
+            CompoundTag repCdTag = tag.getCompound(KEY_REPUTATION_COOLDOWNS);
+            for (String key : repCdTag.getAllKeys()) {
+                try {
+                    data.reputationCooldowns.put(Integer.parseInt(key), repCdTag.getLong(key));
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
 

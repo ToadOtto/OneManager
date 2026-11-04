@@ -121,6 +121,12 @@ public class NetworkHandler {
                 SubmitTreasuryReasonC2SPacket::handle
         );
 
+        registrar.playToServer(
+                ReputationActionC2SPacket.TYPE,
+                ReputationActionC2SPacket.STREAM_CODEC,
+                ReputationActionC2SPacket::handle
+        );
+
         registrar.playToClient(
                 SyncAllCharactersPacket.TYPE,
                 SyncAllCharactersPacket.STREAM_CODEC,
