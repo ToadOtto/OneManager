@@ -440,8 +440,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout headerBar = Containers.horizontalFlow(Sizing.fill(100), Sizing.fill(100));
         headerBar.verticalAlignment(VerticalAlignment.CENTER);
 
-        // Logo - OneHouse3 logo from assets/oh3logo/small.png
-        TextureIconComponent logo = new TextureIconComponent(ICON_LOGO, 0, 0, 1646, 1646, 1646, 1646, 22, 22);
+        // Logo - OneHouse3 logo from assets/oh3logo/big.png
+        TextureIconComponent logo = new TextureIconComponent(ICON_LOGO, 0, 0, 2204, 1230, 2204, 1230, 46, 26);
         logo.margins(Insets.right(12));
         headerBar.child(logo);
 

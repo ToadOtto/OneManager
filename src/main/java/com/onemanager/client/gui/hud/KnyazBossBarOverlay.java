@@ -3,18 +3,13 @@ package com.onemanager.client.gui.hud;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.onemanager.OneManager;
 import com.onemanager.client.ClientPacketHandler;
-import com.onemanager.data.ActiveCharacter;
 import com.onemanager.data.CharacterWorldData;
-import com.onemanager.data.PlayerCharacterData;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -24,8 +19,8 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import java.util.UUID;
 
 /**
- * Top-of-screen bossbar HUD overlay displaying the reigning Knyaz's reputation bar,
- * square avatar icon, and monarch title with full name.
+ * Top-of-screen bossbar HUD overlay displaying the reigning Knyaz's reputation bar
+ * and square avatar icon inside the custom frame.
  */
 @EventBusSubscriber(modid = OneManager.MOD_ID, value = Dist.CLIENT)
 public final class KnyazBossBarOverlay {
@@ -60,15 +55,8 @@ public final class KnyazBossBarOverlay {
         }
 
         UUID knyazUuid = worldData.getKnyazUuid();
-        String knyazName = worldData.getKnyazName();
-        PlayerCharacterData knyazPd = knyazUuid != null ? worldData.getPlayerData(knyazUuid) : null;
-        ActiveCharacter knyazChar = knyazPd != null ? knyazPd.getActiveCharacter() : null;
-        String fullName = (knyazChar != null && !knyazChar.getName().isEmpty())
-                ? knyazChar.getName()
-                : knyazName;
 
         GuiGraphics guiGraphics = event.getGuiGraphics();
-        Font font = mc.font;
         int screenWidth = guiGraphics.guiWidth();
 
         // Calculate horizontal position centered on screen
@@ -116,22 +104,6 @@ public final class KnyazBossBarOverlay {
 
         // Center tick at 0 mark
         guiGraphics.fill(centerX, fillY1 - 1, centerX + 1, fillY2 + 1, 0xFFB0B7C6);
-
-        // 4. White Reputation Number in the Center of the Scale
-        String repStr = (rep > 0 ? "+" : "") + rep;
-        int repStrWidth = font.width(repStr);
-        int repStrX = centerX - repStrWidth / 2;
-        int repStrY = barY + 12; // Vertically centered over the groove (barY + 16)
-        guiGraphics.drawString(font, repStr, repStrX, repStrY, 0xFFFFFFFF, true);
-
-        // 5. Centered text under the frame: "Князь " + (полное имя князя)
-        Component titleComp = Component.literal("Князь ")
-                .withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(fullName).withStyle(ChatFormatting.WHITE));
-        int titleWidth = font.width(titleComp);
-        int titleX = barX + (BAR_TEXTURE_WIDTH - titleWidth) / 2;
-        int titleY = barY + BAR_TEXTURE_HEIGHT + 2;
-        guiGraphics.drawString(font, titleComp, titleX, titleY, 0xFFFFFFFF, true);
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
