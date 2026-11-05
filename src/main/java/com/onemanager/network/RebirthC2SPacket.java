@@ -114,6 +114,7 @@ public record RebirthC2SPacket(
             }
 
             // 1. Current active character is moved to characterHistory
+            boolean wasKnyaz = worldData != null && worldData.isKnyaz(player.getUUID());
             DeadCharacter dead;
             if (playerData.hasActiveCharacter()) {
                 dead = playerData.killActiveCharacter(cause, System.currentTimeMillis(), player.serverLevel().getGameTime());
@@ -129,9 +130,13 @@ public record RebirthC2SPacket(
                         -1L,
                         newRace,
                         newAppearance,
-                        newDescription
+                        newDescription,
+                        wasKnyaz
                 );
                 playerData.addDeadCharacter(dead);
+            }
+            if (dead != null && wasKnyaz) {
+                dead.setKnyaz(true);
             }
 
             // 2. Create new active character with input Name, Age, Race, Appearance, Description.

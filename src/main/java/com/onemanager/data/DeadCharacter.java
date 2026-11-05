@@ -31,6 +31,7 @@ public class DeadCharacter {
     public static final String KEY_RACE = "race";
     public static final String KEY_APPEARANCE = "appearance";
     public static final String KEY_DESCRIPTION = "description";
+    public static final String KEY_WAS_KNYAZ = "was_knyaz";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.systemDefault());
@@ -46,24 +47,29 @@ public class DeadCharacter {
     private String race;
     private String appearance;
     private String description;
+    private boolean wasKnyaz;
 
     public DeadCharacter() {
-        this("", 0, Collections.emptyList(), "", System.currentTimeMillis(), "Unknown", false, -1L, "", "", "");
+        this("", 0, Collections.emptyList(), "", System.currentTimeMillis(), "Unknown", false, -1L, "", "", "", false);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause) {
-        this(name, age, professions, lineage, deathDate, deathCause, false, -1L, "", "", "");
+        this(name, age, professions, lineage, deathDate, deathCause, false, -1L, "", "", "", false);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried) {
-        this(name, age, professions, lineage, deathDate, deathCause, buried, -1L, "", "", "");
+        this(name, age, professions, lineage, deathDate, deathCause, buried, -1L, "", "", "", false);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried, long daysAlive) {
-        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, "", "", "");
+        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, "", "", "", false);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried, long daysAlive, String race, String appearance, String description) {
+        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, false);
+    }
+
+    public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried, long daysAlive, String race, String appearance, String description, boolean wasKnyaz) {
         this.name = name != null ? name : "";
         this.age = age;
         if (professions != null) {
@@ -77,6 +83,7 @@ public class DeadCharacter {
         this.race = race != null ? race : "";
         this.appearance = appearance != null ? appearance : "";
         this.description = description != null ? description : "";
+        this.wasKnyaz = wasKnyaz;
     }
 
     public String getName() {
@@ -188,6 +195,18 @@ public class DeadCharacter {
         this.description = description != null ? description : "";
     }
 
+    public boolean wasKnyaz() {
+        return wasKnyaz || professions.contains("Князь") || (name != null && name.toLowerCase().startsWith("князь"));
+    }
+
+    public void setWasKnyaz(boolean wasKnyaz) {
+        this.wasKnyaz = wasKnyaz;
+    }
+
+    public void setKnyaz(boolean wasKnyaz) {
+        this.wasKnyaz = wasKnyaz;
+    }
+
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putString(KEY_NAME, name);
@@ -210,6 +229,9 @@ public class DeadCharacter {
         tag.putString(KEY_RACE, race != null ? race : "");
         tag.putString(KEY_APPEARANCE, appearance != null ? appearance : "");
         tag.putString(KEY_DESCRIPTION, description != null ? description : "");
+        if (wasKnyaz) {
+            tag.putBoolean(KEY_WAS_KNYAZ, true);
+        }
         return tag;
     }
 
@@ -230,6 +252,7 @@ public class DeadCharacter {
         String race = tag.getString(KEY_RACE);
         String appearance = tag.getString(KEY_APPEARANCE);
         String description = tag.getString(KEY_DESCRIPTION);
+        boolean wasKnyaz = tag.contains(KEY_WAS_KNYAZ) ? tag.getBoolean(KEY_WAS_KNYAZ) : tag.getBoolean("knyaz");
 
         Set<String> professions = new LinkedHashSet<>();
         if (tag.contains(KEY_PROFESSIONS, Tag.TAG_LIST)) {
@@ -239,11 +262,11 @@ public class DeadCharacter {
             }
         }
 
-        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description);
+        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, wasKnyaz);
     }
 
     public DeadCharacter copy() {
-        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description);
+        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, wasKnyaz);
     }
 
     @Override

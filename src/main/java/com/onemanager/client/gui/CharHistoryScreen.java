@@ -414,7 +414,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         mainPanel.padding(Insets.of(8));
 
         // 1. TOP HEADER BAR: pops out with elevated dark gray surface
-        StackLayout header = Containers.stack(Sizing.fill(100), Sizing.fixed(26));
+        StackLayout header = Containers.stack(Sizing.fill(100), Sizing.fixed(32));
         header.surface(Surface.flat(0xFF161920).and(Surface.outline(0xFF262C36)));
         header.padding(Insets.horizontal(8));
 
@@ -440,8 +440,8 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout headerBar = Containers.horizontalFlow(Sizing.fill(100), Sizing.fill(100));
         headerBar.verticalAlignment(VerticalAlignment.CENTER);
 
-        // Logo - OneHouse3 logo from assets/oh3logo/big.png
-        TextureIconComponent logo = new TextureIconComponent(ICON_LOGO, 0, 0, 2204, 1230, 2204, 1230, 46, 26);
+        // Logo - OneHouse3 logo from assets/oh3logo/small.png (256x256 HQ source, 30x30 display)
+        TextureIconComponent logo = new TextureIconComponent(ICON_LOGO, 0, 0, 256, 256, 256, 256, 30, 30);
         logo.margins(Insets.right(12));
         headerBar.child(logo);
 
@@ -802,11 +802,14 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 nameRow.verticalAlignment(VerticalAlignment.CENTER);
                 nameRow.gap(4);
 
-                Component nameComp = Component.literal(active.getName()).withStyle(ChatFormatting.WHITE)
+                boolean isKnyaz = worldData != null && worldData.isKnyaz(pd.getPlayerUuid());
+                ChatFormatting nameColor = isKnyaz ? ChatFormatting.GOLD : ChatFormatting.WHITE;
+
+                Component nameComp = Component.literal(active.getName()).withStyle(nameColor)
                         .append(Component.literal(" [" + pd.getLastKnownPlayerName() + "]").withStyle(ChatFormatting.GRAY));
                 nameRow.child(Components.label(nameComp));
 
-                if (worldData != null && worldData.isKnyaz(pd.getPlayerUuid())) {
+                if (isKnyaz) {
                     TextureIconComponent crownIcon = new TextureIconComponent(ICON_MONARCH_CROWN, 12);
                     crownIcon.tooltip(Component.literal("Князь").withStyle(ChatFormatting.GOLD));
                     nameRow.child(crownIcon);
@@ -874,12 +877,24 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 info.margins(Insets.left(6));
                 info.gap(1);
 
+                FlowLayout nameRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+                nameRow.verticalAlignment(VerticalAlignment.CENTER);
+                nameRow.gap(4);
+
                 Component titleComp = Component.literal(dead.getName() + " (" + dead.getAge() + " л.)").withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(" [" + entry.playerName() + "]").withStyle(ChatFormatting.DARK_GRAY));
                 if (!dead.getRace().isEmpty()) {
                     titleComp = titleComp.copy().append(Component.literal(" • " + dead.getRace()).withStyle(ChatFormatting.DARK_GRAY));
                 }
-                info.child(Components.label(titleComp));
+                nameRow.child(Components.label(titleComp));
+
+                if (dead.wasKnyaz()) {
+                    TextureIconComponent deadCrown = new TextureIconComponent(ICON_MONARCH_CROWN, 12)
+                            .color(0.50f, 0.50f, 0.50f, 0.85f);
+                    deadCrown.tooltip(Component.literal("Князь (почивший)").withStyle(ChatFormatting.GRAY));
+                    nameRow.child(deadCrown);
+                }
+                info.child(nameRow);
 
                 String factStr = dead.getFaction().isEmpty() ? "Не указана" : dead.getFaction();
                 info.child(Components.label(Component.literal("Фракция: " + factStr).withStyle(ChatFormatting.DARK_GRAY)));
@@ -959,7 +974,18 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                 info.margins(Insets.left(6));
                 info.gap(1);
 
-                info.child(Components.label(Component.literal(dead.getName()).withStyle(ChatFormatting.WHITE)));
+                FlowLayout nameRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+                nameRow.verticalAlignment(VerticalAlignment.CENTER);
+                nameRow.gap(4);
+                nameRow.child(Components.label(Component.literal(dead.getName()).withStyle(ChatFormatting.WHITE)));
+
+                if (dead.wasKnyaz()) {
+                    TextureIconComponent deadCrown = new TextureIconComponent(ICON_MONARCH_CROWN, 12)
+                            .color(0.50f, 0.50f, 0.50f, 0.85f);
+                    deadCrown.tooltip(Component.literal("Князь (почивший)").withStyle(ChatFormatting.GRAY));
+                    nameRow.child(deadCrown);
+                }
+                info.child(nameRow);
                 info.child(Components.label(Component.literal("Дата: " + dead.getFormattedDeathDate()).withStyle(ChatFormatting.GRAY)));
 
                 LabelComponent causeLabel = Components.label(Component.literal("Причина: " + dead.getDeathCause()).withStyle(ChatFormatting.DARK_GRAY));
@@ -2893,8 +2919,9 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout nameRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         nameRow.verticalAlignment(VerticalAlignment.CENTER);
         nameRow.gap(4);
-        nameRow.child(Components.label(Component.literal(active.getName()).withStyle(ChatFormatting.WHITE)));
-        if (worldData != null && worldData.isKnyaz(pd.getPlayerUuid())) {
+        boolean isKnyaz = worldData != null && worldData.isKnyaz(pd.getPlayerUuid());
+        nameRow.child(Components.label(Component.literal(active.getName()).withStyle(isKnyaz ? ChatFormatting.GOLD : ChatFormatting.WHITE)));
+        if (isKnyaz) {
             TextureIconComponent crown = new TextureIconComponent(ICON_MONARCH_CROWN, 12);
             crown.tooltip(Component.literal("Князь").withStyle(ChatFormatting.GOLD));
             nameRow.child(crown);
@@ -2992,7 +3019,17 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         profileRow.child(new PlayerAvatarComponent(entry.playerUuid(), 36, dead.isBuried() ? 0.70f : 1.0f));
 
         FlowLayout nameCol = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
-        nameCol.child(Components.label(Component.literal(dead.getName()).withStyle(ChatFormatting.WHITE)));
+        FlowLayout nameRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+        nameRow.verticalAlignment(VerticalAlignment.CENTER);
+        nameRow.gap(4);
+        nameRow.child(Components.label(Component.literal(dead.getName()).withStyle(ChatFormatting.WHITE)));
+        if (dead.wasKnyaz()) {
+            TextureIconComponent deadCrown = new TextureIconComponent(ICON_MONARCH_CROWN, 12)
+                    .color(0.50f, 0.50f, 0.50f, 0.85f);
+            deadCrown.tooltip(Component.literal("Князь (почивший)").withStyle(ChatFormatting.GRAY));
+            nameRow.child(deadCrown);
+        }
+        nameCol.child(nameRow);
         nameCol.child(Components.label(Component.literal("Игрок: " + entry.playerName()).withStyle(ChatFormatting.GRAY)));
         profileRow.child(nameCol);
         modal.child(profileRow);

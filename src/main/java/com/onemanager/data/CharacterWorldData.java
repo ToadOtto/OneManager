@@ -307,7 +307,11 @@ public class CharacterWorldData extends SavedData {
     public DeadCharacter killCharacter(UUID uuid, String deathCause) {
         PlayerCharacterData data = getPlayerData(uuid);
         if (data != null && data.hasActiveCharacter()) {
+            boolean wasKnyaz = isKnyaz(uuid);
             DeadCharacter dead = data.killActiveCharacter(deathCause);
+            if (dead != null && wasKnyaz) {
+                dead.setKnyaz(true);
+            }
             setDirty();
             return dead;
         }

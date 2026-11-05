@@ -41,5 +41,5 @@ repo/
 logs/
 integrate/
 .github/
-data/
+/data/
 .migration_backup/
