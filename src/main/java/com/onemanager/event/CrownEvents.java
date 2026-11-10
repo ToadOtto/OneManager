@@ -94,6 +94,12 @@ public class CrownEvents {
                 removeCrownBuffs(player);
 
                 ServerLevel serverLevel = player.serverLevel();
+                com.onemanager.data.CharacterWorldData worldData = com.onemanager.data.CharacterWorldData.get(serverLevel);
+                if (worldData != null && worldData.isKnyaz(player.getUUID())) {
+                    player.getPersistentData().putBoolean("was_knyaz_at_death", true);
+                    player.getPersistentData().putInt("knyaz_rep_at_death", worldData.getKnyazReputation());
+                }
+
                 ItemEntity itemEntity = new ItemEntity(
                         serverLevel,
                         player.getX(),

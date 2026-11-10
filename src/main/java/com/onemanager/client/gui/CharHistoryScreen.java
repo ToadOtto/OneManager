@@ -893,6 +893,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                             .color(0.50f, 0.50f, 0.50f, 0.85f);
                     deadCrown.tooltip(Component.literal("Князь (почивший)").withStyle(ChatFormatting.GRAY));
                     nameRow.child(deadCrown);
+                    nameRow.child(createKnyazDeathReputationBadge(dead));
                 }
                 info.child(nameRow);
 
@@ -984,6 +985,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                             .color(0.50f, 0.50f, 0.50f, 0.85f);
                     deadCrown.tooltip(Component.literal("Князь (почивший)").withStyle(ChatFormatting.GRAY));
                     nameRow.child(deadCrown);
+                    nameRow.child(createKnyazDeathReputationBadge(dead));
                 }
                 info.child(nameRow);
                 info.child(Components.label(Component.literal("Дата: " + dead.getFormattedDeathDate()).withStyle(ChatFormatting.GRAY)));
@@ -3028,6 +3030,7 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
                     .color(0.50f, 0.50f, 0.50f, 0.85f);
             deadCrown.tooltip(Component.literal("Князь (почивший)").withStyle(ChatFormatting.GRAY));
             nameRow.child(deadCrown);
+            nameRow.child(createKnyazDeathReputationBadge(dead));
         }
         nameCol.child(nameRow);
         nameCol.child(Components.label(Component.literal("Игрок: " + entry.playerName()).withStyle(ChatFormatting.GRAY)));
@@ -3056,6 +3059,14 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
 
         String profs = dead.getProfessions().isEmpty() ? "Без профессии" : String.join(", ", dead.getProfessions());
         detailsFlow.child(createWrappedLabel(Component.literal("Профессии: ").withStyle(ChatFormatting.GRAY).append(Component.literal(profs).withStyle(ChatFormatting.WHITE))));
+
+        if (dead.wasKnyaz()) {
+            int rep = dead.getReputationAtDeath() != null ? dead.getReputationAtDeath() : 0;
+            String sign = rep > 0 ? "+" : "";
+            int repColor = ReputationPanelBuilder.getReputationColor(rep);
+            detailsFlow.child(createWrappedLabel(Component.literal("Репутация при гибели: ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(sign + rep).withStyle(style -> style.withColor(repColor).withBold(true)))));
+        }
 
         detailsFlow.child(createWrappedLabel(Component.literal("Лицензии: ").withStyle(ChatFormatting.GRAY).append(Component.literal("Отсутствуют").withStyle(ChatFormatting.DARK_GRAY))));
 
@@ -3095,6 +3106,29 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         LabelComponent label = Components.label(text);
         label.maxWidth(280);
         return label;
+    }
+
+    private FlowLayout createKnyazDeathReputationBadge(DeadCharacter dead) {
+        int rep = dead.getReputationAtDeath() != null ? dead.getReputationAtDeath() : 0;
+        String sign = rep > 0 ? "+" : "";
+        String text = sign + rep;
+
+        int color = ReputationPanelBuilder.getReputationColor(rep);
+
+        FlowLayout badge = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+        badge.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        badge.padding(Insets.of(1, 1, 3, 3));
+
+        int bg = rep > 0 ? 0xFF131D16 : (rep < 0 ? 0xFF201315 : 0xFF161920);
+        int border = 0x88000000 | (color & 0x00FFFFFF);
+        badge.surface(Surface.flat(bg).and(Surface.outline(border)));
+
+        LabelComponent label = Components.label(Component.literal(text).withStyle(style -> style.withColor(color)));
+        badge.child(label);
+
+        badge.tooltip(Component.literal("Репутация Князя при гибели: ").withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(text).withStyle(style -> style.withColor(color).withBold(true))));
+        return badge;
     }
 
     /**

@@ -59,6 +59,18 @@ public class CharacterDataTest {
         DeadCharacter loadedBuried = DeadCharacter.fromNBT(buriedTag);
         assertTrue(loadedBuried.isBuried());
         assertEquals(dead, loadedBuried);
+
+        // Test wasKnyaz and reputationAtDeath
+        dead.setKnyaz(true);
+        dead.setReputationAtDeath(75);
+        assertTrue(dead.wasKnyaz());
+        assertEquals(Integer.valueOf(75), dead.getReputationAtDeath());
+        CompoundTag knyazTag = dead.toNBT();
+        assertTrue(knyazTag.getBoolean(DeadCharacter.KEY_WAS_KNYAZ));
+        assertEquals(75, knyazTag.getInt(DeadCharacter.KEY_REPUTATION_AT_DEATH));
+        DeadCharacter loadedKnyaz = DeadCharacter.fromNBT(knyazTag);
+        assertTrue(loadedKnyaz.wasKnyaz());
+        assertEquals(Integer.valueOf(75), loadedKnyaz.getReputationAtDeath());
     }
 
     @Test
@@ -113,10 +125,12 @@ public class CharacterDataTest {
         worldData.addProfession(player1, "Mage");
         worldData.setActiveCharacter(player1, new ActiveCharacter("Jaina", 30, 1700000000000L, true));
 
-        // Player 2 setup
+        // Player 2 setup (Knyaz with reputation)
         worldData.setLineage(player2, "Ironforge");
         worldData.addProfession(player2, "Warrior");
         worldData.setActiveCharacter(player2, new ActiveCharacter("Muradin", 40, 1700000000000L, false));
+        worldData.setKnyaz("Muradin", player2);
+        worldData.applyReputationChange(45, "test");
         worldData.killCharacter(player2, "Crushed by Anvil");
 
         // Save world data
@@ -145,6 +159,8 @@ public class CharacterDataTest {
         assertEquals("Muradin", history.get(0).getName());
         assertEquals("Crushed by Anvil", history.get(0).getDeathCause());
         assertEquals("Ironforge", history.get(0).getLineage());
+        assertTrue(history.get(0).wasKnyaz());
+        assertEquals(Integer.valueOf(45), history.get(0).getReputationAtDeath());
     }
 
     @Test

@@ -114,7 +114,14 @@ public record RebirthC2SPacket(
             }
 
             // 1. Current active character is moved to characterHistory
-            boolean wasKnyaz = worldData != null && worldData.isKnyaz(player.getUUID());
+            boolean wasKnyaz = (worldData != null && worldData.isKnyaz(player.getUUID()))
+                    || player.getPersistentData().getBoolean("was_knyaz_at_death");
+            int knyazRep = player.getPersistentData().contains("knyaz_rep_at_death")
+                    ? player.getPersistentData().getInt("knyaz_rep_at_death")
+                    : (worldData != null ? worldData.getKnyazReputation() : 0);
+            player.getPersistentData().remove("was_knyaz_at_death");
+            player.getPersistentData().remove("knyaz_rep_at_death");
+
             DeadCharacter dead;
             if (playerData.hasActiveCharacter()) {
                 dead = playerData.killActiveCharacter(cause, System.currentTimeMillis(), player.serverLevel().getGameTime());
@@ -131,12 +138,14 @@ public record RebirthC2SPacket(
                         newRace,
                         newAppearance,
                         newDescription,
-                        wasKnyaz
+                        wasKnyaz,
+                        wasKnyaz ? knyazRep : null
                 );
                 playerData.addDeadCharacter(dead);
             }
             if (dead != null && wasKnyaz) {
                 dead.setKnyaz(true);
+                dead.setReputationAtDeath(knyazRep);
             }
 
             // 2. Create new active character with input Name, Age, Race, Appearance, Description.

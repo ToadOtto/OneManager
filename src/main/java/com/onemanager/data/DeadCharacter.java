@@ -32,6 +32,7 @@ public class DeadCharacter {
     public static final String KEY_APPEARANCE = "appearance";
     public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_WAS_KNYAZ = "was_knyaz";
+    public static final String KEY_REPUTATION_AT_DEATH = "reputation_at_death";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.systemDefault());
@@ -48,28 +49,33 @@ public class DeadCharacter {
     private String appearance;
     private String description;
     private boolean wasKnyaz;
+    private Integer reputationAtDeath;
 
     public DeadCharacter() {
-        this("", 0, Collections.emptyList(), "", System.currentTimeMillis(), "Unknown", false, -1L, "", "", "", false);
+        this("", 0, Collections.emptyList(), "", System.currentTimeMillis(), "Unknown", false, -1L, "", "", "", false, null);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause) {
-        this(name, age, professions, lineage, deathDate, deathCause, false, -1L, "", "", "", false);
+        this(name, age, professions, lineage, deathDate, deathCause, false, -1L, "", "", "", false, null);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried) {
-        this(name, age, professions, lineage, deathDate, deathCause, buried, -1L, "", "", "", false);
+        this(name, age, professions, lineage, deathDate, deathCause, buried, -1L, "", "", "", false, null);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried, long daysAlive) {
-        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, "", "", "", false);
+        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, "", "", "", false, null);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried, long daysAlive, String race, String appearance, String description) {
-        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, false);
+        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, false, null);
     }
 
     public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried, long daysAlive, String race, String appearance, String description, boolean wasKnyaz) {
+        this(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, wasKnyaz, null);
+    }
+
+    public DeadCharacter(String name, int age, Collection<String> professions, String lineage, long deathDate, String deathCause, boolean buried, long daysAlive, String race, String appearance, String description, boolean wasKnyaz, Integer reputationAtDeath) {
         this.name = name != null ? name : "";
         this.age = age;
         if (professions != null) {
@@ -84,6 +90,7 @@ public class DeadCharacter {
         this.appearance = appearance != null ? appearance : "";
         this.description = description != null ? description : "";
         this.wasKnyaz = wasKnyaz;
+        this.reputationAtDeath = reputationAtDeath;
     }
 
     public String getName() {
@@ -207,6 +214,18 @@ public class DeadCharacter {
         this.wasKnyaz = wasKnyaz;
     }
 
+    public Integer getReputationAtDeath() {
+        return reputationAtDeath;
+    }
+
+    public void setReputationAtDeath(Integer reputationAtDeath) {
+        this.reputationAtDeath = reputationAtDeath;
+    }
+
+    public boolean hasReputationAtDeath() {
+        return reputationAtDeath != null;
+    }
+
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putString(KEY_NAME, name);
@@ -232,6 +251,9 @@ public class DeadCharacter {
         if (wasKnyaz) {
             tag.putBoolean(KEY_WAS_KNYAZ, true);
         }
+        if (reputationAtDeath != null) {
+            tag.putInt(KEY_REPUTATION_AT_DEATH, reputationAtDeath);
+        }
         return tag;
     }
 
@@ -253,6 +275,9 @@ public class DeadCharacter {
         String appearance = tag.getString(KEY_APPEARANCE);
         String description = tag.getString(KEY_DESCRIPTION);
         boolean wasKnyaz = tag.contains(KEY_WAS_KNYAZ) ? tag.getBoolean(KEY_WAS_KNYAZ) : tag.getBoolean("knyaz");
+        Integer reputationAtDeath = tag.contains(KEY_REPUTATION_AT_DEATH, Tag.TAG_ANY_NUMERIC)
+                ? tag.getInt(KEY_REPUTATION_AT_DEATH)
+                : null;
 
         Set<String> professions = new LinkedHashSet<>();
         if (tag.contains(KEY_PROFESSIONS, Tag.TAG_LIST)) {
@@ -262,11 +287,11 @@ public class DeadCharacter {
             }
         }
 
-        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, wasKnyaz);
+        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, wasKnyaz, reputationAtDeath);
     }
 
     public DeadCharacter copy() {
-        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, wasKnyaz);
+        return new DeadCharacter(name, age, professions, lineage, deathDate, deathCause, buried, daysAlive, race, appearance, description, wasKnyaz, reputationAtDeath);
     }
 
     @Override

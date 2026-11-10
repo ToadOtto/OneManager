@@ -311,6 +311,7 @@ public class CharacterWorldData extends SavedData {
             DeadCharacter dead = data.killActiveCharacter(deathCause);
             if (dead != null && wasKnyaz) {
                 dead.setKnyaz(true);
+                dead.setReputationAtDeath(getKnyazReputation());
             }
             setDirty();
             return dead;

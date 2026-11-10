@@ -111,6 +111,16 @@ public class RemainsItem extends Item {
                     .append(Component.literal(dateFormatted).withStyle(ChatFormatting.DARK_GRAY)));
         }
 
+        if (tag.getBoolean(DeadCharacter.KEY_WAS_KNYAZ) || tag.getBoolean("was_knyaz")) {
+            String repStr = "";
+            if (tag.contains(DeadCharacter.KEY_REPUTATION_AT_DEATH)) {
+                int rep = tag.getInt(DeadCharacter.KEY_REPUTATION_AT_DEATH);
+                repStr = " (" + (rep > 0 ? "+" : "") + rep + ")";
+            }
+            tooltip.add(Component.literal("Статус: ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal("Почивший Князь" + repStr).withStyle(ChatFormatting.GOLD)));
+        }
+
         tooltip.add(Component.literal("Покойтесь с миром...").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC));
     }
 
@@ -141,6 +151,13 @@ public class RemainsItem extends Item {
             }
         }
         tag.put(KEY_PROFESSIONS, list);
+
+        if (dead != null && dead.wasKnyaz()) {
+            tag.putBoolean(DeadCharacter.KEY_WAS_KNYAZ, true);
+            if (dead.getReputationAtDeath() != null) {
+                tag.putInt(DeadCharacter.KEY_REPUTATION_AT_DEATH, dead.getReputationAtDeath());
+            }
+        }
 
         CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
         stack.set(DataComponents.CUSTOM_NAME, Component.literal("Останки: " + name));
