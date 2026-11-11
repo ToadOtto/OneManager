@@ -4,6 +4,7 @@ import com.onemanager.OneManager;
 import com.onemanager.command.GiveCrownCommand;
 import com.onemanager.data.KnyazSavedData;
 import com.onemanager.item.CrownItem;
+import com.onemanager.reputation.KnyazResistance;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
 import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.inventory.Slot;
@@ -31,6 +33,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.ItemStackedOnOtherEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -75,6 +78,40 @@ public class CrownEvents {
                 player.removeEffect(effect);
             }
         }
+    }
+
+    /**
+     * Applies reputation-based PvP damage resistance to the ruling Knyaz when attacked by another player
+     * (by hand, melee weapon, projectile, etc.).
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onKnyazIncomingDamage(LivingIncomingDamageEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer victim) || victim.server == null) {
+            return;
+        }
+
+        Entity attacker = event.getSource().getEntity();
+        Player attackerPlayer = null;
+        if (attacker instanceof Player p) {
+            attackerPlayer = p;
+        } else {
+            Entity direct = event.getSource().getDirectEntity();
+            if (direct instanceof Player p) {
+                attackerPlayer = p;
+            }
+        }
+        if (attackerPlayer == null || attackerPlayer.getUUID().equals(victim.getUUID())) {
+            return;
+        }
+
+        com.onemanager.data.CharacterWorldData worldData = com.onemanager.data.CharacterWorldData.get(victim.server);
+        if (worldData == null || !worldData.isKnyaz(victim.getUUID())) {
+            return;
+        }
+
+        KnyazResistance resist = KnyazResistance.fromReputation(worldData.getKnyazReputation());
+        float multiplier = resist.getDamageMultiplier();
+        event.setAmount(event.getAmount() * multiplier);
     }
 
     /**

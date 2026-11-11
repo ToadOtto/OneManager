@@ -12,6 +12,7 @@ import com.onemanager.data.CharacterWorldData;
 import com.onemanager.data.PlayerCharacterData;
 import com.onemanager.network.NetworkHandler;
 import com.onemanager.network.ReputationActionC2SPacket;
+import com.onemanager.reputation.KnyazResistance;
 import com.onemanager.reputation.ReputationAbility;
 import com.onemanager.reputation.ReputationAction;
 import com.onemanager.reputation.ReputationEvent;
@@ -46,13 +47,14 @@ public final class ReputationPanelBuilder {
     private static final ResourceLocation TEXTURE_RIBBON = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/state/red_ribbon.png");
     private static final ResourceLocation TEXTURE_LIKE = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/state/like.png");
     private static final ResourceLocation TEXTURE_DISLIKE = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/state/dislike.png");
+    private static final ResourceLocation TEXTURE_RESISTS = ResourceLocation.fromNamespaceAndPath(OneManager.MOD_ID, "textures/gui/state/resists.png");
 
     private ReputationPanelBuilder() {}
 
     public static FlowLayout build(CharacterWorldData worldData, Runnable onActionTriggered) {
         FlowLayout root = Containers.verticalFlow(Sizing.content(), Sizing.content());
         root.horizontalAlignment(HorizontalAlignment.CENTER);
-        root.gap(10);
+        root.gap(8);
         root.padding(Insets.of(4));
 
         if (worldData == null) {
@@ -103,12 +105,16 @@ public final class ReputationPanelBuilder {
     private static FlowLayout buildRibbonHeader(CharacterWorldData worldData) {
         FlowLayout container = Containers.verticalFlow(Sizing.content(), Sizing.content());
         container.horizontalAlignment(HorizontalAlignment.CENTER);
+        container.gap(2);
 
-        // Scaled up ribbon: 290 x 72 px (native 626x201)
-        StackLayout ribbonStack = Containers.stack(Sizing.fixed(290), Sizing.fixed(72));
+        // Resistance status icon positioned above the Knyaz ribbon
+        container.child(buildResistanceBadge(worldData.getKnyazReputation()));
+
+        // Scaled up ribbon: 290 x 66 px (native 626x201)
+        StackLayout ribbonStack = Containers.stack(Sizing.fixed(290), Sizing.fixed(66));
         ribbonStack.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
 
-        TextureIconComponent ribbon = new TextureIconComponent(TEXTURE_RIBBON, 0, 0, 626, 201, 626, 201, 290, 72);
+        TextureIconComponent ribbon = new TextureIconComponent(TEXTURE_RIBBON, 0, 0, 626, 201, 626, 201, 290, 66);
         ribbonStack.child(ribbon);
 
         // Central overlay box for Knyaz portrait / title
@@ -151,6 +157,39 @@ public final class ReputationPanelBuilder {
         container.child(ribbonStack);
 
         return container;
+    }
+
+    public static FlowLayout buildResistanceBadge(int rep) {
+        KnyazResistance resist = KnyazResistance.fromReputation(rep);
+
+        FlowLayout box = Containers.horizontalFlow(Sizing.fixed(34), Sizing.fixed(34));
+        box.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        box.cursorStyle(CursorStyle.HAND);
+
+        TextureIconComponent icon = new TextureIconComponent(
+                TEXTURE_RESISTS,
+                resist.getSpriteIndex() * 32,
+                0,
+                32,
+                32,
+                288,
+                32,
+                32,
+                32
+        );
+        box.child(icon);
+
+        int pct = resist.getResistancePercent();
+        ChatFormatting pctStyle = pct > 60 ? ChatFormatting.RED : (pct < 60 ? ChatFormatting.GREEN : ChatFormatting.GOLD);
+
+        Component tooltip = Component.literal(resist.getTitle())
+                .withStyle(style -> style.withColor(resist.getTitleColor()).withBold(true))
+                .append(Component.literal("\n\n" + resist.getDescription()).withStyle(ChatFormatting.GRAY))
+                .append(Component.literal("\n\nКнязь обладает защитой от атак других горожан: ").withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(pct + "%").withStyle(pctStyle, ChatFormatting.BOLD));
+        box.tooltip(tooltip);
+
+        return box;
     }
 
     // =========================================================================

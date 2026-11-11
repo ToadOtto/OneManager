@@ -37,7 +37,7 @@ public final class KnyazPanelBuilder {
     public static FlowLayout build(CharacterWorldData worldData, Runnable onActionTriggered) {
         FlowLayout root = Containers.verticalFlow(Sizing.content(), Sizing.content());
         root.horizontalAlignment(HorizontalAlignment.CENTER);
-        root.gap(10);
+        root.gap(8);
         root.padding(Insets.of(4));
 
         if (worldData == null) {
@@ -55,7 +55,9 @@ public final class KnyazPanelBuilder {
         // =====================================================================
         FlowLayout topBox = Containers.verticalFlow(Sizing.content(), Sizing.content());
         topBox.horizontalAlignment(HorizontalAlignment.CENTER);
-        topBox.gap(4);
+        topBox.gap(3);
+
+        topBox.child(ReputationPanelBuilder.buildResistanceBadge(rep));
 
         FlowLayout rulerCard = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(42));
         rulerCard.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);

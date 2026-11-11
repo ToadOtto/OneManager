@@ -1796,6 +1796,14 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         FlowLayout content = Containers.verticalFlow(Sizing.fill(100), Sizing.expand());
         content.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
 
+        if (this.currentStateSubCategory == StateSubCategory.KNYAZ || this.currentStateSubCategory == StateSubCategory.REPUTATION) {
+            float scale = getUiScale();
+            int uiWidth = (int) (this.width / scale);
+            int contentWidth = Math.max(420, (int) (uiWidth * 0.92) - 155);
+            int shiftLeft = Math.max(0, Math.min((int) (contentWidth * 0.15f), contentWidth - 420));
+            content.padding(Insets.right(shiftLeft));
+        }
+
         switch (this.currentStateSubCategory) {
             case KNYAZ -> content.child(KnyazPanelBuilder.build(this.worldData, this::rebuildUI));
             case REPUTATION -> content.child(ReputationPanelBuilder.build(this.worldData, this::rebuildUI));
