@@ -598,17 +598,17 @@ public class CharacterDataTest {
 
     @Test
     public void testKnyazResistanceTiers() {
-        // Neutral range (-24 .. +24) -> Покровительство Короны (60%)
+        // Neutral range (-24 .. +24) -> Покровительство Короны (50%)
         assertEquals(com.onemanager.reputation.KnyazResistance.CROWN_PATRONAGE, com.onemanager.reputation.KnyazResistance.fromReputation(0));
         assertEquals(com.onemanager.reputation.KnyazResistance.CROWN_PATRONAGE, com.onemanager.reputation.KnyazResistance.fromReputation(-24));
         assertEquals(com.onemanager.reputation.KnyazResistance.CROWN_PATRONAGE, com.onemanager.reputation.KnyazResistance.fromReputation(24));
-        assertEquals(60, com.onemanager.reputation.KnyazResistance.CROWN_PATRONAGE.getResistancePercent());
-        assertEquals(0.40f, com.onemanager.reputation.KnyazResistance.CROWN_PATRONAGE.getDamageMultiplier(), 0.001f);
+        assertEquals(50, com.onemanager.reputation.KnyazResistance.CROWN_PATRONAGE.getResistancePercent());
+        assertEquals(0.50f, com.onemanager.reputation.KnyazResistance.CROWN_PATRONAGE.getDamageMultiplier(), 0.001f);
 
         // Dark Knyaz
         assertEquals(com.onemanager.reputation.KnyazResistance.SHIELD_OF_RESISTANCE, com.onemanager.reputation.KnyazResistance.fromReputation(-25));
         assertEquals(com.onemanager.reputation.KnyazResistance.SHIELD_OF_RESISTANCE, com.onemanager.reputation.KnyazResistance.fromReputation(-49));
-        assertEquals(60, com.onemanager.reputation.KnyazResistance.SHIELD_OF_RESISTANCE.getResistancePercent());
+        assertEquals(50, com.onemanager.reputation.KnyazResistance.SHIELD_OF_RESISTANCE.getResistancePercent());
 
         assertEquals(com.onemanager.reputation.KnyazResistance.STONE_OF_SIN, com.onemanager.reputation.KnyazResistance.fromReputation(-50));
         assertEquals(com.onemanager.reputation.KnyazResistance.STONE_OF_SIN, com.onemanager.reputation.KnyazResistance.fromReputation(-74));
@@ -628,12 +628,12 @@ public class CharacterDataTest {
         // Light Knyaz
         assertEquals(com.onemanager.reputation.KnyazResistance.SHIELD_OF_INSPIRATION, com.onemanager.reputation.KnyazResistance.fromReputation(25));
         assertEquals(com.onemanager.reputation.KnyazResistance.SHIELD_OF_INSPIRATION, com.onemanager.reputation.KnyazResistance.fromReputation(49));
-        assertEquals(60, com.onemanager.reputation.KnyazResistance.SHIELD_OF_INSPIRATION.getResistancePercent());
+        assertEquals(50, com.onemanager.reputation.KnyazResistance.SHIELD_OF_INSPIRATION.getResistancePercent());
 
         assertEquals(com.onemanager.reputation.KnyazResistance.SIGN_OF_HOPE, com.onemanager.reputation.KnyazResistance.fromReputation(50));
         assertEquals(com.onemanager.reputation.KnyazResistance.SIGN_OF_HOPE, com.onemanager.reputation.KnyazResistance.fromReputation(74));
-        assertEquals(50, com.onemanager.reputation.KnyazResistance.SIGN_OF_HOPE.getResistancePercent());
-        assertEquals(0.50f, com.onemanager.reputation.KnyazResistance.SIGN_OF_HOPE.getDamageMultiplier(), 0.001f);
+        assertEquals(40, com.onemanager.reputation.KnyazResistance.SIGN_OF_HOPE.getResistancePercent());
+        assertEquals(0.60f, com.onemanager.reputation.KnyazResistance.SIGN_OF_HOPE.getDamageMultiplier(), 0.001f);
 
         assertEquals(com.onemanager.reputation.KnyazResistance.IDOL_OF_FAITH, com.onemanager.reputation.KnyazResistance.fromReputation(75));
         assertEquals(com.onemanager.reputation.KnyazResistance.IDOL_OF_FAITH, com.onemanager.reputation.KnyazResistance.fromReputation(89));

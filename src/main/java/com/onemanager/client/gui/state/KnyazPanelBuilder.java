@@ -53,7 +53,7 @@ public final class KnyazPanelBuilder {
         // =====================================================================
         FlowLayout topBox = Containers.verticalFlow(Sizing.content(), Sizing.content());
         topBox.horizontalAlignment(HorizontalAlignment.CENTER);
-        topBox.gap(2);
+        topBox.gap(3);
 
         topBox.child(ReputationPanelBuilder.buildResistanceBadge(rep));
         topBox.child(ReputationPanelBuilder.buildOrnateKnyazCard(worldData));

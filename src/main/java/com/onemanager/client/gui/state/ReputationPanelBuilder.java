@@ -108,6 +108,8 @@ public final class ReputationPanelBuilder {
         FlowLayout container = Containers.verticalFlow(Sizing.content(), Sizing.content());
         container.horizontalAlignment(HorizontalAlignment.CENTER);
         container.gap(0);
+        // Lift the entire header (crown + resist + ribbon + portrait) up by 5px
+        container.margins(Insets.of(-5, 5, 0, 0));
 
         // Monarch crown + resistance status icon positioned above the Knyaz ribbon
         container.child(buildResistanceBadge(worldData.getKnyazReputation()));
@@ -115,7 +117,7 @@ public final class ReputationPanelBuilder {
         // Scaled up ribbon (+15%): 334 x 70 px (native 626x201)
         StackLayout ribbonStack = Containers.stack(Sizing.fixed(334), Sizing.fixed(70));
         ribbonStack.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        ribbonStack.margins(Insets.top(-2));
+        ribbonStack.margins(Insets.top(-1));
 
         TextureIconComponent ribbon = new TextureIconComponent(TEXTURE_RIBBON, 0, 0, 626, 201, 626, 201, 334, 70);
         ribbonStack.child(ribbon);
@@ -181,7 +183,7 @@ public final class ReputationPanelBuilder {
         col.cursorStyle(CursorStyle.HAND);
 
         TextureIconComponent crownIcon = new TextureIconComponent(TEXTURE_CROWN, 20);
-        crownIcon.margins(Insets.bottom(-3));
+        crownIcon.margins(Insets.bottom(-2));
         col.child(crownIcon);
 
         TextureIconComponent icon = new TextureIconComponent(
@@ -198,7 +200,8 @@ public final class ReputationPanelBuilder {
         col.child(icon);
 
         int pct = resist.getResistancePercent();
-        ChatFormatting pctStyle = pct > 60 ? ChatFormatting.RED : (pct < 60 ? ChatFormatting.GREEN : ChatFormatting.GOLD);
+        int basePct = KnyazResistance.BASE_RESISTANCE_PERCENT;
+        ChatFormatting pctStyle = pct > basePct ? ChatFormatting.RED : (pct < basePct ? ChatFormatting.GREEN : ChatFormatting.GOLD);
 
         Component tooltip = Component.literal(resist.getTitle())
                 .withStyle(style -> style.withColor(resist.getTitleColor()).withBold(true))
@@ -483,7 +486,7 @@ public final class ReputationPanelBuilder {
 
         int bgColor;
         int borderColor;
-        if (reputation == 0) {
+        if (!unlocked) {
             bgColor = 0xFF111318;
             borderColor = 0xFF222630;
         } else if (positive) {
@@ -525,7 +528,7 @@ public final class ReputationPanelBuilder {
         lblBox.verticalAlignment(VerticalAlignment.CENTER);
 
         LabelComponent lbl = Components.label(Component.literal(thLabel).withStyle(
-                reputation != 0 ? (positive ? ChatFormatting.GREEN : ChatFormatting.RED) : ChatFormatting.DARK_GRAY
+                unlocked ? (positive ? ChatFormatting.GREEN : ChatFormatting.RED) : ChatFormatting.DARK_GRAY
         ));
         lblBox.child(lbl);
         row.child(lblBox);
@@ -534,24 +537,25 @@ public final class ReputationPanelBuilder {
         List<ReputationAbility> abilities = ReputationAbility.getTier(tier, positive);
         for (int i = 0; i < 4; i++) {
             ReputationAbility a = i < abilities.size() ? abilities.get(i) : null;
-            row.child(createAbilitySlot(a, unlocked, reputation != 0, positive));
+            row.child(createAbilitySlot(a, unlocked, positive));
         }
 
         return row;
     }
 
-    private static FlowLayout createAbilitySlot(ReputationAbility ability, boolean unlocked, boolean colored, boolean positive) {
+    private static FlowLayout createAbilitySlot(ReputationAbility ability, boolean unlocked, boolean positive) {
         FlowLayout slot = Containers.horizontalFlow(Sizing.fixed(25), Sizing.fixed(25));
         slot.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
 
-        int slotBg = colored ? (positive ? 0xFF1A3324 : 0xFF35191E) : 0xFF14161E;
-        int slotBorder = colored ? (positive ? 0xFF357049 : 0xFF702D37) : 0xFF252934;
+        int slotBg = unlocked ? (positive ? 0xFF1A3324 : 0xFF35191E) : 0xFF14161E;
+        int slotBorder = unlocked ? (positive ? 0xFF357049 : 0xFF702D37) : 0xFF252934;
         slot.surface(Surface.flat(slotBg).and(Surface.outline(slotBorder)));
         slot.cursorStyle(unlocked ? CursorStyle.HAND : CursorStyle.POINTER);
 
         if (ability != null) {
-            ChatFormatting starColor = colored ? (positive ? ChatFormatting.GREEN : ChatFormatting.RED) : ChatFormatting.DARK_GRAY;
-            slot.child(Components.label(Component.literal("★").withStyle(starColor)));
+            String star = unlocked ? "★" : "·";
+            ChatFormatting starColor = unlocked ? (positive ? ChatFormatting.GREEN : ChatFormatting.RED) : ChatFormatting.DARK_GRAY;
+            slot.child(Components.label(Component.literal(star).withStyle(starColor)));
 
             String statusText = unlocked ? "§aРазблокировано" : "§cЗаблокировано (требуется репутация " + ability.threshold() + ")";
             slot.tooltip(Component.literal(
