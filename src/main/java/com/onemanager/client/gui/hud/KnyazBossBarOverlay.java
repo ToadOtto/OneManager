@@ -19,8 +19,8 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import java.util.UUID;
 
 /**
- * Top-of-screen bossbar HUD overlay displaying the reigning Knyaz's reputation bar
- * and square avatar icon inside the custom frame.
+ * HUD overlay displaying the reigning Knyaz's reputation bar and square avatar icon
+ * inside the custom frame ONLY while holding TAB, positioned directly below the player list.
  */
 @EventBusSubscriber(modid = OneManager.MOD_ID, value = Dist.CLIENT)
 public final class KnyazBossBarOverlay {
@@ -41,6 +41,10 @@ public final class KnyazBossBarOverlay {
         if (mc.player == null || mc.level == null) {
             return;
         }
+        // Only display while the player is holding the Tab (Player List) key
+        if (!mc.options.keyPlayerList.isDown()) {
+            return;
+        }
         // Do not render over open menus or container screens (allow ChatScreen)
         if (mc.screen != null && !(mc.screen instanceof ChatScreen)) {
             return;
@@ -59,12 +63,9 @@ public final class KnyazBossBarOverlay {
         GuiGraphics guiGraphics = event.getGuiGraphics();
         int screenWidth = guiGraphics.guiWidth();
 
-        // Calculate horizontal position centered on screen
+        // Calculate horizontal position centered on screen, and vertical position below Tab player list
         int barX = (screenWidth - BAR_TEXTURE_WIDTH) / 2;
-        int barY = 12;
-
-        // Shift down if vanilla boss bars are currently active
-        barY += getBossOverlayOffset(mc);
+        int barY = getTabListBottomY(mc, screenWidth) + 6;
 
         // 1. Render Frame Texture (143x32)
         RenderSystem.enableBlend();
@@ -108,19 +109,36 @@ public final class KnyazBossBarOverlay {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    private static int getBossOverlayOffset(Minecraft mc) {
+    private static int getTabListBottomY(Minecraft mc, int screenWidth) {
+        int y = 10;
+        int playerCount = 1;
+        if (mc.getConnection() != null) {
+            playerCount = Math.max(1, Math.min(80, mc.getConnection().getOnlinePlayers().size()));
+        }
+        int rows = playerCount;
+        int cols = 1;
+        while (rows > 20) {
+            cols++;
+            rows = (playerCount + cols - 1) / cols;
+        }
+        y += rows * 9 + 4;
+
         try {
-            var bossOverlay = mc.gui.getBossOverlay();
-            if (bossOverlay != null) {
-                var field = bossOverlay.getClass().getDeclaredField("events");
-                field.setAccessible(true);
-                Object mapObj = field.get(bossOverlay);
-                if (mapObj instanceof java.util.Map<?, ?> map && !map.isEmpty()) {
-                    return map.size() * 19;
+            var tabList = mc.gui.getTabList();
+            if (tabList != null) {
+                for (var field : tabList.getClass().getDeclaredFields()) {
+                    if (net.minecraft.network.chat.Component.class.isAssignableFrom(field.getType())) {
+                        field.setAccessible(true);
+                        Object val = field.get(tabList);
+                        if (val instanceof net.minecraft.network.chat.Component comp && !comp.getString().isEmpty()) {
+                            int lines = mc.font.split(comp, Math.max(100, screenWidth - 50)).size();
+                            y += lines * 9 + 2;
+                        }
+                    }
                 }
             }
         } catch (Throwable ignored) {
         }
-        return 0;
+        return y;
     }
 }

@@ -1790,19 +1790,11 @@ public class CharHistoryScreen extends BaseOwoScreen<StackLayout> {
         }));
 
         mainLayout.child(topNav);
-        mainLayout.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF1E222A)).margins(Insets.bottom(4)));
+        mainLayout.child(Components.box(Sizing.fill(100), Sizing.fixed(1)).color(Color.ofRgb(0xFF1E222A)).margins(Insets.bottom(2)));
 
         // Category Content Area
         FlowLayout content = Containers.verticalFlow(Sizing.fill(100), Sizing.expand());
         content.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-
-        if (this.currentStateSubCategory == StateSubCategory.KNYAZ || this.currentStateSubCategory == StateSubCategory.REPUTATION) {
-            float scale = getUiScale();
-            int uiWidth = (int) (this.width / scale);
-            int contentWidth = Math.max(420, (int) (uiWidth * 0.92) - 155);
-            int shiftLeft = Math.max(0, Math.min((int) (contentWidth * 0.15f), contentWidth - 420));
-            content.padding(Insets.right(shiftLeft));
-        }
 
         switch (this.currentStateSubCategory) {
             case KNYAZ -> content.child(KnyazPanelBuilder.build(this.worldData, this::rebuildUI));

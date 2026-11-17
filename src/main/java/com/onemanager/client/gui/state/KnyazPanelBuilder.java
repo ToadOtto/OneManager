@@ -37,16 +37,14 @@ public final class KnyazPanelBuilder {
     public static FlowLayout build(CharacterWorldData worldData, Runnable onActionTriggered) {
         FlowLayout root = Containers.verticalFlow(Sizing.content(), Sizing.content());
         root.horizontalAlignment(HorizontalAlignment.CENTER);
-        root.gap(8);
-        root.padding(Insets.of(4));
+        root.gap(5);
+        root.padding(Insets.of(0));
 
         if (worldData == null) {
             root.child(Components.label(Component.literal("Данные мира недоступны").withStyle(ChatFormatting.GRAY)));
             return root;
         }
 
-        UUID knyazUuid = worldData.getKnyazUuid();
-        String knyazName = worldData.getKnyazName();
         int rep = worldData.getKnyazReputation();
         int trend = worldData.getReputationTrend();
 
@@ -55,51 +53,26 @@ public final class KnyazPanelBuilder {
         // =====================================================================
         FlowLayout topBox = Containers.verticalFlow(Sizing.content(), Sizing.content());
         topBox.horizontalAlignment(HorizontalAlignment.CENTER);
-        topBox.gap(3);
+        topBox.gap(2);
 
         topBox.child(ReputationPanelBuilder.buildResistanceBadge(rep));
-
-        FlowLayout rulerCard = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(42));
-        rulerCard.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        rulerCard.surface(Surface.flat(0xEE12141B).and(Surface.outline(0xFF8A7242)));
-        rulerCard.padding(Insets.horizontal(10));
-        rulerCard.gap(8);
-
-        rulerCard.child(new PlayerAvatarComponent(knyazUuid, 32));
-
-        FlowLayout rulerNames = Containers.verticalFlow(Sizing.content(), Sizing.content());
-        rulerNames.gap(2);
-
-        PlayerCharacterData knyazPd = knyazUuid != null ? worldData.getPlayerData(knyazUuid) : null;
-        ActiveCharacter knyazChar = knyazPd != null ? knyazPd.getActiveCharacter() : null;
-        String charName = knyazChar != null && !knyazChar.getName().isEmpty() ? knyazChar.getName() : knyazName;
-
-        LabelComponent titleLbl = Components.label(Component.literal("Князь").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
-        titleLbl.maxWidth(140);
-        rulerNames.child(titleLbl);
-
-        LabelComponent nameLbl = Components.label(Component.literal(charName).withStyle(ChatFormatting.WHITE));
-        nameLbl.maxWidth(140);
-        rulerNames.child(nameLbl);
-
-        rulerCard.child(rulerNames);
-        topBox.child(rulerCard);
+        topBox.child(ReputationPanelBuilder.buildOrnateKnyazCard(worldData));
 
         // "Ваша репутация:"
         topBox.child(Components.label(Component.literal("Ваша репутация:").withStyle(ChatFormatting.GRAY)));
 
-        // Big signed number + trend
-        FlowLayout repRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(24));
+        // Big signed number + trend (+15%: 1.85f)
+        FlowLayout repRow = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(26));
         repRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        repRow.gap(4);
+        repRow.gap(5);
 
         int numColor = ReputationPanelBuilder.getReputationColor(rep);
         String repStr = (rep > 0 ? "+" : "") + rep;
         ScaledLabelComponent numLabel = new ScaledLabelComponent(
                 Component.literal(repStr).withStyle(style -> style.withColor(numColor).withBold(true)),
-                1.6f, numColor, true
+                1.85f, numColor, true
         );
-        numLabel.sizing(Sizing.fixed(36), Sizing.fixed(16));
+        numLabel.sizing(Sizing.fixed(42), Sizing.fixed(18));
         repRow.child(numLabel);
         repRow.child(ReputationPanelBuilder.buildTrendIndicator(trend));
         topBox.child(repRow);
@@ -109,24 +82,24 @@ public final class KnyazPanelBuilder {
         // =====================================================================
         // SECTION 2: СИЛЫ МОНАРХА (CARD WITH BUTTONS 1-6 ACTIVE, 7 PASSIVE)
         // =====================================================================
-        FlowLayout powersCard = Containers.verticalFlow(Sizing.fixed(360), Sizing.content());
+        FlowLayout powersCard = Containers.verticalFlow(Sizing.fixed(395), Sizing.content());
         powersCard.surface(Surface.flat(0xFF14171E).and(Surface.outline(0xFF2E3544)));
-        powersCard.padding(Insets.of(8));
-        powersCard.gap(6);
+        powersCard.padding(Insets.of(7));
+        powersCard.gap(5);
         powersCard.horizontalAlignment(HorizontalAlignment.CENTER);
 
         FlowLayout powersTitleRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         powersTitleRow.verticalAlignment(VerticalAlignment.CENTER);
-        powersTitleRow.gap(4);
+        powersTitleRow.gap(5);
         ItemComponent crownIcon = Components.item(new ItemStack(Items.GOLDEN_HELMET));
-        crownIcon.sizing(Sizing.fixed(14), Sizing.fixed(14));
+        crownIcon.sizing(Sizing.fixed(16), Sizing.fixed(16));
         powersTitleRow.child(crownIcon);
         powersTitleRow.child(Components.label(Component.literal("Силы Монарха").withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)));
         powersCard.child(powersTitleRow);
 
         FlowLayout buttonsRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         buttonsRow.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        buttonsRow.gap(8);
+        buttonsRow.gap(9);
 
         // Buttons 1-6 (Active abilities)
         for (int i = 1; i <= 6; i++) {
@@ -155,7 +128,7 @@ public final class KnyazPanelBuilder {
         // Number above button
         col.child(Components.label(Component.literal(String.valueOf(slot)).withStyle(ChatFormatting.GRAY)));
 
-        FlowLayout btn = Containers.horizontalFlow(Sizing.fixed(32), Sizing.fixed(32));
+        FlowLayout btn = Containers.horizontalFlow(Sizing.fixed(36), Sizing.fixed(36));
         btn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
         btn.surface(Surface.flat(0xFF181B23).and(Surface.outline(0xFF323846)));
         btn.cursorStyle(CursorStyle.HAND);
@@ -209,13 +182,13 @@ public final class KnyazPanelBuilder {
         // Number above button in Gold
         col.child(Components.label(Component.literal("7").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
 
-        FlowLayout btn = Containers.horizontalFlow(Sizing.fixed(32), Sizing.fixed(32));
+        FlowLayout btn = Containers.horizontalFlow(Sizing.fixed(36), Sizing.fixed(36));
         btn.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
         btn.surface(Surface.flat(0xFF282214).and(Surface.outline(0xFFB5933C)));
         btn.cursorStyle(CursorStyle.HAND);
 
         ItemComponent crown = Components.item(new ItemStack(Items.GOLDEN_HELMET));
-        crown.sizing(Sizing.fixed(20), Sizing.fixed(20));
+        crown.sizing(Sizing.fixed(23), Sizing.fixed(23));
         btn.child(crown);
 
         btn.tooltip(Component.literal(
