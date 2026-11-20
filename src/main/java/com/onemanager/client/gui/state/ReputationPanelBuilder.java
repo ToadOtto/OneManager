@@ -111,8 +111,10 @@ public final class ReputationPanelBuilder {
         // Lift the entire header (crown + resist + ribbon + portrait) up by 5px
         container.margins(Insets.of(-5, 5, 0, 0));
 
-        // Monarch crown + resistance status icon positioned above the Knyaz ribbon
-        container.child(buildResistanceBadge(worldData.getKnyazReputation()));
+        // Monarch crown + resistance status icon positioned above the Knyaz frame (lifted 5px with the frame)
+        FlowLayout resistBadge = buildResistanceBadge(worldData.getKnyazReputation());
+        resistBadge.margins(Insets.of(-5, 5, 0, 0));
+        container.child(resistBadge);
 
         // Scaled up ribbon (+15%): 334 x 70 px (native 626x201)
         StackLayout ribbonStack = Containers.stack(Sizing.fixed(334), Sizing.fixed(70));
@@ -122,8 +124,10 @@ public final class ReputationPanelBuilder {
         TextureIconComponent ribbon = new TextureIconComponent(TEXTURE_RIBBON, 0, 0, 626, 201, 626, 201, 334, 70);
         ribbonStack.child(ribbon);
 
-        // Ornate Knyaz frame overlay box
-        ribbonStack.child(buildOrnateKnyazCard(worldData));
+        // Ornate Knyaz frame overlay box, lifted 5px higher than red_ribbon.png
+        StackLayout knyazCard = buildOrnateKnyazCard(worldData);
+        knyazCard.margins(Insets.of(-5, 5, 0, 0));
+        ribbonStack.child(knyazCard);
         container.child(ribbonStack);
 
         return container;
