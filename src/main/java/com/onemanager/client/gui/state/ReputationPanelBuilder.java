@@ -58,6 +58,7 @@ public final class ReputationPanelBuilder {
         root.horizontalAlignment(HorizontalAlignment.CENTER);
         root.gap(5);
         root.padding(Insets.of(0));
+        root.allowOverflow(true);
 
         if (worldData == null) {
             root.child(Components.label(Component.literal("Данные мира недоступны").withStyle(ChatFormatting.GRAY)));
@@ -108,25 +109,26 @@ public final class ReputationPanelBuilder {
         FlowLayout container = Containers.verticalFlow(Sizing.content(), Sizing.content());
         container.horizontalAlignment(HorizontalAlignment.CENTER);
         container.gap(0);
-        // Lift the entire header (crown + resist + ribbon + portrait) up by 5px
-        container.margins(Insets.of(-5, 5, 0, 0));
+        container.allowOverflow(true);
+        // Keep extra spacing below ribbon without negative top margin clipping the crown
+        container.margins(Insets.bottom(5));
 
-        // Monarch crown + resistance status icon positioned above the Knyaz frame (lifted 5px with the frame)
+        // Monarch crown + resistance status icon positioned above the Knyaz frame
         FlowLayout resistBadge = buildResistanceBadge(worldData.getKnyazReputation());
-        resistBadge.margins(Insets.of(-5, 5, 0, 0));
         container.child(resistBadge);
 
-        // Scaled up ribbon (+15%): 334 x 70 px (native 626x201)
-        StackLayout ribbonStack = Containers.stack(Sizing.fixed(334), Sizing.fixed(70));
-        ribbonStack.alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        // Scaled up ribbon (+15%): 334 x 70 px inside a 75px tall stack so knyazCard sits 5px above red_ribbon.png
+        StackLayout ribbonStack = Containers.stack(Sizing.fixed(334), Sizing.fixed(75));
+        ribbonStack.alignment(HorizontalAlignment.CENTER, VerticalAlignment.TOP);
+        ribbonStack.allowOverflow(true);
         ribbonStack.margins(Insets.top(-1));
 
         TextureIconComponent ribbon = new TextureIconComponent(TEXTURE_RIBBON, 0, 0, 626, 201, 626, 201, 334, 70);
+        ribbon.margins(Insets.top(5));
         ribbonStack.child(ribbon);
 
-        // Ornate Knyaz frame overlay box, lifted 5px higher than red_ribbon.png
+        // Ornate Knyaz frame overlay box, 5px higher than red_ribbon.png
         StackLayout knyazCard = buildOrnateKnyazCard(worldData);
-        knyazCard.margins(Insets.of(-5, 5, 0, 0));
         ribbonStack.child(knyazCard);
         container.child(ribbonStack);
 
@@ -185,6 +187,7 @@ public final class ReputationPanelBuilder {
         FlowLayout col = Containers.verticalFlow(Sizing.content(), Sizing.content());
         col.horizontalAlignment(HorizontalAlignment.CENTER);
         col.cursorStyle(CursorStyle.HAND);
+        col.allowOverflow(true);
 
         TextureIconComponent crownIcon = new TextureIconComponent(TEXTURE_CROWN, 20);
         crownIcon.margins(Insets.bottom(-2));

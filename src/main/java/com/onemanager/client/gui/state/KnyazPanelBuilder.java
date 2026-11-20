@@ -39,6 +39,7 @@ public final class KnyazPanelBuilder {
         root.horizontalAlignment(HorizontalAlignment.CENTER);
         root.gap(5);
         root.padding(Insets.of(0));
+        root.allowOverflow(true);
 
         if (worldData == null) {
             root.child(Components.label(Component.literal("Данные мира недоступны").withStyle(ChatFormatting.GRAY)));
